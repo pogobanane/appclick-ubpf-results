@@ -35,12 +35,12 @@ COLORS = [ str(i) for i in range(20) ]
 # }
 
 system_map = {
-        'ebpf-click-unikraftvm': 'Unikraft click (eBPF)',
-        'click-unikraftvm': 'Unikraft click',
+        'ebpf-click-unikraftvm': 'Uk click (eBPF)',
+        'click-unikraftvm': 'Uk click',
         'click-linuxvm': 'Linux click',
         }
 
-YLABEL = 'Restart time [s]'
+YLABEL = 'Throughput [Mpps]'
 XLABEL = 'System'
 
 def map_hue(df_hue, hue_map):
@@ -72,7 +72,7 @@ def setup_parser():
                         type=argparse.FileType('w+'),
                         help='''Path to the output plot
                              (default: packet_loss.pdf)''',
-                        default='reconfiguration.pdf'
+                        default='throughput.pdf'
                         )
     parser.add_argument('-l', '--logarithmic',
                         action='store_true',
@@ -126,9 +126,9 @@ def main():
     parser = setup_parser()
     args = parse_args(parser)
 
-    fig = plt.figure(figsize=(args.width, args.height))
+    # fig = plt.figure(figsize=(args.width, args.height))
     # fig = plt.figure()
-    ax = fig.add_subplot(1, 1, 1)
+    # ax = fig.add_subplot(1, 1, 1)
     # ax.set_axisbelow(True)
     if args.title:
         plt.title(args.title)
@@ -159,73 +159,79 @@ def main():
     # df_hue = map_hue(df_hue, hue_map)
     # df['is_passthrough'] = df.apply(lambda row: True if "vmux-pt" in row['interface'] or "vfio" in row['interface'] else False, axis=1)
 
-    columns = ['system', 'vnf', 'restart_s']
+    columns = ['system', 'vnf', 'direction', 'pps']
     systems = [ "ebpf-click-unikraftvm", "click-unikraftvm", "click-linuxvm" ]
     vnfs = [ "empty", "nat", "filter", "dpi", "tcp" ]
     rows = []
     for system in systems:
         for vnf in vnfs:
-            value = 1
-            if system == "click-unikraftvm":
-                value = 2
-            if system == "click-linuxvm":
-                value = 3
-            rows += [[system, vnf, value]]
+            for direction in ["rx", "tx"]:
+                value = 10
+                if system == "click-unikraftvm":
+                    value = 11
+                if system == "click-linuxvm":
+                    value = 9
+                rows += [[system, vnf, direction, value]]
     df = pd.DataFrame(rows, columns=columns)
 
     df['system'] = df['system'].apply(lambda row: system_map.get(str(row), row))
 
     # map colors to hues
-    # colors = sns.color_palette("pastel", len(df['hue'].unique())-1) + [ mcolors.to_rgb('sandybrown') ]
-    # palette = dict(zip(df['hue'].unique(), colors))
+    colors = sns.color_palette("pastel", len(df['vnf'].unique())-1) + [ mcolors.to_rgb('sandybrown') ]
+    palette = dict(zip(df['vnf'].unique(), colors))
 
     # Plot using Seaborn
-    sns.barplot(
-               data=df,
+    grid = sns.FacetGrid(df,
+            col='direction',
+            sharey = False,
+            sharex = False,
+            # gridspec_kws={"width_ratios": [11, 1]},
+    )
+    grid.map_dataframe(sns.barplot,
                x='system',
-               y='restart_s',
+               y='pps',
                hue="vnf",
-               # palette=palette,
+               palette=palette,
                edgecolor="dimgray",
                )
 
-    # sns.add_legend(
-    #         # bbox_to_anchor=(0.5, 0.77),
-    #         loc='right',
-    #         ncol=1, title=None, frameon=False,
-    #                 )
+    grid.add_legend(
+            # bbox_to_anchor=(0.5, 0.77),
+            loc='right',
+            ncol=1, title=None, frameon=False,
+                    )
 
-    # # Fix the legend hatches
-    # for i, legend_patch in enumerate(grid._legend.get_patches()):
-    #     hatch = hatches[i % len(hatches)]
-    #     legend_patch.set_hatch(f"{hatch}{hatch}")
+    # Fix the legend hatches
+    for i, legend_patch in enumerate(grid._legend.get_patches()):
+        hatch = hatches[i % len(hatches)]
+        legend_patch.set_hatch(f"{hatch}{hatch}")
 
-    # # add hatches to bars
-    # for (i, j, k), data in grid.facet_data():
-    #     print(i, j, k)
-    #     def barplot_add_hatches(plot_in_grid, nr_hues, offset=0):
-    #         hatches_used = -1
-    #         bars_hatched = 0
-    #         for bar in plot_in_grid.patches:
-    #             if nr_hues <= 1:
-    #                 hatches_used += 1
-    #             else: # with multiple hues, we draw bars with the same hatch in batches
-    #                 if bars_hatched % nr_hues == 0:
-    #                     hatches_used += 1
-    #             # if bars_hatched % 7 == 0:
-    #             #     hatches_used += 1
-    #             bars_hatched += 1
-    #             if bar.get_bbox().x0 == 0 and bar.get_bbox().x1 == 0 and bar.get_bbox().y0 == 0 and bar.get_bbox().y1 == 0:
-    #                 # skip bars that are not rendered
-    #                 continue
-    #             hatch = hatches[(offset + hatches_used) % len(hatches)]
-    #             print(bar, hatches_used, hatch)
-    #             bar.set_hatch(hatch)
-    #
-    #     if (i, j, k) == (0, 0, 0):
-    #         barplot_add_hatches(grid.facet_axis(i, j), 7)
-    #     elif (i, j, k) == (0, 1, 0):
-    #         barplot_add_hatches(grid.facet_axis(i, j), 1, offset=(7 if not args.slides else 4))
+    # add hatches to bars
+    for (i, j, k), data in grid.facet_data():
+        print(i, j, k)
+        def barplot_add_hatches(plot_in_grid, nr_hues, offset=0):
+            hatches_used = -1
+            bars_hatched = 0
+            for bar in plot_in_grid.patches:
+                if nr_hues <= 1:
+                    hatches_used += 1
+                else: # with multiple hues, we draw bars with the same hatch in batches
+                    if bars_hatched % nr_hues == 0:
+                        hatches_used += 1
+                # if bars_hatched % 7 == 0:
+                #     hatches_used += 1
+                bars_hatched += 1
+                if bar.get_bbox().x0 == 0 and bar.get_bbox().x1 == 0 and bar.get_bbox().y0 == 0 and bar.get_bbox().y1 == 0:
+                    # skip bars that are not rendered
+                    continue
+                hatch = hatches[(offset + hatches_used) % len(hatches)]
+                print(bar, hatches_used, hatch)
+                bar.set_hatch(hatch)
+
+        if (i, j, k) == (0, 0, 0):
+            barplot_add_hatches(grid.facet_axis(i, j), 3)
+        elif (i, j, k) == (0, 1, 0):
+            barplot_add_hatches(grid.facet_axis(i, j), 3)
 
     # def grid_set_titles(grid, titles):
     #     for ax, title in zip(grid.axes.flat, titles):
@@ -233,7 +239,7 @@ def main():
     #
     # grid_set_titles(grid, ["Emulation and Mediation", "Passthrough"])
     #
-    # grid.figure.set_size_inches(args.width, args.height)
+    grid.figure.set_size_inches(args.width, args.height)
     # grid.set_titles("foobar")
     # plt.subplots_adjust(left=0.06)
     # bar = sns.barplot(x='num_vms', y='rxMppsCalc', hue="hue", data=pd.concat(dfs),
@@ -244,10 +250,10 @@ def main():
     #             # log_scale=log_scale,
     #             ax=ax,
     #             )
-    sns.move_legend(
-        ax, "lower right",
-        # bbox_to_anchor=(.5, 1), ncol=3, title=None, frameon=False,
-    )
+    # sns.move_legend(
+    #     ax, "lower right",
+    #     # bbox_to_anchor=(.5, 1), ncol=3, title=None, frameon=False,
+    # )
     #
     # sns.move_legend(
     #     grid, "lower center",
@@ -256,8 +262,8 @@ def main():
     #     title=None,
     #     # frameon=False,
     # )
-    # grid.set_xlabels(XLABEL)
-    # grid.set_ylabels(YLABEL)
+    grid.set_xlabels(XLABEL)
+    grid.set_ylabels(YLABEL)
     #
     # grid.facet_axis(0, 0).annotate(
     #     "↑ Higher is better", # or ↓ ← ↑ →
@@ -270,8 +276,8 @@ def main():
     #     weight="bold",
     # )
 
-    plt.xlabel(XLABEL)
-    plt.ylabel(YLABEL)
+    # plt.xlabel(XLABEL)
+    # plt.ylabel(YLABEL)
 
     # plt.ylim(0, 1)
     if not args.logarithmic:
