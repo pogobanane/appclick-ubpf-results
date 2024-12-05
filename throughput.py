@@ -166,19 +166,19 @@ def main():
     for system in systems:
         for vnf in vnfs:
             for direction in ["rx", "tx"]:
-                value = 1
+                value = 0
                 # if system == "click-unikraftvm":
                 #     value = 11
                 # if system == "click-linuxvm":
                 #     value = 9
                 if system == "click-linuxvm" and vnf == "none" and direction == "tx":
-                    value = 0.52
+                    value = 0.31
                 if system == "click-linuxvm" and vnf == "none" and direction == "rx":
                     value = 0.72
                 if system == "click-unikraftvm" and vnf == "none" and direction == "tx":
-                    value = 0.50
+                    value = 0.77
                 if system == "click-unikraftvm" and vnf == "none" and direction == "rx":
-                    value = 0.89
+                    value = 1.2
                 if system == "click-unikraftvm" and vnf == "filter" and direction == "tx":
                     value = 0.37
                 rows += [[system, vnf, direction, value]]
@@ -193,7 +193,7 @@ def main():
     # Plot using Seaborn
     grid = sns.FacetGrid(df,
             col='direction',
-            sharey = False,
+            sharey = True,
             sharex = False,
             # gridspec_kws={"width_ratios": [11, 1]},
     )
