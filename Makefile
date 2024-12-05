@@ -5,7 +5,7 @@ WIDTH2 := 5.5
 DWIDTH := 11
 DWIDTH2 := 13
 
-PAPER_FIGURES := reconfiguration.pdf throughput.pdf
+PAPER_FIGURES := reconfiguration.pdf throughput.pdf imagesize.pdf
 # PAPER_FIGURES := mediation.pdf microservices.pdf ycsb.pdf
 # PAPER_FIGURES := mediation.pdf iperf.pdf ycsb.pdf
 
@@ -23,4 +23,9 @@ reconfiguration.pdf:
 throughput.pdf:
 	python3 throughput.py \
 		-W $(WIDTH2) -H 2.5 \
+		--1 flake.nix --1-name stub
+
+imagesize.pdf:
+	python3 imagesize.py \
+		-W $(WIDTH) -H 2.5 \
 		--1 flake.nix --1-name stub

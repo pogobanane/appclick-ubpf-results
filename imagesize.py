@@ -40,7 +40,7 @@ system_map = {
         'click-linuxvm': 'Linux click',
         }
 
-YLABEL = 'Restart time [s]'
+YLABEL = 'Image Size (MB)'
 XLABEL = 'System'
 
 def map_hue(df_hue, hue_map):
@@ -72,7 +72,7 @@ def setup_parser():
                         type=argparse.FileType('w+'),
                         help='''Path to the output plot
                              (default: packet_loss.pdf)''',
-                        default='reconfiguration.pdf'
+                        default='imagesize.pdf'
                         )
     parser.add_argument('-l', '--logarithmic',
                         action='store_true',
@@ -159,21 +159,19 @@ def main():
     # df_hue = map_hue(df_hue, hue_map)
     # df['is_passthrough'] = df.apply(lambda row: True if "vmux-pt" in row['interface'] or "vfio" in row['interface'] else False, axis=1)
 
-    columns = ['system', 'vnf', 'restart_s']
-    systems = [ "ebpf-click-unikraftvm", "click-unikraftvm", "click-linuxvm" ]
-    vnfs = [ "empty", "nat", "filter", "dpi", "tcp" ]
+    columns = ['system', 'size']
+    systems = [ "Unikraft", "Alpine", "Ubuntu" ]
     rows = []
     for system in systems:
-        for vnf in vnfs:
-            value = 1
-            if system == "click-unikraftvm":
-                value = 2
-            if system == "click-linuxvm":
-                value = 3
-            rows += [[system, vnf, value]]
+        value = 0.3
+        if system == "Alpine":
+            value = 2
+        if system == "Ubuntu":
+            value = 8
+        rows += [[system, value]]
     df = pd.DataFrame(rows, columns=columns)
 
-    df['system'] = df['system'].apply(lambda row: system_map.get(str(row), row))
+    # df['system'] = df['system'].apply(lambda row: system_map.get(str(row), row))
 
     # map colors to hues
     # colors = sns.color_palette("pastel", len(df['hue'].unique())-1) + [ mcolors.to_rgb('sandybrown') ]
@@ -183,8 +181,8 @@ def main():
     sns.barplot(
                data=df,
                x='system',
-               y='restart_s',
-               hue="vnf",
+               y='size',
+               # hue="vnf",
                # palette=palette,
                edgecolor="dimgray",
                )
@@ -244,10 +242,10 @@ def main():
     #             # log_scale=log_scale,
     #             ax=ax,
     #             )
-    sns.move_legend(
-        ax, "lower right",
-        # bbox_to_anchor=(.5, 1), ncol=3, title=None, frameon=False,
-    )
+    # sns.move_legend(
+    #     ax, "lower right",
+    #     # bbox_to_anchor=(.5, 1), ncol=3, title=None, frameon=False,
+    # )
     #
     # sns.move_legend(
     #     grid, "lower center",
