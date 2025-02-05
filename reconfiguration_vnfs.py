@@ -72,7 +72,7 @@ def setup_parser():
                         type=argparse.FileType('w+'),
                         help='''Path to the output plot
                              (default: packet_loss.pdf)''',
-                        default='reconfiguration.pdf'
+                        default='reconfiguration_vnfs.pdf'
                         )
     parser.add_argument('-l', '--logarithmic',
                         action='store_true',
