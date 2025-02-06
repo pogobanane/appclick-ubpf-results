@@ -40,7 +40,7 @@ system_map = {
         'click-linuxvm': 'Linux click',
         }
 
-YLABEL = 'Throughput [Mpps]'
+YLABEL = 'Speedup'
 XLABEL = 'VNF'
 
 def map_hue(df_hue, hue_map):
@@ -72,7 +72,7 @@ def setup_parser():
                         type=argparse.FileType('w+'),
                         help='''Path to the output plot
                              (default: packet_loss.pdf)''',
-                        default='throughput.pdf'
+                        default='relative_performance.pdf'
                         )
     parser.add_argument('-l', '--logarithmic',
                         action='store_true',
@@ -162,36 +162,36 @@ def main():
     df['pps'] = df['pps'].apply(lambda pps: pps / 1_000_000) # now mpps
 
 
-    # columns = ['system', 'vnf', 'direction', 'pps']
-    # systems = [ "ebpf-click-unikraftvm", "click-unikraftvm", "click-linuxvm" ]
-    # vnfs = [ "none", "nat", "filter", "dpi", "tcp" ]
-    # rows = []
-    # for system in systems:
-    #     for vnf in vnfs:
-    #         for direction in ["rx", "tx"]:
-    #             value = 0
-    #             # if system == "click-unikraftvm":
-    #             #     value = 11
-    #             # if system == "click-linuxvm":
-    #             #     value = 9
-    #             if system == "click-linuxvm" and vnf == "none" and direction == "tx":
-    #                 value = 0.31
-    #             if system == "click-linuxvm" and vnf == "none" and direction == "rx":
-    #                 value = 0.72
-    #             if system == "click-unikraftvm" and vnf == "none" and direction == "tx":
-    #                 value = 0.77
-    #             if system == "click-unikraftvm" and vnf == "none" and direction == "rx":
-    #                 value = 1.2
-    #             if system == "click-unikraftvm" and vnf == "filter" and direction == "tx":
-    #                 value = 0.37
-    #             rows += [[system, vnf, direction, value]]
-    # df_ = pd.DataFrame(rows, columns=columns)
+    columns = ['vnf', 'direction', 'pps']
+    vnfs = [ "none", "nat", "filter", "dpi", "latency" ]
+    rows = []
+    for vnf in vnfs:
+        for direction in ["rx", "tx"]:
+            value = 0
+            if direction == "tx":
+                value = 1
+            # if system == "click-unikraftvm":
+            #     value = 11
+            # if system == "click-linuxvm":
+            #     value = 9
+            if vnf == "none" and direction == "rx":
+                value = 3
+            if vnf == "filter" and direction == "rx":
+                value = 2.5
+            if vnf == "dpi" and direction == "rx":
+                value = 2
+            if vnf == "nat" and direction == "rx":
+                value = 2
+            if vnf == "latency" and direction == "rx":
+                value = 1.5
+            rows += [[vnf, direction, value]]
+    df = pd.DataFrame(rows, columns=columns)
 
-    df['system'] = df['system'].apply(lambda row: system_map.get(str(row), row))
+    # df['system'] = df['system'].apply(lambda row: system_map.get(str(row), row))
 
     # map colors to hues
-    colors = sns.color_palette("pastel", len(df['system'].unique())-1) + [ mcolors.to_rgb('sandybrown') ]
-    palette = dict(zip(df['system'].unique(), colors))
+    # colors = sns.color_palette("pastel", len(df['system'].unique())-1) + [ mcolors.to_rgb('sandybrown') ]
+    # palette = dict(zip(df['system'].unique(), colors))
 
     # Plot using Seaborn
     grid = sns.FacetGrid(df,
@@ -203,8 +203,8 @@ def main():
     grid.map_dataframe(sns.barplot,
                x='vnf',
                y='pps',
-               hue='system',
-               palette=palette,
+               # hue='system',
+               # palette=palette,
                edgecolor="dimgray",
                )
 
@@ -278,16 +278,16 @@ def main():
     grid.set_xlabels(XLABEL)
     grid.set_ylabels(YLABEL)
     #
-    # grid.facet_axis(0, 0).annotate(
-    #     "↑ Higher is better", # or ↓ ← ↑ →
-    #     xycoords="axes points",
-    #     # xy=(0, 0),
-    #     xy=(0, 0),
-    #     xytext=(-37, -28),
-    #     # fontsize=FONT_SIZE,
-    #     color="navy",
-    #     weight="bold",
-    # )
+    grid.facet_axis(0, 0).annotate(
+        "↑ Higher is better", # or ↓ ← ↑ →
+        xycoords="axes points",
+        # xy=(0, 0),
+        xy=(0, 0),
+        xytext=(-37, -28),
+        # fontsize=FONT_SIZE,
+        color="navy",
+        weight="bold",
+    )
 
     # plt.xlabel(XLABEL)
     # plt.ylabel(YLABEL)
