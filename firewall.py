@@ -298,7 +298,7 @@ def main():
                             )
 
     ax.annotate(
-        "← Lower is better", # or ↓ ← ↑ →
+        "↑ Higher is better", # or ↓ ← ↑ →
         xycoords="axes points",
         # xy=(0, 0),
         xy=(0, 0),

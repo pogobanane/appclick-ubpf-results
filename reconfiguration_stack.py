@@ -165,16 +165,16 @@ def main():
     # df['is_passthrough'] = df.apply(lambda row: True if "vmux-pt" in row['interface'] or "vfio" in row['interface'] else False, axis=1)
 
     columns = ['system', 'contributor', 'restart_s']
-    systems = [ "ebpf-click-unikraftvm", "click-unikraftvm", "click-linuxvm" ]
-    contributors = [ "VM start", "VNF start", "eBPF load" ]
+    systems = [ "click-unikraftvm", "click-linuxvm", "ebpf-linuxvm" ]
+    contributors = [ "VM start", "VNF start", "VNF configuration", "eBPF load" ]
     rows = []
     for system in systems:
         for contributor in contributors:
             value = 1
             if system == "click-unikraftvm":
-                value = 2
-            if system == "click-linuxvm":
                 value = 3
+            if system == "click-linuxvm":
+                value = 2
             rows += [[system, contributor, value]]
     df = pd.DataFrame(rows, columns=columns)
 
@@ -252,7 +252,7 @@ def main():
     #             ax=ax,
     #             )
     sns.move_legend(
-        ax, "lower right",
+        ax, "upper right",
         # bbox_to_anchor=(.5, 1), ncol=3, title=None, frameon=False,
     )
     #
