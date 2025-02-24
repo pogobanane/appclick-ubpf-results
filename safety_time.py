@@ -47,7 +47,7 @@ system_map = {
 
 YLABEL = 'Time [s]'
 X1LABEL = ''
-X2LABEL = 'Reconfiguration frequency'
+X2LABEL = 'Replacement frequency'
 
 def map_hue(df_hue, hue_map):
     return df_hue.apply(lambda row: hue_map.get(str(row), row))
@@ -169,7 +169,7 @@ def main():
     # df['is_passthrough'] = df.apply(lambda row: True if "vmux-pt" in row['interface'] or "vfio" in row['interface'] else False, axis=1)
 
     columns = ['system', 'contributor', 'restart_s']
-    systems = [ "\nOut-of-band", "Reconfiguration\n" ]
+    systems = [ "Out-of-band\n", "\nReconfiguration" ]
     contributors = [ "compilation", "verification", "certification", "validation", "replacement", "map allocation", "JIT compilation" ]
     rows = []
     for system in systems:
@@ -210,16 +210,42 @@ def main():
     x = [ 10, 5, 1 ]
     y = [ 7, 2, 1 ]
 
+    # We define the amortized out-of-band overhead with a update frequency $f_u$, and a reconfiguration frequency $f_r$ given a verification time $t_v$ as $t_a = t_v * f_u / f_r$.
+    HUE_LABEL = "Update frequency"
+    columns = ['t_v', 'f_u', HUE_LABEL, 'f_r', 't_a']
+    t_v = 7 # in seconds
+    secondly = 1 # 1/s
+    minutely = 1/60 # 1/min
+    hourly= 1/(60*60) # 1/h
+    daily = 1/(60*60*24) # 1/day
+    monthly = 1/(60*60*24*30) # 1/month
+    # f_rs = [ secondly, minutely, hourly, daily, monthly ]
+    # f_rs = np.logspace( monthly, minutely, num=4, endpoint=True)
+    # f_rs = np.outer(f_rs, np.arange(1,10,1)).flatten()
+    f_us = [ (monthly, '1/month'), (hourly, '1/day') ]
+    f_rs = [ 1.0/pow(2, i) for i in range(1, 30) ] + [ f_u for f_u, _ in f_us ]
+    rows = []
+    for f_u, hue in f_us:
+        for f_r in f_rs:
+            if f_u <= f_r: # reconfiguration frequency must be higher than update frequency
+                t_a = t_v * f_u / f_r
+                # t_a = t_v * (1/f_r) / (1/f_u)
+                rows += [[t_v, f_u, hue, f_r, t_a]]
+    df = pd.DataFrame(rows, columns=columns)
+    print(df)
+
     # Create line plot
-    sns.lineplot(x=x, y=y, ax=ax2)
+    sns.lineplot(df, x="f_r", y="t_a", hue=HUE_LABEL, ax=ax2)
     ax2.set_title('(b) Overhead amortization')
+    ax2.set_xscale('log')
 
     # set ticks
-    ax2.set_xticks(x)
-    ax2.set_xticklabels(['1/s','1/day','1/month'])
+    f_rs = [ secondly, minutely, hourly, daily, monthly ]
+    ax2.set_xticks(f_rs)
+    ax2.set_xticklabels(['1/s', '', '1/hour', '','  1/month'])
 
     # Remove y-axis label from the second plot since it's shared
-    ax2.set_ylabel('')
+    ax2.set_ylabel('$t_a$ [s]')
 
     # sns.add_legend(
     #         # bbox_to_anchor=(0.5, 0.77),
@@ -277,8 +303,12 @@ def main():
     #             ax=ax,
     #             )
     sns.move_legend(
-        ax1, "upper center",
-        bbox_to_anchor=(1, -0.3), ncol=3, title=None, frameon=False,
+        ax1, "upper right",
+        bbox_to_anchor=(1.42, -0.35), ncol=2, title=None, frameon=True,
+    )
+    sns.move_legend(
+        ax2, "upper left",
+        bbox_to_anchor=(0.2, -0.35), ncol=1, frameon=True,
     )
     # grid.add_legend(
     #     # bbox_to_anchor=(0.5, 0.77),
@@ -316,7 +346,7 @@ def main():
     # plt.ylim(0, 1)
     if not args.logarithmic:
         plt.ylim(bottom=0)
-    ax2.set_xlim(10, 1)
+    # ax2.set_xlim(10, 1)
     # for container in ax.containers:
     #     ax.bar_label(container, fmt='%.0f')
 
