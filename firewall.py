@@ -139,8 +139,10 @@ class LoadLatencyPlot(object):
         y99 = np.array(_y99)[order]
 
         self._plot50 = sns.lineplot(
-            x=bin_edges[1:],
-            y=cdf,
+            # x=bin_edges[1:],
+            # y=cdf,
+            x = [ 0, 10000 ],
+            y = [ 3, 2 ],
             label=f'{self._name}',
             color=self._line_color,
             linestyle=self._line,
@@ -236,8 +238,8 @@ def main():
     ax.set_axisbelow(True)
     if args.title:
         plt.title(args.title)
-    plt.xlabel('Latency ($\mu s$)')
-    plt.ylabel('CDF (%)')
+    plt.xlabel('Firewall rules')
+    plt.ylabel('Throughput [Mpps]')
     plt.grid()
 
     plots = []
@@ -263,8 +265,9 @@ def main():
             plot.plot()
             plots.append(plot)
 
-    ax.set_xscale('log' if args.logarithmic else 'linear')
+    # ax.set_xscale('log' if args.logarithmic else 'linear')
     # plt.xlim(0, 1)
+    plt.ylim(bottom=0)
 
     legend = None
 
