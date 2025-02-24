@@ -256,13 +256,48 @@ def main():
             sharex = False,
             # gridspec_kws={"width_ratios": [11, 1]},
     )
-    grid.map_dataframe(sns.barplot,
+
+    def barplot_pointplot(*args, **kwargs):
+        bar_kwargs = dict(kwargs.copy())
+        del bar_kwargs['y_points']
+        ax1 = sns.barplot(*args, **bar_kwargs)
+
+        ax2 = ax1.twinx().twiny()
+        xlim = ax1.get_xlim()
+        ax2.set_xlim(left=xlim[0], right=xlim[1])
+
+        x = []
+        y = []
+        for bar in ax1.patches:
+            x += [ bar.get_bbox().x0 ]
+            # x += [ 128 ]
+            y += [ bar.get_bbox().height ]
+            break
+            pass
+            # if bar.get_bbox().x0 == 0 and bar.get_bbox().x1 == 0 and bar.get_bbox().y0 == 0 and bar.get_bbox().y1 == 0:
+
+        sns.pointplot(*args,
+                      x = x,
+                      y = y,
+                      legend=False,
+                      native_scale=True,
+                      ax=ax2)
+
+
+    grid.map_dataframe(barplot_pointplot,
                x='size',
                y='pps',
+               y_points='pps',
                hue='grouped_system',
                palette=palette,
                edgecolor="dimgray",
                )
+
+    def foo(plot_in_grid):
+        plot_in_grid.twinx()
+        pass
+
+    # foo(grid.facet_axis(0, 0))
 
     def filter_legend(grid, keep_label):
         legend_data = dict()
