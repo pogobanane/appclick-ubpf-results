@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
 import matplotlib.colors as mcolors
 import argparse
 import seaborn as sns
@@ -257,30 +258,44 @@ def main():
             # gridspec_kws={"width_ratios": [11, 1]},
     )
 
+    def mpps_to_gbitps(mpps, size):
+        return mpps * (size + 20) * 8 / 1000 # 20: preamble + packet gap
+
     def barplot_pointplot(*args, **kwargs):
         bar_kwargs = dict(kwargs.copy())
         del bar_kwargs['y_points']
         ax1 = sns.barplot(*args, **bar_kwargs)
 
+        hues = [ 64, 128, 256, 512, 1024, 1280, 1518 ]
+
         ax2 = ax1.twinx().twiny()
         xlim = ax1.get_xlim()
         ax2.set_xlim(left=xlim[0], right=xlim[1])
+        ylim = ax1.get_ylim()
+        # ax2.set_ylim(
+        #     bottom=0,
+        #     top=mpps_to_gbitps(ylim[1], max(hues))
+        # )
 
         x = []
         y = []
         for bar in ax1.patches:
-            x += [ bar.get_bbox().x0 ]
-            # x += [ 128 ]
-            y += [ bar.get_bbox().height ]
-            break
-            pass
-            # if bar.get_bbox().x0 == 0 and bar.get_bbox().x1 == 0 and bar.get_bbox().y0 == 0 and bar.get_bbox().y1 == 0:
+            y_val = bar.get_bbox().height # mpps
+            size = 64 # packet size
+            gbitps = mpps_to_gbitps(y_val, size)
 
-        sns.pointplot(*args,
+            if y_val != 0:
+                x += [ bar.get_bbox().x0 + bar.get_bbox().width / 2 ]
+                y += [ gbitps ]
+
+        sns.scatterplot(*args,
                       x = x,
                       y = y,
-                      legend=False,
-                      native_scale=True,
+                      legend=True,
+                      # native_scale=True,
+                      # linestyles='',
+                      marker='v',
+                      s=20,
                       ax=ax2)
 
 
@@ -306,11 +321,15 @@ def main():
                 legend_data[label] = handle
         grid._legend_data = legend_data
 
+    def legend_add_line(grid, label, color="blue"):
+        new_handle = Line2D([], [], color=color, marker='v', markersize=3, linestyle='', label=label)
+        grid._legend_data[label] = new_handle
+
 
     filter_legend(grid, lambda label: "spacer" not in label)
 
     grid.add_legend(
-            bbox_to_anchor=(0.96, 0.05),
+            bbox_to_anchor=(0.97, 0.05),
             loc='lower right',
             ncol=3, title=None, frameon=False,
                     )
@@ -349,6 +368,15 @@ def main():
         elif (i, j, k) == (0, 1, 0):
             barplot_add_hatches(grid.facet_axis(i, j), 7)
 
+    grid._legend_data = dict()
+    legend_add_line(grid, "Throughput [Gbit/s]")
+
+    grid.add_legend(
+            bbox_to_anchor=(0.73, 0.22),
+            loc='lower right',
+            ncol=1, title=None, frameon=False,
+                    )
+
     # def grid_set_titles(grid, titles):
     #     for ax, title in zip(grid.axes.flat, titles):
     #         ax.set_title(title)
@@ -380,6 +408,10 @@ def main():
     # )
     grid.set_xlabels(XLABEL)
     grid.set_ylabels(YLABEL)
+    def get_twin(grid, i, j, twin_nr=1):
+        return grid.facet_axis(i, j)._twinned_axes.get_siblings(grid.facet_axis(i, j))[twin_nr]
+    get_twin(grid, 0, 1).set_ylabel("Throughput [Gbit/s]", color="blue")
+    get_twin(grid, 0, 2).set_ylabel("Throughput [Gbit/s]", color="blue")
     #
     # grid.facet_axis(0, 0).annotate(
     #     "↑ Higher is better", # or ↓ ← ↑ →
