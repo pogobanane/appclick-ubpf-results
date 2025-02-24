@@ -161,6 +161,14 @@ def main():
 
     df['pps'] = df['pps'].apply(lambda pps: pps / 1_000_000) # now mpps
 
+    dfs = []
+    for size in [ 64, 128, 256, 512, 1024, 1280, 1518 ]:
+        df_fake = df.copy()
+        df_fake['size'] = size
+        # spacer = pd.DataFrame().reindex_like(group)
+        # spacer.loc[len(spacer)] = [68, 3, 1, "rx", "vpp", 64, "empty_", "linux", 0, 1]
+        dfs += [ df_fake ]
+    df = pd.concat(dfs)
 
     # columns = ['system', 'vnf', 'direction', 'pps']
     # systems = [ "ebpf-click-unikraftvm", "click-unikraftvm", "click-linuxvm" ]
@@ -188,6 +196,39 @@ def main():
     # df_ = pd.DataFrame(rows, columns=columns)
 
     df['system'] = df['system'].apply(lambda row: system_map.get(str(row), row))
+    df['grouped_system'] = df.apply(lambda row: f"{row['vnf']} {row['system']}", axis=1)
+
+    # groups data, inserts new bars with 0 values between groups
+    def group_data(df, grid_column_name, x_name, y_name, hue_name, hue_group_name, new_hue="grouped_hue"):
+        dfs = []
+        for grid_column in df[grid_column_name].unique():
+            for x in df[x_name].unique():
+                spacer = None
+                for hue_group in df[hue_group_name].unique():
+                    group_sample = None
+
+                    # add spacer of previous group before adding this group
+                    if spacer is not None:
+                        dfs += [ spacer ]
+
+                    # add this group
+                    for hue in df[hue_name].unique():
+                        # x, hue and sub_hue define a group
+                        group_member = df[(df[grid_column_name] == grid_column) & (df[x_name] == x) & (df[hue_name] == hue) & (df[hue_group_name] == hue_group)].copy()
+                        group_member[new_hue] = f"{hue_group} {hue}"
+                        if len(group_member) > 0:
+                            group_sample = group_member.loc[0].copy()
+
+                        dfs += [ group_member ]
+
+                    # create spacer for this group
+                    if group_sample is not None:
+                        spacer = group_sample
+                        spacer[new_hue] = f"{hue_group} spacer"
+                        spacer[y_name] = 0
+        return pd.concat(dfs, ignore_index=True)
+
+    df = group_data(df, 'direction', 'size', 'pps', 'system', 'vnf', new_hue="grouped_system")
 
     # map colors to hues
     colors = sns.color_palette("pastel", len(df['system'].unique())-1) + [ mcolors.to_rgb('sandybrown') ]
@@ -201,12 +242,22 @@ def main():
             # gridspec_kws={"width_ratios": [11, 1]},
     )
     grid.map_dataframe(sns.barplot,
-               x='vnf',
+               x='size',
                y='pps',
-               hue='system',
-               palette=palette,
+               hue='grouped_system',
+               # palette=palette,
                edgecolor="dimgray",
                )
+
+    def filter_legend(grid, keep_label):
+        legend_data = dict()
+        for label, handle in grid._legend_data.items():
+            if keep_label(label):
+                legend_data[label] = handle
+        grid._legend_data = legend_data
+
+
+    filter_legend(grid, lambda label: "spacer" not in label)
 
     grid.add_legend(
             # bbox_to_anchor=(0.5, 0.77),
