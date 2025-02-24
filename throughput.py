@@ -8,7 +8,7 @@ import pandas as pd
 from re import search, findall, MULTILINE
 from os.path import basename, getsize
 from typing import List, Any
-from plotting import HATCHES as hatches
+from plotting import HATCHES
 
 
 COLORS = [ str(i) for i in range(20) ]
@@ -41,7 +41,7 @@ system_map = {
         }
 
 YLABEL = 'Throughput [Mpps]'
-XLABEL = 'VNF'
+XLABEL = 'Packet size [B]'
 
 def map_hue(df_hue, hue_map):
     return df_hue.apply(lambda row: hue_map.get(str(row), row))
@@ -232,7 +232,18 @@ def main():
 
     # map colors to hues
     colors = sns.color_palette("pastel", len(df['system'].unique())-1) + [ mcolors.to_rgb('sandybrown') ]
-    palette = dict(zip(df['system'].unique(), colors))
+    system_palette = dict(zip(df['system'].unique(), colors))
+    # palette = dict(zip(df['grouped_system'].unique(), colors))
+
+    # map all same systems to the same color
+    palette = dict()
+    for grouped_system in df['grouped_system'].unique():
+        color = [v for k, v in system_palette.items() if k in grouped_system]
+        if len(color) == 0:
+            palette[grouped_system] = mcolors.to_rgb('black')
+        else:
+            palette[grouped_system] = color[0]
+
 
     # Plot using Seaborn
     grid = sns.FacetGrid(df,
@@ -245,7 +256,7 @@ def main():
                x='size',
                y='pps',
                hue='grouped_system',
-               # palette=palette,
+               palette=palette,
                edgecolor="dimgray",
                )
 
@@ -266,11 +277,13 @@ def main():
                     )
 
     # Fix the legend hatches
+    hatches = [ hatch for hatch in HATCHES for _ in range(3) ] # 3 legend items in each hue_group
     for i, legend_patch in enumerate(grid._legend.get_patches()):
         hatch = hatches[i % len(hatches)]
         legend_patch.set_hatch(f"{hatch}{hatch}")
 
     # add hatches to bars
+    hatches = [ hatch for hatch in HATCHES for _ in range(4) ] # 4 bars in each hue_group
     for (i, j, k), data in grid.facet_data():
         print(i, j, k)
         def barplot_add_hatches(plot_in_grid, nr_hues, offset=0):
@@ -293,9 +306,9 @@ def main():
                 bar.set_hatch(hatch)
 
         if (i, j, k) == (0, 0, 0):
-            barplot_add_hatches(grid.facet_axis(i, j), 2)
+            barplot_add_hatches(grid.facet_axis(i, j), 7)
         elif (i, j, k) == (0, 1, 0):
-            barplot_add_hatches(grid.facet_axis(i, j), 2)
+            barplot_add_hatches(grid.facet_axis(i, j), 7)
 
     # def grid_set_titles(grid, titles):
     #     for ax, title in zip(grid.axes.flat, titles):
