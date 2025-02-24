@@ -165,9 +165,12 @@ def main():
     for size in [ 64, 128, 256, 512, 1024, 1280, 1518 ]:
         df_fake = df.copy()
         df_fake['size'] = size
+        dfs += [ df_fake ]
+        df_fake2 = df_fake.copy()
+        df_fake2['direction'] = 'bi'
+        dfs += [ df_fake2 ]
         # spacer = pd.DataFrame().reindex_like(group)
         # spacer.loc[len(spacer)] = [68, 3, 1, "rx", "vpp", 64, "empty_", "linux", 0, 1]
-        dfs += [ df_fake ]
     df = pd.concat(dfs)
 
     # columns = ['system', 'vnf', 'direction', 'pps']
@@ -248,6 +251,7 @@ def main():
     # Plot using Seaborn
     grid = sns.FacetGrid(df,
             col='direction',
+            col_wrap=2,
             sharey = True,
             sharex = False,
             # gridspec_kws={"width_ratios": [11, 1]},
@@ -271,9 +275,9 @@ def main():
     filter_legend(grid, lambda label: "spacer" not in label)
 
     grid.add_legend(
-            # bbox_to_anchor=(0.5, 0.77),
-            loc='right',
-            ncol=1, title=None, frameon=False,
+            bbox_to_anchor=(0.96, 0.05),
+            loc='lower right',
+            ncol=3, title=None, frameon=False,
                     )
 
     # Fix the legend hatches
@@ -383,7 +387,7 @@ def main():
     # ax.set_position((0.1, 0.1, 0.5, 0.8))
     # plt.tight_layout(pad=0.1)
     # plt.subplots_adjust(right=0.78)
-    # fig.tight_layout(rect=(0, 0, 0.3, 1))
+    plt.tight_layout(rect=(0, 0, 1, 1))
     plt.savefig(args.output.name)
     plt.close()
 

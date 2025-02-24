@@ -28,7 +28,7 @@ reconfiguration_stack.pdf:
 
 throughput.pdf:
 	python3 throughput.py \
-		-W $(WIDTH2) -H 2.5 \
+		-W $(DWIDTH) -H 3.5 \
 		--1-name stub --1 $(DATA)/throughput_*_vpp_*.csv
 
 relative_performance.pdf:
