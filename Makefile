@@ -6,7 +6,7 @@ WIDTH2 := 5.5
 DWIDTH := 11
 DWIDTH2 := 13
 
-PAPER_FIGURES := reconfiguration_vnfs.pdf reconfiguration_stack.pdf throughput.pdf imagesize.pdf relative_performance.pdf latency_cdf.pdf firewall.pdf
+PAPER_FIGURES := reconfiguration_vnfs.pdf reconfiguration_stack.pdf throughput.pdf imagesize.pdf relative_performance.pdf latency_cdf.pdf firewall.pdf safety_time.pdf
 # PAPER_FIGURES := mediation.pdf microservices.pdf ycsb.pdf
 # PAPER_FIGURES := mediation.pdf iperf.pdf ycsb.pdf
 
@@ -58,3 +58,12 @@ firewall.pdf:
   	--3-name "Linux" "l--" "magenta" --3 ./data/stub/acc_histogram_pcvm_vmux-emu_normal_vhostoff_ioregionfdoff_xdp_10kpps_60B_*s.csv \
   	--5-name "UniBPF" "l-" "brown" --5 ./data/stub/acc_histogram_pcvm_vmux-med_normal_vhostoff_ioregionfdoff_xdp_10kpps_60B_*s.csv \
   	--8-name "UniBPF no JIT" "l:" "cyan" --8 ./data/stub/acc_histogram_pcvm_bridge_normal_vhostoff_ioregionfdoff_xdp_10kpps_60B_*s.csv \
+
+
+safety_time.pdf:
+	python3 safety_time.py \
+		-o $(OUT_DIR)/safety_time.pdf \
+		-W $(WIDTH) -H 2.5 \
+		--1 flake.nix --1-name stub
+
+
