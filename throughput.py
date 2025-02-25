@@ -464,8 +464,9 @@ def main():
     # fig.tight_layout(rect = (0, 0, 0, 0.1))
     # ax.set_position((0.1, 0.1, 0.5, 0.8))
     # plt.tight_layout(pad=0.1)
-    # plt.subplots_adjust(right=0.78)
-    plt.tight_layout(rect=(0, 0, 1, 1))
+    # plt.tight_layout(rect=(0, 0, 1, 1))
+    plt.tight_layout(pad=0.1)
+    plt.subplots_adjust(right=0.95, wspace=0.15)
     plt.savefig(args.output.name)
     plt.close()
 
