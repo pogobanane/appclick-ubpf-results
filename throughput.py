@@ -2,6 +2,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
+from matplotlib.patches import Rectangle
 import matplotlib.colors as mcolors
 import argparse
 import seaborn as sns
@@ -280,12 +281,17 @@ def main():
         x = []
         y = []
         for bar in ax1.patches:
+            x_coord = bar.get_bbox().x0 + bar.get_bbox().width / 2
+            x_category_id = round(x_coord) # x axis is not numerical
+            x_category_value = ax1.get_xticklabels()[x_category_id].get_text()
             y_val = bar.get_bbox().height # mpps
-            size = 64 # packet size
-            gbitps = mpps_to_gbitps(y_val, size)
+            # size should be dynamic:
+            #
+            packet_size = int(x_category_value)
+            gbitps = mpps_to_gbitps(y_val, packet_size)
 
             if y_val != 0:
-                x += [ bar.get_bbox().x0 + bar.get_bbox().width / 2 ]
+                x += [ x_coord ]
                 y += [ gbitps ]
 
         sns.scatterplot(*args,
@@ -321,6 +327,10 @@ def main():
                 legend_data[label] = handle
         grid._legend_data = legend_data
 
+    def legend_add_rectangle(grid, label, color="blue"):
+        new_handle = Rectangle((0, 0), 1, 1, facecolor=color, edgecolor="dimgray", label=label)
+        grid._legend_data[label] = new_handle
+
     def legend_add_line(grid, label, color="blue"):
         new_handle = Line2D([], [], color=color, marker='v', markersize=3, linestyle='', label=label)
         grid._legend_data[label] = new_handle
@@ -329,8 +339,8 @@ def main():
     filter_legend(grid, lambda label: "spacer" not in label)
 
     grid.add_legend(
-            bbox_to_anchor=(0.97, 0.05),
-            loc='lower right',
+            bbox_to_anchor=(0.55, 0.3),
+            loc='upper left',
             ncol=3, title=None, frameon=False,
                     )
 
@@ -369,12 +379,13 @@ def main():
             barplot_add_hatches(grid.facet_axis(i, j), 7)
 
     grid._legend_data = dict()
+    legend_add_rectangle(grid, "Throughput [Mpps]", color="white")
     legend_add_line(grid, "Throughput [Gbit/s]")
 
     grid.add_legend(
-            bbox_to_anchor=(0.73, 0.22),
-            loc='lower right',
-            ncol=1, title=None, frameon=False,
+            bbox_to_anchor=(0.55, 0.3),
+            loc='lower left',
+            ncol=2, title=None, frameon=False,
                     )
 
     # def grid_set_titles(grid, titles):
