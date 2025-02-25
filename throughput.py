@@ -40,6 +40,9 @@ system_map = {
         'ebpf-click-unikraftvm': 'Uk click (eBPF)',
         'click-unikraftvm': 'Uk click',
         'click-linuxvm': 'Linux click',
+        'ukebpfjit': 'UniBPF',
+        'linux': 'Linux',
+        'uk': 'Unikraft',
         }
 
 YLABEL = 'Throughput [Mpps]'
@@ -164,7 +167,8 @@ def main():
     df['pps'] = df['pps'].apply(lambda pps: pps / 1_000_000) # now mpps
 
     dfs = []
-    for size in [ 64, 128, 256, 512, 1024, 1280, 1518 ]:
+    # for size in [ 64, 128, 256, 512, 1024, 1280, 1518 ]:
+    for size in [ 64, 256, 1024, 1518 ]:
         df_fake = df.copy()
         df_fake['size'] = size
         dfs += [ df_fake ]
@@ -271,6 +275,7 @@ def main():
 
         ax2 = ax1.twinx().twiny()
         xlim = ax1.get_xlim()
+        ax2.set_xticks([])
         ax2.set_xlim(left=xlim[0], right=xlim[1])
         ylim = ax1.get_ylim()
         # ax2.set_ylim(
@@ -374,9 +379,9 @@ def main():
                 bar.set_hatch(hatch)
 
         if (i, j, k) == (0, 0, 0):
-            barplot_add_hatches(grid.facet_axis(i, j), 7)
+            barplot_add_hatches(grid.facet_axis(i, j), 4)
         elif (i, j, k) == (0, 1, 0):
-            barplot_add_hatches(grid.facet_axis(i, j), 7)
+            barplot_add_hatches(grid.facet_axis(i, j), 4)
 
     grid._legend_data = dict()
     legend_add_rectangle(grid, "Throughput [Mpps]", color="white")
@@ -421,8 +426,8 @@ def main():
     grid.set_ylabels(YLABEL)
     def get_twin(grid, i, j, twin_nr=1):
         return grid.facet_axis(i, j)._twinned_axes.get_siblings(grid.facet_axis(i, j))[twin_nr]
-    get_twin(grid, 0, 1).set_ylabel("Throughput [Gbit/s]", color="blue")
-    get_twin(grid, 0, 2).set_ylabel("Throughput [Gbit/s]", color="blue")
+    get_twin(grid, 0, 1).set_ylabel("Throughput [Gbit/s]")
+    get_twin(grid, 0, 2).set_ylabel("Throughput [Gbit/s]")
     #
     # grid.facet_axis(0, 0).annotate(
     #     "↑ Higher is better", # or ↓ ← ↑ →
@@ -466,7 +471,7 @@ def main():
     # plt.tight_layout(pad=0.1)
     # plt.tight_layout(rect=(0, 0, 1, 1))
     plt.tight_layout(pad=0.1)
-    plt.subplots_adjust(right=0.95, wspace=0.15)
+    plt.subplots_adjust(right=0.95, wspace=0.15, hspace=0.5)
     plt.savefig(args.output.name)
     plt.close()
 
