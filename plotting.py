@@ -105,8 +105,7 @@ class mybarplot():
 
 
     @staticmethod
-    def add_colors(data: DataFrame, x: str, y: str, hue: str, ax: Axes, colors):
-        color_by = "system"
+    def add_colors(data: DataFrame, x: str, y: str, hue: str, ax: Axes, colors, color_by):
         color_map = dict()
         for hue_value, color in zip(data[color_by].unique(), colors):
             color_map[hue_value] = color
@@ -121,22 +120,12 @@ class mybarplot():
 
 
     @staticmethod
-    def add_hatches(data: DataFrame, x: str, y: str, hue: str, ax: Axes, hatches=HATCHES):
-        hatch_by = "vnf"
+    def add_hatches(data: DataFrame, x: str, y: str, hue: str, ax: Axes, hatch_by, hatches=HATCHES):
         hatch_map = dict()
         for hue_value, hatch in zip(data[hatch_by].unique(), hatches):
             hatch_map[hue_value] = hatch
 
-        hue_handles_labels = mybarplot.list_hues(ax)
-        for bar in ax.patches:
-            hue_value = mybarplot.hue_value(bar, hue_handles_labels)
-            x_category_value = mybarplot.x_category_value(bar, ax)
-            y_value = mybarplot.y_value(bar)
-
-            # get the data used for this bar
-            x_category_value = mybarplot.convert_for(x_category_value, data, x)
-            bars_data = data[(data[x] == x_category_value) & (data[hue] == hue_value)]
-
+        for bar, bars_data, bars_y in mybarplot.all_bars(data, x, y, hue, ax):
             hatch_by_value = bars_data[hatch_by].unique()
             if len(hatch_by_value) != 1:
                 raise Exception(f"Hatch by {hatch_by} is ambiguous.")

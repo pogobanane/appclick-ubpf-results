@@ -269,9 +269,11 @@ def main():
     def barplot_pointplot(*args, **kwargs):
         bar_kwargs = dict(kwargs.copy())
         del bar_kwargs['y_points']
+        del bar_kwargs['color_by']
+        del bar_kwargs['hatch_by']
         ax1 = sns.barplot(*args, **bar_kwargs)
-        mybarplot.add_hatches(data=kwargs.get("data"), x=kwargs.get("x"), y=kwargs.get("y"), hue=kwargs.get("hue"), ax=ax1)
-        mybarplot.add_colors(data=kwargs.get("data"), x=kwargs.get("x"), y=kwargs.get("y"), hue=kwargs.get("hue"), ax=ax1, colors=colors)
+        mybarplot.add_hatches(data=kwargs.get("data"), x=kwargs.get("x"), y=kwargs.get("y"), hue=kwargs.get("hue"), ax=ax1, hatch_by=kwargs.get("hatch_by"))
+        mybarplot.add_colors(data=kwargs.get("data"), x=kwargs.get("x"), y=kwargs.get("y"), hue=kwargs.get("hue"), ax=ax1, colors=colors, color_by=kwargs.get("color_by"))
 
         hues = [ 64, 128, 256, 512, 1024, 1280, 1518 ]
 
@@ -316,6 +318,8 @@ def main():
                x='size',
                y='pps',
                y_points='pps',
+               color_by="system",
+               hatch_by="vnf",
                hue='grouped_system',
                # palette=palette,
                edgecolor="dimgray",
@@ -351,21 +355,15 @@ def main():
             ncol=3, title=None, frameon=False,
                     )
 
-    # Fix the legend hatches
-    hatches = [ hatch for hatch in HATCHES for _ in range(3) ] # 3 legend items in each hue_group
+    # # Fix the legend hatches
+    # hatches = [ hatch for hatch in HATCHES for _ in range(3) ] # 3 legend items in each hue_group
+    # for i, legend_patch in enumerate(grid._legend.get_patches()):
+    #     hatch = hatches[i % len(hatches)]
+    #     legend_patch.set_hatch(f"{hatch}{hatch}")
     for i, legend_patch in enumerate(grid._legend.get_patches()):
-        hatch = hatches[i % len(hatches)]
+        hatch = legend_patch.get_hatch()
         legend_patch.set_hatch(f"{hatch}{hatch}")
 
-    # add hatches to bars
-    hatches = [ hatch for hatch in HATCHES for _ in range(4) ] # 4 bars in each hue_group
-    for (i, j, k), data in grid.facet_data():
-        print(i, j, k)
-
-        # if (i, j, k) == (0, 0, 0):
-        #     barplot_add_hatches(grid.facet_axis(i, j), 4, hatches=hatches)
-        # elif (i, j, k) == (0, 1, 0):
-        #     barplot_add_hatches(grid.facet_axis(i, j), 4, hatches=hatches)
 
     grid._legend_data = dict()
     legend_add_rectangle(grid, "Throughput [Mpps]", color="white")
