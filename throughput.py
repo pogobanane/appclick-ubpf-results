@@ -10,7 +10,7 @@ import pandas as pd
 from re import search, findall, MULTILINE
 from os.path import basename, getsize
 from typing import List, Any
-from plotting import HATCHES
+from plotting import *
 
 
 COLORS = [ str(i) for i in range(20) ]
@@ -270,6 +270,8 @@ def main():
         bar_kwargs = dict(kwargs.copy())
         del bar_kwargs['y_points']
         ax1 = sns.barplot(*args, **bar_kwargs)
+        mybarplot.add_hatches(data=kwargs.get("data"), x=kwargs.get("x"), y=kwargs.get("y"), hue=kwargs.get("hue"), ax=ax1)
+        mybarplot.add_colors(data=kwargs.get("data"), x=kwargs.get("x"), y=kwargs.get("y"), hue=kwargs.get("hue"), ax=ax1, colors=colors)
 
         hues = [ 64, 128, 256, 512, 1024, 1280, 1518 ]
 
@@ -315,7 +317,7 @@ def main():
                y='pps',
                y_points='pps',
                hue='grouped_system',
-               palette=palette,
+               # palette=palette,
                edgecolor="dimgray",
                )
 
@@ -359,29 +361,11 @@ def main():
     hatches = [ hatch for hatch in HATCHES for _ in range(4) ] # 4 bars in each hue_group
     for (i, j, k), data in grid.facet_data():
         print(i, j, k)
-        def barplot_add_hatches(plot_in_grid, nr_hues, offset=0):
-            hatches_used = -1
-            bars_hatched = 0
-            for bar in plot_in_grid.patches:
-                if nr_hues <= 1:
-                    hatches_used += 1
-                else: # with multiple hues, we draw bars with the same hatch in batches
-                    if bars_hatched % nr_hues == 0:
-                        hatches_used += 1
-                # if bars_hatched % 7 == 0:
-                #     hatches_used += 1
-                bars_hatched += 1
-                if bar.get_bbox().x0 == 0 and bar.get_bbox().x1 == 0 and bar.get_bbox().y0 == 0 and bar.get_bbox().y1 == 0:
-                    # skip bars that are not rendered
-                    continue
-                hatch = hatches[(offset + hatches_used) % len(hatches)]
-                print(bar, hatches_used, hatch)
-                bar.set_hatch(hatch)
 
-        if (i, j, k) == (0, 0, 0):
-            barplot_add_hatches(grid.facet_axis(i, j), 4)
-        elif (i, j, k) == (0, 1, 0):
-            barplot_add_hatches(grid.facet_axis(i, j), 4)
+        # if (i, j, k) == (0, 0, 0):
+        #     barplot_add_hatches(grid.facet_axis(i, j), 4, hatches=hatches)
+        # elif (i, j, k) == (0, 1, 0):
+        #     barplot_add_hatches(grid.facet_axis(i, j), 4, hatches=hatches)
 
     grid._legend_data = dict()
     legend_add_rectangle(grid, "Throughput [Mpps]", color="white")
