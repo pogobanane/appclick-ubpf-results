@@ -1,5 +1,6 @@
-OUT_DIR := ./
-DATA := ./data/v0.0.3-pre
+VERSION := v0.0.3-pre2
+DATA := ./data/$(VERSION)
+OUT_DIR := ./out/$(VERSION)
 
 WIDTH := 5.0
 WIDTH2 := 5.5
@@ -29,6 +30,7 @@ reconfiguration_stack.pdf:
 throughput.pdf:
 	python3 throughput.py \
 		-W $(DWIDTH) -H 3.5 \
+		-o $(OUT_DIR)/throughput.pdf \
 		--1-name stub --1 $(DATA)/throughput_*_vpp_*.csv
 
 relative_performance.pdf:

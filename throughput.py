@@ -166,18 +166,23 @@ def main():
 
     df['pps'] = df['pps'].apply(lambda pps: pps / 1_000_000) # now mpps
 
-    dfs = []
-    # for size in [ 64, 128, 256, 512, 1024, 1280, 1518 ]:
-    for size in [ 64, 256, 1024, 1518 ]:
-        df_fake = df.copy()
-        df_fake['size'] = size
-        dfs += [ df_fake ]
-        df_fake2 = df_fake.copy()
-        df_fake2['direction'] = 'bi'
-        dfs += [ df_fake2 ]
-        # spacer = pd.DataFrame().reindex_like(group)
-        # spacer.loc[len(spacer)] = [68, 3, 1, "rx", "vpp", 64, "empty_", "linux", 0, 1]
-    df = pd.concat(dfs)
+    # dfs = []
+    # # for size in [ 64, 128, 256, 512, 1024, 1280, 1518 ]:
+    # for size in [ 64, 256, 1024, 1518 ]:
+    #     df_fake = df.copy()
+    #     df_fake['size'] = size
+    #     dfs += [ df_fake ]
+    #     df_fake2 = df_fake.copy()
+    #     df_fake2['direction'] = 'bi'
+    #     dfs += [ df_fake2 ]
+    #     # spacer = pd.DataFrame().reindex_like(group)
+    #     # spacer.loc[len(spacer)] = [68, 3, 1, "rx", "vpp", 64, "empty_", "linux", 0, 1]
+    # df = pd.concat(dfs)
+    df_fake = df.loc[0].copy()
+    df_fake['direction'] = "bi"
+    df = pd.concat([df, df_fake])
+
+    df['size'] = df['size'].astype(int)
 
     # columns = ['system', 'vnf', 'direction', 'pps']
     # systems = [ "ebpf-click-unikraftvm", "click-unikraftvm", "click-linuxvm" ]
@@ -241,6 +246,7 @@ def main():
 
     # map colors to hues
     colors = sns.color_palette("pastel", len(df['system'].unique())-1) + [ mcolors.to_rgb('sandybrown') ]
+    colors = sns.color_palette("pastel", 5) + [ mcolors.to_rgb('sandybrown') ]
     system_palette = dict(zip(df['system'].unique(), colors))
     # palette = dict(zip(df['grouped_system'].unique(), colors))
 
@@ -291,11 +297,8 @@ def main():
         y = []
         for bar in ax1.patches:
             x_coord = bar.get_bbox().x0 + bar.get_bbox().width / 2
-            x_category_id = round(x_coord) # x axis is not numerical
-            x_category_value = ax1.get_xticklabels()[x_category_id].get_text()
-            y_val = bar.get_bbox().height # mpps
-            # size should be dynamic:
-            #
+            x_category_value = mybarplot.x_category_value(bar, ax1)
+            y_val = mybarplot.y_value(bar)
             packet_size = int(x_category_value)
             gbitps = mpps_to_gbitps(y_val, packet_size)
 
