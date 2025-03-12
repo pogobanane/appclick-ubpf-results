@@ -1,4 +1,4 @@
-VERSION := v0.0.3-pre2
+VERSION := v0.0.3-pre4
 DATA := ./data/$(VERSION)
 OUT_DIR := ./out/$(VERSION)
 
