@@ -178,9 +178,11 @@ def main():
     #     # spacer = pd.DataFrame().reindex_like(group)
     #     # spacer.loc[len(spacer)] = [68, 3, 1, "rx", "vpp", 64, "empty_", "linux", 0, 1]
     # df = pd.concat(dfs)
-    df_fake = df.loc[0].copy()
-    df_fake['direction'] = "bi"
-    df = pd.concat([df, df_fake])
+    # df[(df["vnf"] == "mirror") | (df["vnf"] == "nat")].copy()["direction"] = "bi"
+    df.loc[(df["vnf"] == "mirror") | (df["vnf"] == "nat"), "direction"] = "bi"
+    # df_fake = df.loc[0].copy()
+    # df_fake['direction'] = "bi"
+    # df = pd.concat([df, df_fake])
 
     df['size'] = df['size'].astype(int)
 
@@ -313,6 +315,8 @@ def main():
                       # native_scale=True,
                       # linestyles='',
                       marker='v',
+                      # palette="pastel",
+                      c = [ "cornflowerblue" ],
                       s=20,
                       ax=ax2)
 
@@ -370,7 +374,7 @@ def main():
 
     grid._legend_data = dict()
     legend_add_rectangle(grid, "Throughput [Mpps]", color="white")
-    legend_add_line(grid, "Throughput [Gbit/s]")
+    legend_add_line(grid, "Throughput [Gbit/s]", color="dimgray")
 
     grid.add_legend(
             bbox_to_anchor=(0.55, 0.3),
