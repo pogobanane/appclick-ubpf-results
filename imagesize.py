@@ -163,11 +163,16 @@ def main():
     systems = [ "Unikraft", "Alpine", "Ubuntu" ]
     rows = []
     for system in systems:
-        value = 0.3
+        value = 300000
         if system == "Alpine":
-            value = 2
+            # click + click config + nat ebpf program + signature + alpine image
+            value = 3940608 + 5803 + 2576 + 71 + 110675968
         if system == "Ubuntu":
-            value = 8
+            value = 3940608 + 5803 + 2576 + 71 + 629971968
+        if system == "Unikraft":
+            # unikraft-click kernel + image with nat ebpf program, signature and click config
+            value = 5161368 + 10752
+        value /= 1024 * 1024 # MB
         rows += [[system, value]]
     df = pd.DataFrame(rows, columns=columns)
 
