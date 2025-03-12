@@ -278,11 +278,12 @@ def main():
         bar_kwargs = dict(kwargs.copy())
         del bar_kwargs['y_points']
         del bar_kwargs['color_by']
+        del bar_kwargs['colors']
         del bar_kwargs['hatch_by']
         del bar_kwargs['hatches']
         ax1 = sns.barplot(*args, **bar_kwargs)
         mybarplot.add_hatches(data=kwargs.get("data"), x=kwargs.get("x"), y=kwargs.get("y"), hue=kwargs.get("hue"), ax=ax1, hatch_by=kwargs.get("hatch_by"), hatches=kwargs.get("hatches"))
-        mybarplot.add_colors(data=kwargs.get("data"), x=kwargs.get("x"), y=kwargs.get("y"), hue=kwargs.get("hue"), ax=ax1, colors=colors, color_by=kwargs.get("color_by"))
+        mybarplot.add_colors(data=kwargs.get("data"), x=kwargs.get("x"), y=kwargs.get("y"), hue=kwargs.get("hue"), ax=ax1, colors=kwargs.get("colors"), color_by=kwargs.get("color_by"))
 
         hues = [ 64, 128, 256, 512, 1024, 1280, 1518 ]
 
@@ -326,11 +327,17 @@ def main():
     for hue_value, hatch in zip(df[hatch_by].unique(), HATCHES):
         hatch_map[hue_value] = hatch
 
+    color_map = dict()
+    color_by = "system"
+    for hue_value, color in zip(df[color_by].unique(), colors):
+        color_map[hue_value] = color
+
     grid.map_dataframe(barplot_pointplot,
                x='size',
                y='pps',
                y_points='pps',
-               color_by="system",
+               color_by=color_by,
+               colors=color_map,
                hatch_by=hatch_by,
                hatches=hatch_map,
                hue='grouped_system',
@@ -351,8 +358,8 @@ def main():
                 legend_data[label] = handle
         grid._legend_data = legend_data
 
-    def legend_add_rectangle(grid, label, color="blue"):
-        new_handle = Rectangle((0, 0), 1, 1, facecolor=color, edgecolor="dimgray", label=label)
+    def legend_add_rectangle(grid, label, hatch=None, color="blue"):
+        new_handle = Rectangle((0, 0), 1, 1, hatch=hatch, facecolor=color, edgecolor="dimgray", label=label)
         grid._legend_data[label] = new_handle
 
     def legend_add_line(grid, label, color="blue"):
@@ -361,6 +368,14 @@ def main():
 
 
     filter_legend(grid, lambda label: "spacer" not in label)
+
+    grid._legend_data = dict()
+    # legend_add_line(grid, "", color="white")
+    for label, color in color_map.items():
+        legend_add_rectangle(grid, label, color=color)
+    for label, hatch in hatch_map.items():
+        legend_add_rectangle(grid, label, color="white", hatch=hatch)
+
 
     grid.add_legend(
             bbox_to_anchor=(0.55, 0.3),
@@ -373,9 +388,9 @@ def main():
     # for i, legend_patch in enumerate(grid._legend.get_patches()):
     #     hatch = hatches[i % len(hatches)]
     #     legend_patch.set_hatch(f"{hatch}{hatch}")
-    for i, legend_patch in enumerate(grid._legend.get_patches()):
-        hatch = legend_patch.get_hatch()
-        legend_patch.set_hatch(f"{hatch}{hatch}")
+    # for i, legend_patch in enumerate(grid._legend.get_patches()):
+    #     hatch = legend_patch.get_hatch()
+    #     legend_patch.set_hatch(f"{hatch}{hatch}")
 
 
     grid._legend_data = dict()

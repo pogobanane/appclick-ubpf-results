@@ -3,7 +3,7 @@ from matplotlib.patches import Rectangle
 from pandas import DataFrame
 import pandas as pd
 import matplotlib.legend as mlegend
-from typing import List, Dict
+from typing import List, Dict, Any
 
 # most of this file expects to work with seaborn plots
 
@@ -106,10 +106,13 @@ class mybarplot():
 
 
     @staticmethod
-    def add_colors(data: DataFrame, x: str, y: str, hue: str, ax: Axes, colors, color_by):
+    def add_colors(data: DataFrame, x: str, y: str, hue: str, ax: Axes, colors: List[str] | Dict[str, Any], color_by: str):
         color_map = dict()
-        for hue_value, color in zip(data[color_by].unique(), colors):
-            color_map[hue_value] = color
+        if isinstance(colors, list):
+            for hue_value, color in zip(data[color_by].unique(), colors):
+                color_map[hue_value] = color
+        elif isinstance(colors, dict):
+            color_map = colors
 
         for bar, bars_data, bars_y in mybarplot.all_bars(data, x, y, hue, ax):
             color_by_value = bars_data[color_by].unique()
