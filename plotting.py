@@ -3,6 +3,7 @@ from matplotlib.patches import Rectangle
 from pandas import DataFrame
 import pandas as pd
 import matplotlib.legend as mlegend
+from typing import List, Dict
 
 # most of this file expects to work with seaborn plots
 
@@ -120,10 +121,13 @@ class mybarplot():
 
 
     @staticmethod
-    def add_hatches(data: DataFrame, x: str, y: str, hue: str, ax: Axes, hatch_by, hatches=HATCHES):
+    def add_hatches(data: DataFrame, x: str, y: str, hue: str, ax: Axes, hatch_by: str, hatches: List[str] | Dict[str, str] = HATCHES):
         hatch_map = dict()
-        for hue_value, hatch in zip(data[hatch_by].unique(), hatches):
-            hatch_map[hue_value] = hatch
+        if isinstance(hatches, list):
+            for hue_value, hatch in zip(data[hatch_by].unique(), hatches):
+                hatch_map[hue_value] = hatch
+        elif isinstance(hatches, dict):
+            hatch_map = hatches
 
         for bar, bars_data, bars_y in mybarplot.all_bars(data, x, y, hue, ax):
             hatch_by_value = bars_data[hatch_by].unique()

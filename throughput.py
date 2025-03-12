@@ -279,8 +279,9 @@ def main():
         del bar_kwargs['y_points']
         del bar_kwargs['color_by']
         del bar_kwargs['hatch_by']
+        del bar_kwargs['hatches']
         ax1 = sns.barplot(*args, **bar_kwargs)
-        mybarplot.add_hatches(data=kwargs.get("data"), x=kwargs.get("x"), y=kwargs.get("y"), hue=kwargs.get("hue"), ax=ax1, hatch_by=kwargs.get("hatch_by"))
+        mybarplot.add_hatches(data=kwargs.get("data"), x=kwargs.get("x"), y=kwargs.get("y"), hue=kwargs.get("hue"), ax=ax1, hatch_by=kwargs.get("hatch_by"), hatches=kwargs.get("hatches"))
         mybarplot.add_colors(data=kwargs.get("data"), x=kwargs.get("x"), y=kwargs.get("y"), hue=kwargs.get("hue"), ax=ax1, colors=colors, color_by=kwargs.get("color_by"))
 
         hues = [ 64, 128, 256, 512, 1024, 1280, 1518 ]
@@ -320,13 +321,18 @@ def main():
                       s=20,
                       ax=ax2)
 
+    hatch_map = dict()
+    hatch_by = "vnf"
+    for hue_value, hatch in zip(df[hatch_by].unique(), HATCHES):
+        hatch_map[hue_value] = hatch
 
     grid.map_dataframe(barplot_pointplot,
                x='size',
                y='pps',
                y_points='pps',
                color_by="system",
-               hatch_by="vnf",
+               hatch_by=hatch_by,
+               hatches=hatch_map,
                hue='grouped_system',
                # palette=palette,
                edgecolor="dimgray",
