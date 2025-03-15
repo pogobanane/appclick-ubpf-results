@@ -58,9 +58,9 @@ latency_cdf.pdf:
 firewall.pdf:
 	python3 firewall.py -W $(WIDTH) -H 2.1 -l \
   	-o $(OUT_DIR)/firewall.pdf \
-  	--3-name "Linux" "l--" "magenta" --3 ./data/stub/acc_histogram_pcvm_vmux-emu_normal_vhostoff_ioregionfdoff_xdp_10kpps_60B_*s.csv \
-  	--5-name "UniBPF" "l-" "brown" --5 ./data/stub/acc_histogram_pcvm_vmux-med_normal_vhostoff_ioregionfdoff_xdp_10kpps_60B_*s.csv \
-  	--8-name "UniBPF no JIT" "l:" "cyan" --8 ./data/stub/acc_histogram_pcvm_bridge_normal_vhostoff_ioregionfdoff_xdp_10kpps_60B_*s.csv \
+  	--3-name "Linux" "l--" "magenta" --3 $(DATA)/firewall_linux_*.csv \
+  	--5-name "Unikraft" "l-" "brown" --5 $(DATA)/firewall_uk_*.csv \
+  	--8-name "UniBPF" "l:" "cyan" --8 $(DATA)/firewall_ukebpfjit_*.csv \
 
 
 safety_time.pdf:
