@@ -24,6 +24,7 @@ reconfiguration_vnfs.pdf:
 
 reconfiguration_stack.pdf:
 	python3 reconfiguration_stack.py \
+		-o $(OUT_DIR)/reconfiguration_stack.pdf \
 		-W $(WIDTH) -H 2.5 \
 		--1 flake.nix --1-name stub
 

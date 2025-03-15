@@ -40,12 +40,14 @@ COLORS = [ str(i) for i in range(20) ]
 # }
 
 system_map = {
-        'ebpf-click-unikraftvm': 'Unikraft click (eBPF)',
-        'click-unikraftvm': 'Unikraft click',
-        'click-linuxvm': 'Linux click',
+        'ebpf-click-unikraftvm': 'Unikraft (eBPF)',
+        'click-unikraftvm': 'Unikraft',
+        'click-linuxvm': 'Linux',
+        'ebpf-unikraftvm': 'Unikraft eBPF',
+        'ebpf-linuxvm': 'Linux eBPF',
         }
 
-YLABEL = 'Restart time [s]'
+YLABEL = 'Reconfiguration time [ms]'
 XLABEL = 'System'
 
 def map_hue(df_hue, hue_map):
@@ -164,9 +166,36 @@ def main():
     # df_hue = map_hue(df_hue, hue_map)
     # df['is_passthrough'] = df.apply(lambda row: True if "vmux-pt" in row['interface'] or "vfio" in row['interface'] else False, axis=1)
 
+    click_reconfigure = {
+        "init ebpf vm": 419128582,
+        "jit ebpf": 422390128,
+        "init ebpf done": 425529314,
+        "total": 9816700,
+    }
+    click_reconfigure = { k: v / 1000000 for k, v in click_reconfigure.items() }
+
+    click_unikraftvm = {
+        "click main()": 107225458,
+        "print config": 108642850,
+        "print config done": 520667278,
+        "initialize elements": 524018298,
+        "initialize elements done": 527915291,
+        "first packet": 538017416,
+        "total": 671417165,
+        "strace qemu start": 1769300316851874,
+        "strace qemu kvm entry": 1769300382133824,
+        "strace 255": 1769300428826889, # firmware done, unikraft start
+        "strace 254": 1769300547534819, # same as click main()
+        "strace 253": 1769300981529181, # same as elements done
+        "strace total": 689807614,
+    }
+    click_unikraftvm = { k: v / 1000000 for k, v in click_unikraftvm.items() }
+    print_system = click_unikraftvm["print config done"] - click_unikraftvm["print config"]
+    all_unikraft = []
+
     columns = ['system', 'contributor', 'restart_s']
-    systems = [ "click-unikraftvm", "click-linuxvm", "ebpf-linuxvm" ]
-    contributors = [ "VM start", "VNF start", "VNF configuration", "eBPF load" ]
+    systems = [ "click-unikraftvm", "click-linuxvm", "ebpf-unikraftvm", "ebpf-linuxvm" ]
+    contributors = [ "Qemu start", "Firmware", "Unikraft", "click init", "VNF configuration", "first packet", "other" ]
     rows = []
     for system in systems:
         for contributor in contributors:
@@ -175,6 +204,47 @@ def main():
                 value = 3
             if system == "click-linuxvm":
                 value = 2
+            match (system, contributor):
+                # cargo run --bin bench-helper --features print-output
+                case ("click-linuxvm", "click init"):
+                    value = 108
+                case ("click-linuxvm", "other"):
+                    value = 17
+                case ("click-linuxvm", "first packet"):
+                    value = 0.4
+
+                # cargo run --bin bench-helper --features print-output
+                # just qemu-startup
+                case ("click-unikraftvm", "Qemu start"):
+                    value = click_unikraftvm["strace qemu kvm entry"] - click_unikraftvm["strace qemu start"]
+                    all_unikraft += [ value ]
+                case ("click-unikraftvm", "Firmware"):
+                    value = click_unikraftvm["strace 255"] - click_unikraftvm["strace qemu kvm entry"]
+                    all_unikraft += [ value ]
+                case ("click-unikraftvm", "Unikraft"):
+                    value = click_unikraftvm["strace 254"] - click_unikraftvm["strace 255"]
+                    all_unikraft += [ value ]
+                case ("click-unikraftvm", "click init"):
+                    value = click_unikraftvm["initialize elements"] - click_unikraftvm["click main()"] - print_system
+                    all_unikraft += [ value ]
+                case ("click-unikraftvm", "VNF configuration"):
+                    value = click_unikraftvm["initialize elements done"] - click_unikraftvm["initialize elements"]
+                    all_unikraft += [ value ]
+                case ("click-unikraftvm", "first packet"):
+                    value = click_unikraftvm["first packet"] - click_unikraftvm["initialize elements done"]
+                    all_unikraft += [ value ]
+                case ("click-unikraftvm", "other"):
+                    value = click_unikraftvm["total"] - sum(all_unikraft) - print_system
+
+                # QEMU_OUT="/tmp/foo2" cargo bench --bench live_reconfigure
+                case ("ebpf-unikraftvm", "VNF configuration"):
+                    value = click_reconfigure["init ebpf done"] - click_reconfigure["init ebpf vm"]
+                case ("ebpf-unikraftvm", "other"):
+                    value = click_reconfigure["total"] - (click_reconfigure["init ebpf done"] - click_reconfigure["init ebpf vm"])
+
+                case (_, _):
+                    value = 0
+
             rows += [[system, contributor, value]]
     df = pd.DataFrame(rows, columns=columns)
 
