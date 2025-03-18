@@ -40,11 +40,11 @@ COLORS = [ str(i) for i in range(20) ]
 # }
 
 system_map = {
-        'ebpf-click-unikraftvm': 'Unikraft (eBPF)',
-        'click-unikraftvm': 'Unikraft',
-        'click-linuxvm': 'Linux',
-        'ebpf-unikraftvm': 'Unikraft eBPF',
-        'ebpf-linuxvm': 'Linux eBPF',
+        'ebpf-click-unikraftvm': 'UniBPF',
+        'click-unikraftvm': 'Unikraft/Click',
+        'click-linuxvm': 'Linux/Click',
+        'ebpf-unikraftvm': 'UniBPF',
+        'ebpf-linuxvm': 'Linux/eBPF',
         }
 
 YLABEL = 'Reconfiguration time [ms]'
@@ -194,7 +194,7 @@ def main():
     all_unikraft = []
 
     columns = ['system', 'contributor', 'restart_s']
-    systems = [ "click-unikraftvm", "click-linuxvm", "ebpf-unikraftvm", "ebpf-linuxvm" ]
+    systems = [ "click-unikraftvm", "click-linuxvm", "ebpf-linuxvm", "ebpf-unikraftvm" ]
     contributors = [ "Qemu start", "Firmware", "Unikraft", "click init", "VNF configuration", "first packet", "other" ]
     rows = []
     for system in systems:
@@ -241,6 +241,11 @@ def main():
                     value = click_reconfigure["init ebpf done"] - click_reconfigure["init ebpf vm"]
                 case ("ebpf-unikraftvm", "other"):
                     value = click_reconfigure["total"] - (click_reconfigure["init ebpf done"] - click_reconfigure["init ebpf vm"])
+
+                # sudo /bin/sh -c 'time ip l set eno1 xdpgeneric obj ./nix/builds/xdp/lib/reflector.o sec xdp'
+                case ("ebpf-linuxvm", "VNF configuration"):
+                    value = 26
+
 
                 case (_, _):
                     value = 0
