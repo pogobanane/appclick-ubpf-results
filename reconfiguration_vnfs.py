@@ -35,9 +35,12 @@ COLORS = [ str(i) for i in range(20) ]
 # }
 
 system_map = {
-        'ebpf-click-unikraftvm': 'Unikraft click (eBPF)',
-        'click-unikraftvm': 'Unikraft click',
-        'click-linuxvm': 'Linux click',
+        # 'ebpf-click-unikraftvm': 'Unikraft click (eBPF)',
+        # 'click-unikraftvm': 'Unikraft click',
+        # 'click-linuxvm': 'Linux click',
+        'linux': 'Linux/Click',
+        'ukebpfjit': 'UniBPF',
+        'uk': 'Unikraft/Click',
         }
 
 YLABEL = 'Restart time [s]'
@@ -137,27 +140,31 @@ def main():
     log_scale = (False, True) if args.logarithmic else False
     # ax.set_yscale('log' if args.logarithmic else 'linear')
 
-    # dfs = []
-    # for color in COLORS:
-    #     if args.__dict__[color]:
-    #         arg_dfs = [ pd.read_csv(f.name, sep='\\s+') for f in args.__dict__[color] ]
-    #         arg_df = pd.concat(arg_dfs)
-    #         name = args.__dict__[f'{color}_name']
-    #         arg_df["hue"] = name
-    #         dfs += [ arg_df ]
-    #         # throughput = ThroughputDatapoint(
-    #         #     moongen_log_filepaths=[f.name for f in args.__dict__[color]],
-    #         #     name=args.__dict__[f'{color}_name'],
-    #         #     color=color,
-    #         # )
-    #         # dfs += color_dfs
-    # df = pd.concat(dfs)
+    dfs = []
+    for color in COLORS:
+        if args.__dict__[color]:
+            arg_dfs = [ pd.read_csv(f.name) for f in args.__dict__[color] ]
+            arg_df = pd.concat(arg_dfs)
+            name = args.__dict__[f'{color}_name']
+            arg_df["arglabel"] = name
+            dfs += [ arg_df ]
+            # throughput = ThroughputDatapoint(
+            #     moongen_log_filepaths=[f.name for f in args.__dict__[color]],
+            #     name=args.__dict__[f'{color}_name'],
+            #     color=color,
+            # )
+            # dfs += color_dfs
+    df = pd.concat(dfs)
     # hue = ['repetitions', 'num_vms', 'interface', 'fastclick']
     # groups = df.groupby(hue)
     # summary = df.groupby(hue)['rxMppsCalc'].describe()
     # df_hue = df.apply(lambda row: '_'.join(str(row[col]) for col in ['repetitions', 'interface', 'fastclick', 'rate']), axis=1)
     # df_hue = map_hue(df_hue, hue_map)
     # df['is_passthrough'] = df.apply(lambda row: True if "vmux-pt" in row['interface'] or "vfio" in row['interface'] else False, axis=1)
+    df.loc[(df["label"] == "total startup time"), "label"] = "total"
+    df['msec'] = df['nsec'].apply(lambda nsec: nsec / 1_000_000.0)
+    df = df[df['system'].isin(["linux", "ukebpfjit", "uk"])]
+    df = df[df['label'] == 'total']
 
     columns = ['system', 'vnf', 'restart_s']
     systems = [ "ebpf-click-unikraftvm", "click-unikraftvm", "click-linuxvm" ]
@@ -171,7 +178,7 @@ def main():
             if system == "click-linuxvm":
                 value = 3
             rows += [[system, vnf, value]]
-    df = pd.DataFrame(rows, columns=columns)
+    # df = pd.DataFrame(rows, columns=columns)
 
     df['system'] = df['system'].apply(lambda row: system_map.get(str(row), row))
 
@@ -183,7 +190,7 @@ def main():
     sns.barplot(
                data=df,
                x='system',
-               y='restart_s',
+               y='msec',
                hue="vnf",
                # palette=palette,
                edgecolor="dimgray",
@@ -276,6 +283,8 @@ def main():
     # plt.ylim(0, 1)
     if not args.logarithmic:
         plt.ylim(bottom=0)
+    else:
+        plt.ylim(bottom=1)
     # for container in ax.containers:
     #     ax.bar_label(container, fmt='%.0f')
 
