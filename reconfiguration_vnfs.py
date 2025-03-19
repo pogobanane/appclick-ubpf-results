@@ -9,6 +9,7 @@ from re import search, findall, MULTILINE
 from os.path import basename, getsize
 from typing import List, Any
 from plotting import HATCHES as hatches
+from tqdm import tqdm
 
 
 COLORS = [ str(i) for i in range(20) ]
@@ -169,7 +170,7 @@ def main():
 
         repeating_row = None
         this_set = set_spec.copy()
-        for (i, row) in df.iterrows():
+        for (i, row) in tqdm(df.iterrows(), total=df.shape[0]):
             # ensure that test inputs of a set are the same
             if repeating_row is None:
                 repeating_row = row
@@ -194,12 +195,12 @@ def main():
                     new_row = repeating_row.copy()
                     new_row['label'] = key
                     new_row['nsec'] = value
-                    rows += [ new_row ]
+                    rows += [ new_row.drop("Unnamed: 0") ]
 
         return pd.DataFrame(rows)
 
 
-    linux = df[df['system'] == 'linux']
+    linux_raw = df[df['system'] == 'linux']
     set_spec = {
         'main': None,
         'init done': None,
@@ -211,10 +212,11 @@ def main():
         out['click init'] = i['init done'] - i['main']
         out['first packet'] = i['first packet'] - i['init done']
         out['other'] = i['total startup time'] - out['click init'] + out['first packet']
+        out['total'] = i['total startup time']
         return out
-    foo = parse(linux, set_spec, calculate_linux)
+    linux = parse(linux_raw, set_spec, calculate_linux)
 
-    uktrace = df[df['system'] == 'uktrace']
+    uktrace_raw = df[df['system'] == 'uktrace']
     set_spec = {
         # we collect the same metrics as with uk, but they are inaccurate here because of expensive tracing
         # 'click main()': None,
@@ -233,11 +235,12 @@ def main():
     def calculate_uktrace(i): # takes a set_spec filled with values
         out = dict()
         out['Qemu start'] = i['qemu kvm entry'] - i['qemu start']
+        out['Firmware'] = i['qemu kvm port 255'] - i['qemu kvm entry']
+        out['Unikraft'] = i['qemu kvm port 254'] - i['qemu kvm port 255']
         return out
-    bar = parse(uktrace, set_spec, calculate_uktrace)
-    breakpoint()
+    uktrace = parse(uktrace_raw, set_spec, calculate_uktrace)
 
-    uk = df[df['system'] == 'uk']
+    uk_raw = df[df['system'] == 'uk']
     set_spec = {
         'click main()': None,
         'print config': None,
@@ -247,16 +250,32 @@ def main():
         'first packet': None,
         'total startup time': None,
     }
-    def calculate_uk(i): # takes a set_spec filled with values
+    def calculate_uk(i):
         out = dict()
-        out['other'] = i['total startup time']
+        print_config = i['print config done'] - i['print config']
+        out['total'] = i['total startup time'] - print_config
         return out
-    bar = parse(uk, set_spec, calculate_uk)
-    breakpoint()
+    uk = parse(uk_raw, set_spec, calculate_uk)
 
-    df.loc[(df["label"] == "total startup time"), "label"] = "total"
+    ukebpfjit_raw = df[df['system'] == 'ukebpfjit']
+    set_spec = {
+        # 'init ebpf vm': None,
+        # 'jit ebpf': None,
+        # 'init ebpf vm done': None,
+        'total': None,
+    }
+    def calculate_ukebpfjit(i):
+        out = dict()
+        out['total'] = i['total']
+        return out
+    ukebpfjit = parse(ukebpfjit_raw, set_spec, calculate_ukebpfjit)
+
+    df = pd.concat([linux, uk, ukebpfjit])
+    df = df[df['label'] == 'total']
+
+    # df.loc[(df["label"] == "total startup time"), "label"] = "total"
     df['msec'] = df['nsec'].apply(lambda nsec: nsec / 1_000_000.0)
-    df = df[df['system'].isin(["linux", "ukebpfjit", "uk"])]
+    # df = df[df['system'].isin(["linux", "ukebpfjit", "uk"])]
     df = df[df['label'] == 'total']
 
     # columns = ['system', 'vnf', 'restart_s']

@@ -24,6 +24,7 @@
         numpy
         matplotlib
         seaborn
+        tqdm
       ];
     };
   };
