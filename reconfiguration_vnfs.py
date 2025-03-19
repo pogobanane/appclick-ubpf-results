@@ -162,34 +162,19 @@ def main():
     # df_hue = map_hue(df_hue, hue_map)
     # df['is_passthrough'] = df.apply(lambda row: True if "vmux-pt" in row['interface'] or "vfio" in row['interface'] else False, axis=1)
 
-    def calculate_linux(i):
-        out = dict()
-        out['click init'] = i['init done'] - i['main']
-        out['first packet'] = i['first packet'] - i['init done']
-        out['other'] = i['total startup time'] - out['click init'] + out['first packet']
-        return out
-
 
     # print("\n".join(df.to_string().splitlines()[:20]))
-    def parse(df):
+    def parse(df, set_spec, set_calculator):
         rows = []
 
-        linux = df[df['system'] == 'linux']
         repeating_row = None
-        # expected_labels = ['main', 'init done', 'first packet', 'total startup time']
-        set_spec = {
-            'main': None,
-            'init done': None,
-            'first packet': None,
-            'total startup time': None,
-        }
         this_set = set_spec.copy()
-        for (i, row) in linux.iterrows():
+        for (i, row) in df.iterrows():
             if repeating_row is None:
                 repeating_row = row
             elif row['label'] == repeating_row["label"]:
                 # arrived at next set, calculate this_set and append to output
-                data = calculate_linux(this_set)
+                data = set_calculator(this_set)
                 for key, value in data.items():
                     new_row = repeating_row.copy()
                     new_row['label'] = key
@@ -207,7 +192,61 @@ def main():
 
         return pd.DataFrame(rows)
 
-    foo = parse(df)
+
+    linux = df[df['system'] == 'linux']
+    set_spec = {
+        'main': None,
+        'init done': None,
+        'first packet': None,
+        'total startup time': None,
+    }
+    def calculate_linux(i): # takes a set_spec filled with values
+        out = dict()
+        out['click init'] = i['init done'] - i['main']
+        out['first packet'] = i['first packet'] - i['init done']
+        out['other'] = i['total startup time'] - out['click init'] + out['first packet']
+        return out
+    foo = parse(linux, set_spec, calculate_linux)
+
+    # uktrace = df[df['system'] == 'uktrace']
+    # set_spec = {
+    #     # we collect the same metrics as with uk, but they are inaccurate here because of expensive tracing
+    #     # 'click main()': None,
+    #     # 'print config': None,
+    #     # 'print config done': None,
+    #     # 'initialize elements': None,
+    #     # 'initialize elements done': None,
+    #     # 'first packet': None,
+    #     # 'total startup time': None,
+    #     'qemu start': None,
+    #     'qemu kvm entry': None,
+    #     'qemu kvm port 255': None,
+    #     'qemu kvm port 254': None,
+    #     'qemu kvm port 253': None,
+    # }
+    # def calculate_uktrace(i): # takes a set_spec filled with values
+    #     out = dict()
+    #     out['Qemu start'] = i['qemu kvm entry'] - i['qemu start']
+    #     return out
+    # bar = parse(uktrace, set_spec, calculate_uktrace)
+    # breakpoint()
+
+    uk = df[df['system'] == 'uk']
+    set_spec = {
+        'click main()': None,
+        'print config': None,
+        'print config done': None,
+        'initialize elements': None,
+        'initialize elements done': None,
+        'first packet': None,
+        'total startup time': None,
+    }
+    def calculate_uk(i): # takes a set_spec filled with values
+        out = dict()
+        out['other'] = i['total startup time']
+        return out
+    bar = parse(uk, set_spec, calculate_uk)
+    breakpoint()
 
     df.loc[(df["label"] == "total startup time"), "label"] = "total"
     df['msec'] = df['nsec'].apply(lambda nsec: nsec / 1_000_000.0)
