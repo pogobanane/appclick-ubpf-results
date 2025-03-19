@@ -138,7 +138,7 @@ def main():
     plt.grid()
     # plt.xlim(0, 0.83)
     log_scale = (False, True) if args.logarithmic else False
-    # ax.set_yscale('log' if args.logarithmic else 'linear')
+    ax.set_yscale('log' if args.logarithmic else 'linear')
 
     dfs = []
     for color in COLORS:
@@ -161,23 +161,71 @@ def main():
     # df_hue = df.apply(lambda row: '_'.join(str(row[col]) for col in ['repetitions', 'interface', 'fastclick', 'rate']), axis=1)
     # df_hue = map_hue(df_hue, hue_map)
     # df['is_passthrough'] = df.apply(lambda row: True if "vmux-pt" in row['interface'] or "vfio" in row['interface'] else False, axis=1)
+
+    def calculate_linux(i):
+        out = dict()
+        out['click init'] = i['init done'] - i['main']
+        out['first packet'] = i['first packet'] - i['init done']
+        out['other'] = i['total startup time'] - out['click init'] + out['first packet']
+        return out
+
+
+    # print("\n".join(df.to_string().splitlines()[:20]))
+    def parse(df):
+        rows = []
+
+        linux = df[df['system'] == 'linux']
+        repeating_row = None
+        # expected_labels = ['main', 'init done', 'first packet', 'total startup time']
+        set_spec = {
+            'main': None,
+            'init done': None,
+            'first packet': None,
+            'total startup time': None,
+        }
+        this_set = set_spec.copy()
+        for (i, row) in linux.iterrows():
+            if repeating_row is None:
+                repeating_row = row
+            elif row['label'] == repeating_row["label"]:
+                # arrived at next set, calculate this_set and append to output
+                data = calculate_linux(this_set)
+                for key, value in data.items():
+                    new_row = repeating_row.copy()
+                    new_row['label'] = key
+                    new_row['nsec'] = value
+                    rows += [ new_row ]
+
+                this_set = set_spec.copy()
+                repeating_row = row
+            elif not repeating_row.drop('nsec').drop('label').drop("Unnamed: 0").equals(row.drop('nsec').drop('label').drop("Unnamed: 0")):
+                raise Exception(f"Different parameters within one set (expected {repeating_row} but got {row})")
+
+            # fill values for this set
+            if row['label'] in this_set.keys():
+                this_set[row['label']] = row['nsec']
+
+        return pd.DataFrame(rows)
+
+    foo = parse(df)
+
     df.loc[(df["label"] == "total startup time"), "label"] = "total"
     df['msec'] = df['nsec'].apply(lambda nsec: nsec / 1_000_000.0)
     df = df[df['system'].isin(["linux", "ukebpfjit", "uk"])]
     df = df[df['label'] == 'total']
 
-    columns = ['system', 'vnf', 'restart_s']
-    systems = [ "ebpf-click-unikraftvm", "click-unikraftvm", "click-linuxvm" ]
-    vnfs = [ "empty", "nat", "filter", "dpi", "tcp" ]
-    rows = []
-    for system in systems:
-        for vnf in vnfs:
-            value = 1
-            if system == "click-unikraftvm":
-                value = 2
-            if system == "click-linuxvm":
-                value = 3
-            rows += [[system, vnf, value]]
+    # columns = ['system', 'vnf', 'restart_s']
+    # systems = [ "ebpf-click-unikraftvm", "click-unikraftvm", "click-linuxvm" ]
+    # vnfs = [ "empty", "nat", "filter", "dpi", "tcp" ]
+    # rows = []
+    # for system in systems:
+    #     for vnf in vnfs:
+    #         value = 1
+    #         if system == "click-unikraftvm":
+    #             value = 2
+    #         if system == "click-linuxvm":
+    #             value = 3
+    #         rows += [[system, vnf, value]]
     # df = pd.DataFrame(rows, columns=columns)
 
     df['system'] = df['system'].apply(lambda row: system_map.get(str(row), row))
