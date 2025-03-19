@@ -170,25 +170,31 @@ def main():
         repeating_row = None
         this_set = set_spec.copy()
         for (i, row) in df.iterrows():
+            # ensure that test inputs of a set are the same
             if repeating_row is None:
                 repeating_row = row
-            elif row['label'] == repeating_row["label"]:
-                # arrived at next set, calculate this_set and append to output
+            elif all(value is not None for value in this_set.values()):
+                # arrived at next set
+                this_set = set_spec.copy()
+                repeating_row = row
+            elif not repeating_row.drop('nsec').drop('label').drop("Unnamed: 0").equals(row.drop('nsec').drop('label').drop("Unnamed: 0")):
+                raise Exception(f"Different parameters within one set (expected {repeating_row} but got {row})")
+
+
+            # fill values for this set
+            if row['label'] in this_set.keys():
+                # if it is already filled, we messed up our set
+                if this_set[row['label']] is not None:
+                    raise Exception(f"Duplicate label {row['label']} in one set")
+                this_set[row['label']] = row['nsec']
+            if all(value is not None for value in this_set.values()):
+                # set done, calculate this_set and append to output
                 data = set_calculator(this_set)
                 for key, value in data.items():
                     new_row = repeating_row.copy()
                     new_row['label'] = key
                     new_row['nsec'] = value
                     rows += [ new_row ]
-
-                this_set = set_spec.copy()
-                repeating_row = row
-            elif not repeating_row.drop('nsec').drop('label').drop("Unnamed: 0").equals(row.drop('nsec').drop('label').drop("Unnamed: 0")):
-                raise Exception(f"Different parameters within one set (expected {repeating_row} but got {row})")
-
-            # fill values for this set
-            if row['label'] in this_set.keys():
-                this_set[row['label']] = row['nsec']
 
         return pd.DataFrame(rows)
 
@@ -208,28 +214,28 @@ def main():
         return out
     foo = parse(linux, set_spec, calculate_linux)
 
-    # uktrace = df[df['system'] == 'uktrace']
-    # set_spec = {
-    #     # we collect the same metrics as with uk, but they are inaccurate here because of expensive tracing
-    #     # 'click main()': None,
-    #     # 'print config': None,
-    #     # 'print config done': None,
-    #     # 'initialize elements': None,
-    #     # 'initialize elements done': None,
-    #     # 'first packet': None,
-    #     # 'total startup time': None,
-    #     'qemu start': None,
-    #     'qemu kvm entry': None,
-    #     'qemu kvm port 255': None,
-    #     'qemu kvm port 254': None,
-    #     'qemu kvm port 253': None,
-    # }
-    # def calculate_uktrace(i): # takes a set_spec filled with values
-    #     out = dict()
-    #     out['Qemu start'] = i['qemu kvm entry'] - i['qemu start']
-    #     return out
-    # bar = parse(uktrace, set_spec, calculate_uktrace)
-    # breakpoint()
+    uktrace = df[df['system'] == 'uktrace']
+    set_spec = {
+        # we collect the same metrics as with uk, but they are inaccurate here because of expensive tracing
+        # 'click main()': None,
+        # 'print config': None,
+        # 'print config done': None,
+        # 'initialize elements': None,
+        # 'initialize elements done': None,
+        # 'first packet': None,
+        # 'total startup time': None,
+        'qemu start': None,
+        'qemu kvm entry': None,
+        'qemu kvm port 255': None,
+        'qemu kvm port 254': None,
+        'qemu kvm port 253': None,
+    }
+    def calculate_uktrace(i): # takes a set_spec filled with values
+        out = dict()
+        out['Qemu start'] = i['qemu kvm entry'] - i['qemu start']
+        return out
+    bar = parse(uktrace, set_spec, calculate_uktrace)
+    breakpoint()
 
     uk = df[df['system'] == 'uk']
     set_spec = {
