@@ -10,6 +10,7 @@ from os.path import basename, getsize
 from typing import List, Any
 from plotting import HATCHES as hatches
 from tqdm import tqdm
+import scipy.stats as scipyst
 
 
 COLORS = [ str(i) for i in range(20) ]
@@ -44,7 +45,7 @@ system_map = {
         'uk': 'Unikraft/Click',
         }
 
-YLABEL = 'Restart time [s]'
+YLABEL = 'Restart time [ms]'
 XLABEL = 'System'
 
 def map_hue(df_hue, hue_map):
@@ -292,11 +293,24 @@ def main():
     #         rows += [[system, vnf, value]]
     # df = pd.DataFrame(rows, columns=columns)
 
+
     df['system'] = df['system'].apply(lambda row: system_map.get(str(row), row))
 
     # map colors to hues
     # colors = sns.color_palette("pastel", len(df['hue'].unique())-1) + [ mcolors.to_rgb('sandybrown') ]
     # palette = dict(zip(df['hue'].unique(), colors))
+
+    # Only removes outliers that are excessive (e.g. 1000ms from a median of 15ms).
+    # We need this because our linux measurements sometimes break and don't detect when click is up.
+    dfs = []
+    for system in df['system'].unique():
+        for hue in df['vnf'].unique():
+            raw = df[(df['system'] == system) & (df['vnf'] == hue)]
+            clean = raw[(raw['msec'] < (50*raw['msec'].median()))]
+            dfs += [ clean ]
+    df = pd.concat(dfs)
+
+    breakpoint()
 
     # Plot using Seaborn
     sns.barplot(
