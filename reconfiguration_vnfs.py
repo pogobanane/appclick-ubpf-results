@@ -47,6 +47,10 @@ system_map = {
         'uk': 'Unikraft/Click',
         }
 
+hue_map = {
+    'firewall-10000': 'firewall-10k',
+}
+
 YLABEL = 'Restart time [ms]'
 XLABEL = 'System'
 
@@ -257,6 +261,7 @@ def main():
         out['Unikraft'] = i['qemu kvm port 254'] - i['qemu kvm port 255']
         return out
     uktrace = parse(uktrace_raw, set_spec, calculate_uktrace)
+    uktrace['system'] = 'uk' # we've processed the data to make it uk data
 
     uk_raw = df[df['system'] == 'uk']
     set_spec = {
@@ -269,11 +274,23 @@ def main():
         'total startup time': None,
     }
     def calculate_uk(set_nr, i, supp):
+        def get_supp(label):
+            values = supp[supp['label'] == label]
+            j = set_nr % values.shape[0]
+            return values['nsec'].array[j]
+        qemu_start = get_supp('Qemu start')
+        firmware = get_supp('Firmware')
+        unikraft = get_supp('Unikraft')
         out = dict()
         print_config = i['print config done'] - i['print config']
+        out['click init'] = i['initialize elements'] - i['click main()'] - print_config
+        out['VNF configuration'] = i['initialize elements done'] - i['initialize elements']
+        out['first packet'] = i['first packet'] - i['initialize elements done']
+        # everything we have no detailed trace for is other
+        out['other'] = i['total startup time'] - out['click init'] - out['VNF configuration'] - out['first packet'] - qemu_start - firmware - unikraft - print_config
         out['total'] = i['total startup time'] - print_config
         return out
-    uk = parse(uk_raw, set_spec, calculate_uk)
+    uk = parse(uk_raw, set_spec, calculate_uk, supplementary_df=uktrace)
 
     ukebpfjit_supp_raw = df[df['system'] == 'ukebpfjit']
     set_spec = {
@@ -300,9 +317,9 @@ def main():
         out['other'] = total - out['VNF configuration']
         return out
     ukebpfjit = parse(ukebpfjit_raw, set_spec, calculate_ukebpfjit, supplementary_df=ukebpfjit_supp)
+    ukebpfjit = pd.concat([ukebpfjit, ukebpfjit_supp])
 
     df = pd.concat([linux, uk, ukebpfjit])
-    df = df[df['label'] == 'total']
 
     # df.loc[(df["label"] == "total startup time"), "label"] = "total"
     df['msec'] = df['nsec'].apply(lambda nsec: nsec / 1_000_000.0)
@@ -325,6 +342,7 @@ def main():
 
 
     df['system'] = df['system'].apply(lambda row: system_map.get(str(row), row))
+    df['vnf'] = df['vnf'].apply(lambda row: hue_map.get(str(row), row))
 
     # map colors to hues
     # colors = sns.color_palette("pastel", len(df['hue'].unique())-1) + [ mcolors.to_rgb('sandybrown') ]
@@ -406,7 +424,7 @@ def main():
     #             ax=ax,
     #             )
     sns.move_legend(
-        ax, "lower right",
+        ax, "upper right",
         # bbox_to_anchor=(.5, 1), ncol=3, title=None, frameon=False,
     )
     #
@@ -434,7 +452,7 @@ def main():
     plt.xlabel(XLABEL)
     plt.ylabel(YLABEL)
 
-    # plt.ylim(0, 1)
+    plt.ylim(0, 350)
     if not args.logarithmic:
         plt.ylim(bottom=0)
     else:

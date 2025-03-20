@@ -19,7 +19,6 @@ install:
 
 reconfiguration_vnfs.pdf:
 	python3 reconfiguration_vnfs.py \
-		-l \
 		-o $(OUT_DIR)/reconfiguration_vnfs.pdf \
 		-W $(WIDTH) -H 2.5 \
 		--1 $(DATA)/reconfiguration_*_rep?.csv --1-name stub
