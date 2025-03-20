@@ -11,6 +11,8 @@ from typing import List, Any
 from plotting import HATCHES as hatches
 from tqdm import tqdm
 import scipy.stats as scipyst
+from functools import reduce
+import operator
 
 
 COLORS = [ str(i) for i in range(20) ]
@@ -166,32 +168,47 @@ def main():
 
 
     # print("\n".join(df.to_string().splitlines()[:20]))
-    def parse(df, set_spec, set_calculator):
+    def parse(df, set_spec, set_calculator, supplementary_df=None):
         rows = []
 
+        def get_supplementary_data(supplementary_df_, repeating_row_):
+            if supplementary_df_ is None:
+                return None
+
+            # choose supplementary data for this set
+            columns = [ column for column in supplementary_df_.columns if column not in ["nsec", "label", "Unnamed: 0"] ]
+            column_equalities = [ supplementary_df_[column] == repeating_row_[column] for column in columns ]
+            supplementary_data = supplementary_df_[reduce(operator.and_, column_equalities)]
+            return supplementary_data
+
         repeating_row = None
+        set_supplement = None
         this_set = set_spec.copy()
+        set_nr = 0
         for (i, row) in tqdm(df.iterrows(), total=df.shape[0]):
             # ensure that test inputs of a set are the same
             if repeating_row is None:
                 repeating_row = row
+                set_supplement = get_supplementary_data(supplementary_df, repeating_row)
             elif all(value is not None for value in this_set.values()):
                 # arrived at next set
+                set_nr += 1
                 this_set = set_spec.copy()
                 repeating_row = row
+                set_supplement = get_supplementary_data(supplementary_df, repeating_row)
             elif not repeating_row.drop('nsec').drop('label').drop("Unnamed: 0").equals(row.drop('nsec').drop('label').drop("Unnamed: 0")):
                 raise Exception(f"Different parameters within one set (expected {repeating_row} but got {row})")
-
 
             # fill values for this set
             if row['label'] in this_set.keys():
                 # if it is already filled, we messed up our set
                 if this_set[row['label']] is not None:
-                    raise Exception(f"Duplicate label {row['label']} in one set")
+                    missing = [ key for key, value in this_set.items() if value is None ]
+                    raise Exception(f"Duplicate label {row['label']} in one set. Missing keys for current set: {missing}")
                 this_set[row['label']] = row['nsec']
             if all(value is not None for value in this_set.values()):
                 # set done, calculate this_set and append to output
-                data = set_calculator(this_set)
+                data = set_calculator(set_nr, this_set, set_supplement)
                 for key, value in data.items():
                     new_row = repeating_row.copy()
                     new_row['label'] = key
@@ -208,7 +225,7 @@ def main():
         'first packet': None,
         'total startup time': None,
     }
-    def calculate_linux(i): # takes a set_spec filled with values
+    def calculate_linux(set_nr, i, supp): # takes a set_spec filled with values
         out = dict()
         out['click init'] = i['init done'] - i['main']
         out['first packet'] = i['first packet'] - i['init done']
@@ -233,7 +250,7 @@ def main():
         'qemu kvm port 254': None,
         'qemu kvm port 253': None,
     }
-    def calculate_uktrace(i): # takes a set_spec filled with values
+    def calculate_uktrace(set_nr, i, supp): # takes a set_spec filled with values
         out = dict()
         out['Qemu start'] = i['qemu kvm entry'] - i['qemu start']
         out['Firmware'] = i['qemu kvm port 255'] - i['qemu kvm entry']
@@ -251,25 +268,38 @@ def main():
         'first packet': None,
         'total startup time': None,
     }
-    def calculate_uk(i):
+    def calculate_uk(set_nr, i, supp):
         out = dict()
         print_config = i['print config done'] - i['print config']
         out['total'] = i['total startup time'] - print_config
         return out
     uk = parse(uk_raw, set_spec, calculate_uk)
 
-    ukebpfjit_raw = df[df['system'] == 'ukebpfjit']
+    ukebpfjit_supp_raw = df[df['system'] == 'ukebpfjit']
     set_spec = {
-        # 'init ebpf vm': None,
-        # 'jit ebpf': None,
-        # 'init ebpf vm done': None,
         'total': None,
     }
-    def calculate_ukebpfjit(i):
+    def calculate_ukebpfjit_supp(set_nr, i, supp):
         out = dict()
         out['total'] = i['total']
         return out
-    ukebpfjit = parse(ukebpfjit_raw, set_spec, calculate_ukebpfjit)
+    ukebpfjit_supp = parse(ukebpfjit_supp_raw, set_spec, calculate_ukebpfjit_supp)
+
+    ukebpfjit_raw = df[(df['system'] == 'ukebpfjit') & (df['label'] != 'total')]
+    set_spec = {
+        'init ebpf vm': None,
+        'jit ebpf': None,
+        'init ebpf done': None,
+    }
+    def calculate_ukebpfjit(set_nr, i, supp):
+        totals = supp[supp['label'] == 'total']
+        j = set_nr % totals.shape[0]
+        total = totals['nsec'].array[j]
+        out = dict()
+        out['VNF configuration'] = i['init ebpf done'] - i['init ebpf vm']
+        out['other'] = total - out['VNF configuration']
+        return out
+    ukebpfjit = parse(ukebpfjit_raw, set_spec, calculate_ukebpfjit, supplementary_df=ukebpfjit_supp)
 
     df = pd.concat([linux, uk, ukebpfjit])
     df = df[df['label'] == 'total']
@@ -309,8 +339,6 @@ def main():
             clean = raw[(raw['msec'] < (50*raw['msec'].median()))]
             dfs += [ clean ]
     df = pd.concat(dfs)
-
-    breakpoint()
 
     # Plot using Seaborn
     sns.barplot(
