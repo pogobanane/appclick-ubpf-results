@@ -1,0 +1,3165 @@
+c[?7l[2J[0mSeaBIOS (version rel-1.16.2-0-gea1b7a073390-prebuilt.qemu.org)
+
+
+iPXE (http://ipxe.org) 00:03.0 CA00 PCI2.10 PnP PMM+BEFD0EF0+BEF30EF0 CA00
+Press Ctrl-B to configure iPXE (PCI 00:03.0)...                                                                               
+
+
+
+
+iPXE (http://ipxe.org) 00:04.0 CB00 PCI2.10 PnP PMM BEFD0EF0 BEF30EF0 CB00
+Press Ctrl-B to configure iPXE (PCI 00:04.0)...                                                                               
+
+
+Booting from ROM..Powered by
+o.   .o       _ _               __ _
+Oo   Oo  ___ (_) | __ __  __ _ ' _) :_
+oO   oO ' _ `| | |/ /  _)' _` | |_|  _)
+oOo oOO| | | | |   (| | | (_) |  _) :_
+ OoOoO ._, ._:_:_,\_._,  .__,_:_, \___)
+         Telesto 0.16.3~e453b74a-custom
+Startup trace (nsec): click main(): 108414432
+Startup trace (nsec): print config: 110065944
+Received config (length 815):
+define($MAC0 52:54:00:12:34:56);
+define($MAC1 52:54:00:12:34:57);
+/* End unikraft-provided MAC preamble */
+
+// === Control network ===
+elementclass ControlReceiver { $deviceid |
+    FromDevice($deviceid)
+     -> c0 :: Classifier(12/0806 20/0001,
+                         12/0800,
+                         -);
+
+    // Answer ARP requests
+    c0[0] -> ARPResponder(173.44.0.2 $MAC1)
+          -> ToDevice($deviceid);
+
+    // Handle IP packets
+    c0[1] -> StripEtherVLANHeader
+     -> CheckIPHeader
+     -> IPFilter(allow dst port 4444, deny all)
+     -> IPReassembler
+     -> SetUDPChecksum
+     -> CheckUDPHeader
+     -> Control;
+
+    c0[2] -> Discard;
+}
+
+ControlReceiver(1);
+
+// === Data network ===
+FromDevice(0) -> Print('Received packet') -> BPFRewriter(ID 1, FILE nat, SIGNATURE nat.sig, JIT true) -> Discard;
+
+Startup trace (nsec): print config done: 171951503
+Startup trace (nsec): initialize elements: 175430470
+Startup trace (nsec): init ebpf vm: 178931333
+Startup trace (nsec): jit ebpf: 182190566
+Startup trace (nsec): init ebpf done: 186247994
+Startup trace (nsec): initialize elements done: 190087730
+[router_thread:250] Starting driver...
+
+
+Received packet:   72 | 01005e00 0016767e 90d49854 080046c0 00300000 40000102
+[    0.204796] ERR:  [libclick] <bpfrewriter.cc @   67> BPFRewriter: Unsupported action: 4294967295
+Received packet:  200 | 33330000 0016767e 90d49854 86dd6000 00000088 0001fe80
+[    0.215611] ERR:  [libclick] <bpfrewriter.cc @   67> BPFRewriter: Unsupported action: 4294967295
+Received packet:   78 | 01005e00 00fc767e 90d49854 08004500 00361b05 0000ff11
+[    0.226375] ERR:  [libclick] <bpfrewriter.cc @   67> BPFRewriter: Unsupported action: 4294967295
+Received packet:   98 | 33330001 0003767e 90d49854 86dd600b c7de0022 11fffe80
+[    0.237149] ERR:  [libclick] <bpfrewriter.cc @   67> BPFRewriter: Unsupported action: 4294967295
+Received packet:   78 | 01005e00 00fc767e 90d49854 08004500 00361bbc 0000ff11
+[    0.247917] ERR:  [libclick] <bpfrewriter.cc @   67> BPFRewriter: Unsupported action: 4294967295
+Received packet:  132 | 33330000 00fb767e 90d49854 86dd6009 ed030044 11fffe80
+[    0.258690] ERR:  [libclick] <bpfrewriter.cc @   67> BPFRewriter: Unsupported action: 4294967295
+Received packet:  120 | 33330000 0016fe79 37a903cf 86dd6000 00000038 00010000
+[    0.269457] ERR:  [libclick] <bpfrewriter.cc @   67> BPFRewriter: Unsupported action: 4294967295
+Received packet:  100 | 01005e00 00fb767e 90d49854 08004500 004c2640 0000ff11
+[    0.280221] ERR:  [libclick] <bpfrewriter.cc @   67> BPFRewriter: Unsupported action: 4294967295
+Received packet:   72 | 01005e00 0016767e 90d49854 080046c0 00300000 40000102
+[    0.290984] ERR:  [libclick] <bpfrewriter.cc @   67> BPFRewriter: Unsupported action: 4294967295
+Startup trace (nsec): init ebpf vm: 297746116
+Startup trace (nsec): jit ebpf: 300962338
+Startup trace (nsec): init ebpf done: 304347489
+Startup trace (nsec): init ebpf vm: 307663645
+Startup trace (nsec): jit ebpf: 310877545
+Startup trace (nsec): init ebpf done: 314150472
+Startup trace (nsec): init ebpf vm: 317450035
+Startup trace (nsec): jit ebpf: 320662888
+Startup trace (nsec): init ebpf done: 323920528
+Startup trace (nsec): init ebpf vm: 327224589
+Startup trace (nsec): jit ebpf: 330437138
+Startup trace (nsec): init ebpf done: 333690421
+Startup trace (nsec): init ebpf vm: 337009939
+Startup trace (nsec): jit ebpf: 340226683
+Startup trace (nsec): init ebpf done: 343480665
+Startup trace (nsec): init ebpf vm: 346772745
+Startup trace (nsec): jit ebpf: 349985157
+Startup trace (nsec): init ebpf done: 353247886
+Startup trace (nsec): init ebpf vm: 356566693
+Startup trace (nsec): jit ebpf: 359778081
+Startup trace (nsec): init ebpf done: 363037821
+Startup trace (nsec): init ebpf vm: 366344491
+Startup trace (nsec): jit ebpf: 369555401
+Startup trace (nsec): init ebpf done: 372809629
+Startup trace (nsec): init ebpf vm: 376129729
+Startup trace (nsec): jit ebpf: 379351473
+Startup trace (nsec): init ebpf done: 382606434
+Startup trace (nsec): init ebpf vm: 385907911
+Startup trace (nsec): jit ebpf: 389123754
+Startup trace (nsec): init ebpf done: 392443339
+Startup trace (nsec): init ebpf vm: 395747743
+Startup trace (nsec): jit ebpf: 398973792
+Startup trace (nsec): init ebpf done: 402276757
+Startup trace (nsec): init ebpf vm: 405578856
+Startup trace (nsec): jit ebpf: 408795492
+Startup trace (nsec): init ebpf done: 412063671
+Startup trace (nsec): init ebpf vm: 415376318
+Startup trace (nsec): jit ebpf: 418588704
+Startup trace (nsec): init ebpf done: 421906122
+Startup trace (nsec): init ebpf vm: 425206912
+Startup trace (nsec): jit ebpf: 428425585
+Startup trace (nsec): init ebpf done: 431682095
+Startup trace (nsec): init ebpf vm: 434993256
+Startup trace (nsec): jit ebpf: 438208524
+Startup trace (nsec): init ebpf done: 441472735
+Startup trace (nsec): init ebpf vm: 444791746
+Startup trace (nsec): jit ebpf: 448004655
+Startup trace (nsec): init ebpf done: 451269895
+Startup trace (nsec): init ebpf vm: 454571951
+Startup trace (nsec): jit ebpf: 457788077
+Startup trace (nsec): init ebpf done: 461044889
+Startup trace (nsec): init ebpf vm: 464369459
+Startup trace (nsec): jit ebpf: 467585584
+Startup trace (nsec): init ebpf done: 470848379
+Startup trace (nsec): init ebpf vm: 474152998
+Startup trace (nsec): jit ebpf: 477364040
+Startup trace (nsec): init ebpf done: 480619386
+Startup trace (nsec): init ebpf vm: 483934771
+Startup trace (nsec): jit ebpf: 487154546
+Startup trace (nsec): init ebpf done: 490413857
+Startup trace (nsec): init ebpf vm: 493707094
+Startup trace (nsec): jit ebpf: 496917883
+Startup trace (nsec): init ebpf done: 500173234
+Startup trace (nsec): init ebpf vm: 503486907
+Startup trace (nsec): jit ebpf: 506741906
+Startup trace (nsec): init ebpf done: 509998883
+Startup trace (nsec): init ebpf vm: 513292431
+Startup trace (nsec): jit ebpf: 516517620
+Startup trace (nsec): init ebpf done: 519772964
+Startup trace (nsec): init ebpf vm: 523081754
+Startup trace (nsec): jit ebpf: 526297866
+Startup trace (nsec): init ebpf done: 529556369
+Startup trace (nsec): init ebpf vm: 532874633
+Startup trace (nsec): jit ebpf: 536086074
+Startup trace (nsec): init ebpf done: 539340482
+Startup trace (nsec): init ebpf vm: 542647267
+Startup trace (nsec): jit ebpf: 545861348
+Startup trace (nsec): init ebpf done: 549114618
+Startup trace (nsec): init ebpf vm: 552439998
+Startup trace (nsec): jit ebpf: 555650441
+Startup trace (nsec): init ebpf done: 558903158
+Startup trace (nsec): init ebpf vm: 562229117
+Startup trace (nsec): jit ebpf: 565439936
+Startup trace (nsec): init ebpf done: 568700451
+Startup trace (nsec): init ebpf vm: 571996689
+Startup trace (nsec): jit ebpf: 575212786
+Startup trace (nsec): init ebpf done: 578472596
+Startup trace (nsec): init ebpf vm: 581780460
+Startup trace (nsec): jit ebpf: 584993512
+Startup trace (nsec): init ebpf done: 588256534
+Startup trace (nsec): init ebpf vm: 591558747
+Startup trace (nsec): jit ebpf: 594777951
+Startup trace (nsec): init ebpf done: 598033693
+Startup trace (nsec): init ebpf vm: 601358383
+Startup trace (nsec): jit ebpf: 604569532
+Startup trace (nsec): init ebpf done: 607821045
+Startup trace (nsec): init ebpf vm: 611125429
+Startup trace (nsec): jit ebpf: 614346327
+Startup trace (nsec): init ebpf done: 617600501
+Startup trace (nsec): init ebpf vm: 620925620
+Startup trace (nsec): jit ebpf: 624140988
+Startup trace (nsec): init ebpf done: 627394324
+Startup trace (nsec): init ebpf vm: 630700250
+Startup trace (nsec): jit ebpf: 633915079
+Startup trace (nsec): init ebpf done: 637174686
+Startup trace (nsec): init ebpf vm: 640499453
+Startup trace (nsec): jit ebpf: 643713477
+Startup trace (nsec): init ebpf done: 646966224
+Startup trace (nsec): init ebpf vm: 650268471
+Startup trace (nsec): jit ebpf: 653481840
+Startup trace (nsec): init ebpf done: 656737508
+Startup trace (nsec): init ebpf vm: 660058296
+Startup trace (nsec): jit ebpf: 663276376
+Startup trace (nsec): init ebpf done: 666532072
+Startup trace (nsec): init ebpf vm: 669828869
+Startup trace (nsec): jit ebpf: 673067638
+Startup trace (nsec): init ebpf done: 676327003
+Startup trace (nsec): init ebpf vm: 679612226
+Startup trace (nsec): jit ebpf: 682826535
+Startup trace (nsec): init ebpf done: 686088050
+Startup trace (nsec): init ebpf vm: 689396980
+Startup trace (nsec): jit ebpf: 692607766
+Startup trace (nsec): init ebpf done: 695863202
+Startup trace (nsec): init ebpf vm: 699191447
+Startup trace (nsec): jit ebpf: 702403114
+Startup trace (nsec): init ebpf done: 705659244
+Startup trace (nsec): init ebpf vm: 708966678
+Startup trace (nsec): jit ebpf: 712182799
+Startup trace (nsec): init ebpf done: 715437718
+Startup trace (nsec): init ebpf vm: 718755408
+Startup trace (nsec): jit ebpf: 721973234
+Startup trace (nsec): init ebpf done: 725237765
+Startup trace (nsec): init ebpf vm: 728533303
+Startup trace (nsec): jit ebpf: 731745846
+Startup trace (nsec): init ebpf done: 734997928
+Startup trace (nsec): init ebpf vm: 738318272
+Startup trace (nsec): jit ebpf: 741532885
+Startup trace (nsec): init ebpf done: 744802971
+Startup trace (nsec): init ebpf vm: 748111747
+Startup trace (nsec): jit ebpf: 751328225
+Startup trace (nsec): init ebpf done: 754589840
+Startup trace (nsec): init ebpf vm: 757900921
+Startup trace (nsec): jit ebpf: 761122695
+Startup trace (nsec): init ebpf done: 764382790
+Startup trace (nsec): init ebpf vm: 767701723
+Startup trace (nsec): jit ebpf: 770916792
+Startup trace (nsec): init ebpf done: 774181870
+Startup trace (nsec): init ebpf vm: 777492735
+Startup trace (nsec): jit ebpf: 780718942
+Startup trace (nsec): init ebpf done: 784131738
+Startup trace (nsec): init ebpf vm: 787477735
+Startup trace (nsec): jit ebpf: 790697590
+Startup trace (nsec): init ebpf done: 794070282
+Startup trace (nsec): init ebpf vm: 797400175
+Startup trace (nsec): jit ebpf: 800620460
+Startup trace (nsec): init ebpf done: 803967519
+Startup trace (nsec): init ebpf vm: 807288737
+Startup trace (nsec): jit ebpf: 810509327
+Startup trace (nsec): init ebpf done: 813858149
+Startup trace (nsec): init ebpf vm: 817178147
+Startup trace (nsec): jit ebpf: 820404419
+Startup trace (nsec): init ebpf done: 823753937
+Startup trace (nsec): init ebpf vm: 827116064
+Startup trace (nsec): jit ebpf: 830355756
+Startup trace (nsec): init ebpf done: 833759609
+Startup trace (nsec): init ebpf vm: 837091431
+Startup trace (nsec): jit ebpf: 840312300
+Startup trace (nsec): init ebpf done: 843653534
+Startup trace (nsec): init ebpf vm: 846973908
+Startup trace (nsec): jit ebpf: 850196728
+Startup trace (nsec): init ebpf done: 853512629
+Startup trace (nsec): init ebpf vm: 856842992
+Startup trace (nsec): jit ebpf: 860059701
+Startup trace (nsec): init ebpf done: 863365539
+Startup trace (nsec): init ebpf vm: 866677786
+Startup trace (nsec): jit ebpf: 869905224
+Startup trace (nsec): init ebpf done: 873216140
+Startup trace (nsec): init ebpf vm: 876524932
+Startup trace (nsec): jit ebpf: 879740367
+Startup trace (nsec): init ebpf done: 883033176
+Startup trace (nsec): init ebpf vm: 886353065
+Startup trace (nsec): jit ebpf: 889568672
+Startup trace (nsec): init ebpf done: 892847258
+Startup trace (nsec): init ebpf vm: 896171224
+Startup trace (nsec): jit ebpf: 899387812
+Startup trace (nsec): init ebpf done: 902659048
+Startup trace (nsec): init ebpf vm: 905990312
+Startup trace (nsec): jit ebpf: 909215148
+Startup trace (nsec): init ebpf done: 912481512
+Startup trace (nsec): init ebpf vm: 915792622
+Startup trace (nsec): jit ebpf: 919007997
+Startup trace (nsec): init ebpf done: 922309305
+Startup trace (nsec): init ebpf vm: 925617091
+Startup trace (nsec): jit ebpf: 928837633
+Startup trace (nsec): init ebpf done: 932098703
+Startup trace (nsec): init ebpf vm: 935408502
+Startup trace (nsec): jit ebpf: 938623377
+Startup trace (nsec): init ebpf done: 941890213
+Startup trace (nsec): init ebpf vm: 945206805
+Startup trace (nsec): jit ebpf: 948426312
+Startup trace (nsec): init ebpf done: 951791342
+Startup trace (nsec): init ebpf vm: 955286675
+Startup trace (nsec): jit ebpf: 958501865
+Startup trace (nsec): init ebpf done: 961848407
+Startup trace (nsec): init ebpf vm: 965176434
+Startup trace (nsec): jit ebpf: 968403291
+Startup trace (nsec): init ebpf done: 971789931
+Startup trace (nsec): init ebpf vm: 975131136
+Startup trace (nsec): jit ebpf: 978358959
+Startup trace (nsec): init ebpf done: 981810872
+Startup trace (nsec): init ebpf vm: 985151827
+Startup trace (nsec): jit ebpf: 988374330
+Startup trace (nsec): init ebpf done: 991773033
+Startup trace (nsec): init ebpf vm: 995090583
+Startup trace (nsec): jit ebpf: 998312982
+Startup trace (nsec): init ebpf done: 1001651023
+Startup trace (nsec): init ebpf vm: 1004992492
+Startup trace (nsec): jit ebpf: 1008246682
+Startup trace (nsec): init ebpf done: 1011537850
+Startup trace (nsec): init ebpf vm: 1014883505
+Startup trace (nsec): jit ebpf: 1018135902
+Startup trace (nsec): init ebpf done: 1021425863
+Startup trace (nsec): init ebpf vm: 1024750397
+Startup trace (nsec): jit ebpf: 1027997421
+Startup trace (nsec): init ebpf done: 1031292550
+Startup trace (nsec): init ebpf vm: 1034629909
+Startup trace (nsec): jit ebpf: 1037879203
+Startup trace (nsec): init ebpf done: 1041176382
+Startup trace (nsec): init ebpf vm: 1044518848
+Startup trace (nsec): jit ebpf: 1047768084
+Startup trace (nsec): init ebpf done: 1051069859
+Startup trace (nsec): init ebpf vm: 1054411420
+Startup trace (nsec): jit ebpf: 1057659639
+Startup trace (nsec): init ebpf done: 1060949410
+Startup trace (nsec): init ebpf vm: 1064292511
+Startup trace (nsec): jit ebpf: 1067543546
+Startup trace (nsec): init ebpf done: 1070834720
+Startup trace (nsec): init ebpf vm: 1074179851
+Startup trace (nsec): jit ebpf: 1077424861
+Startup trace (nsec): init ebpf done: 1080713706
+Startup trace (nsec): init ebpf vm: 1084060679
+Startup trace (nsec): jit ebpf: 1087313286
+Startup trace (nsec): init ebpf done: 1090597849
+Startup trace (nsec): init ebpf vm: 1093923122
+Startup trace (nsec): jit ebpf: 1097173178
+Startup trace (nsec): init ebpf done: 1100464589
+Startup trace (nsec): init ebpf vm: 1103801634
+Startup trace (nsec): jit ebpf: 1107054909
+Startup trace (nsec): init ebpf done: 1110346083
+Startup trace (nsec): init ebpf vm: 1113691417
+Startup trace (nsec): jit ebpf: 1116935072
+Startup trace (nsec): init ebpf done: 1120231299
+Startup trace (nsec): init ebpf vm: 1123556971
+Startup trace (nsec): jit ebpf: 1126799327
+Startup trace (nsec): init ebpf done: 1130090861
+Startup trace (nsec): init ebpf vm: 1133431803
+Startup trace (nsec): jit ebpf: 1136675299
+Startup trace (nsec): init ebpf done: 1139966905
+Startup trace (nsec): init ebpf vm: 1143307426
+Startup trace (nsec): jit ebpf: 1146594144
+Startup trace (nsec): init ebpf done: 1149893563
+Startup trace (nsec): init ebpf vm: 1153224823
+Startup trace (nsec): jit ebpf: 1156478295
+Startup trace (nsec): init ebpf done: 1159783714
+Startup trace (nsec): init ebpf vm: 1163174415
+Startup trace (nsec): jit ebpf: 1166426908
+Startup trace (nsec): init ebpf done: 1169738790
+Startup trace (nsec): init ebpf vm: 1173088988
+Startup trace (nsec): jit ebpf: 1176337376
+Startup trace (nsec): init ebpf done: 1179635098
+Startup trace (nsec): init ebpf vm: 1182976398
+Startup trace (nsec): jit ebpf: 1186242253
+Startup trace (nsec): init ebpf done: 1189534177
+Startup trace (nsec): init ebpf vm: 1192894351
+Startup trace (nsec): jit ebpf: 1196164853
+Startup trace (nsec): init ebpf done: 1199467258
+Startup trace (nsec): init ebpf vm: 1202818692
+Startup trace (nsec): jit ebpf: 1206077881
+Startup trace (nsec): init ebpf done: 1209386088
+Startup trace (nsec): init ebpf vm: 1212740884
+Startup trace (nsec): jit ebpf: 1216003996
+Startup trace (nsec): init ebpf done: 1219315245
+Startup trace (nsec): init ebpf vm: 1222668508
+Startup trace (nsec): jit ebpf: 1225931203
+Startup trace (nsec): init ebpf done: 1229253925
+Startup trace (nsec): init ebpf vm: 1232601335
+Startup trace (nsec): jit ebpf: 1235861868
+Startup trace (nsec): init ebpf done: 1239169868
+Startup trace (nsec): init ebpf vm: 1242533973
+Startup trace (nsec): jit ebpf: 1245796744
+Startup trace (nsec): init ebpf done: 1249102654
+Startup trace (nsec): init ebpf vm: 1252457387
+Startup trace (nsec): jit ebpf: 1255716385
+Startup trace (nsec): init ebpf done: 1259019306
+Startup trace (nsec): init ebpf vm: 1262371620
+Startup trace (nsec): jit ebpf: 1265635050
+Startup trace (nsec): init ebpf done: 1268936609
+Startup trace (nsec): init ebpf vm: 1272288466
+Startup trace (nsec): jit ebpf: 1275549862
+Startup trace (nsec): init ebpf done: 1278850551
+Startup trace (nsec): init ebpf vm: 1282197891
+Startup trace (nsec): jit ebpf: 1285453672
+Startup trace (nsec): init ebpf done: 1288752365
+Startup trace (nsec): init ebpf vm: 1292105491
+Startup trace (nsec): jit ebpf: 1295367316
+Startup trace (nsec): init ebpf done: 1298674740
+Startup trace (nsec): init ebpf vm: 1302035181
+Startup trace (nsec): jit ebpf: 1305302019
+Startup trace (nsec): init ebpf done: 1308605166
+Startup trace (nsec): init ebpf vm: 1311962966
+Startup trace (nsec): jit ebpf: 1315228925
+Startup trace (nsec): init ebpf done: 1318531256
+Startup trace (nsec): init ebpf vm: 1321895028
+Startup trace (nsec): jit ebpf: 1325158889
+Startup trace (nsec): init ebpf done: 1328463273
+Startup trace (nsec): init ebpf vm: 1331820908
+Startup trace (nsec): jit ebpf: 1335089251
+Startup trace (nsec): init ebpf done: 1338404020
+Startup trace (nsec): init ebpf vm: 1341761239
+Startup trace (nsec): jit ebpf: 1345021778
+Startup trace (nsec): init ebpf done: 1348335631
+Startup trace (nsec): init ebpf vm: 1351689172
+Startup trace (nsec): jit ebpf: 1354949499
+Startup trace (nsec): init ebpf done: 1358256398
+Startup trace (nsec): init ebpf vm: 1361601229
+Startup trace (nsec): jit ebpf: 1364861941
+Startup trace (nsec): init ebpf done: 1368170641
+Startup trace (nsec): init ebpf vm: 1371533051
+Startup trace (nsec): jit ebpf: 1374792639
+Startup trace (nsec): init ebpf done: 1378106844
+Startup trace (nsec): init ebpf vm: 1381461631
+Startup trace (nsec): jit ebpf: 1384722159
+Startup trace (nsec): init ebpf done: 1388023604
+Startup trace (nsec): init ebpf vm: 1391373530
+Startup trace (nsec): jit ebpf: 1394634545
+Startup trace (nsec): init ebpf done: 1397934838
+Startup trace (nsec): init ebpf vm: 1401282347
+Startup trace (nsec): jit ebpf: 1404541130
+Startup trace (nsec): init ebpf done: 1407842465
+Startup trace (nsec): init ebpf vm: 1411197372
+Startup trace (nsec): jit ebpf: 1414459647
+Startup trace (nsec): init ebpf done: 1417763354
+Startup trace (nsec): init ebpf vm: 1421123933
+Startup trace (nsec): jit ebpf: 1424425149
+Startup trace (nsec): init ebpf done: 1427724523
+Startup trace (nsec): init ebpf vm: 1431066582
+Startup trace (nsec): jit ebpf: 1434328482
+Startup trace (nsec): init ebpf done: 1437629725
+Startup trace (nsec): init ebpf vm: 1440970246
+Startup trace (nsec): jit ebpf: 1444240045
+Startup trace (nsec): init ebpf done: 1447541242
+Startup trace (nsec): init ebpf vm: 1450920749
+Startup trace (nsec): jit ebpf: 1454182433
+Startup trace (nsec): init ebpf done: 1457484982
+Startup trace (nsec): init ebpf vm: 1460826200
+Startup trace (nsec): jit ebpf: 1464082455
+Startup trace (nsec): init ebpf done: 1467406660
+Startup trace (nsec): init ebpf vm: 1470762534
+Startup trace (nsec): jit ebpf: 1474030453
+Startup trace (nsec): init ebpf done: 1477348923
+Startup trace (nsec): init ebpf vm: 1480702582
+Startup trace (nsec): jit ebpf: 1483960663
+Startup trace (nsec): init ebpf done: 1487264195
+Startup trace (nsec): init ebpf vm: 1490615598
+Startup trace (nsec): jit ebpf: 1493873970
+Startup trace (nsec): init ebpf done: 1497182153
+Startup trace (nsec): init ebpf vm: 1500549626
+Startup trace (nsec): jit ebpf: 1503807839
+Startup trace (nsec): init ebpf done: 1507111832
+Startup trace (nsec): init ebpf vm: 1510464062
+Startup trace (nsec): jit ebpf: 1513730223
+Startup trace (nsec): init ebpf done: 1517028438
+Startup trace (nsec): init ebpf vm: 1520397881
+Startup trace (nsec): jit ebpf: 1523660140
+Startup trace (nsec): init ebpf done: 1526960188
+Startup trace (nsec): init ebpf vm: 1530334322
+Startup trace (nsec): jit ebpf: 1533594223
+Startup trace (nsec): init ebpf done: 1536892293
+Startup trace (nsec): init ebpf vm: 1540253764
+Startup trace (nsec): jit ebpf: 1543512937
+Startup trace (nsec): init ebpf done: 1546814123
+Startup trace (nsec): init ebpf vm: 1550189277
+Startup trace (nsec): jit ebpf: 1553449778
+Startup trace (nsec): init ebpf done: 1556755830
+Startup trace (nsec): init ebpf vm: 1560097069
+Startup trace (nsec): jit ebpf: 1563358791
+Startup trace (nsec): init ebpf done: 1566655953
+Startup trace (nsec): init ebpf vm: 1570023598
+Startup trace (nsec): jit ebpf: 1573284125
+Startup trace (nsec): init ebpf done: 1576583768
+Startup trace (nsec): init ebpf vm: 1579922584
+Startup trace (nsec): jit ebpf: 1583182805
+Startup trace (nsec): init ebpf done: 1586496895
+Startup trace (nsec): init ebpf vm: 1589863522
+Startup trace (nsec): jit ebpf: 1593125040
+Startup trace (nsec): init ebpf done: 1596423068
+Startup trace (nsec): init ebpf vm: 1599775734
+Startup trace (nsec): jit ebpf: 1603038344
+Startup trace (nsec): init ebpf done: 1606340963
+Startup trace (nsec): init ebpf vm: 1609711806
+Startup trace (nsec): jit ebpf: 1612975563
+Startup trace (nsec): init ebpf done: 1616278237
+Startup trace (nsec): init ebpf vm: 1619639401
+Startup trace (nsec): jit ebpf: 1622900568
+Startup trace (nsec): init ebpf done: 1626241109
+Startup trace (nsec): init ebpf vm: 1629570097
+Startup trace (nsec): jit ebpf: 1632833664
+Startup trace (nsec): init ebpf done: 1636133534
+Startup trace (nsec): init ebpf vm: 1639468734
+Startup trace (nsec): jit ebpf: 1642722713
+Startup trace (nsec): init ebpf done: 1646018209
+Startup trace (nsec): init ebpf vm: 1649384595
+Startup trace (nsec): jit ebpf: 1652640047
+Startup trace (nsec): init ebpf done: 1655939349
+Startup trace (nsec): init ebpf vm: 1659309572
+Startup trace (nsec): jit ebpf: 1662565306
+Startup trace (nsec): init ebpf done: 1665866141
+Startup trace (nsec): init ebpf vm: 1669235246
+Startup trace (nsec): jit ebpf: 1672522053
+Startup trace (nsec): init ebpf done: 1675825648
+Startup trace (nsec): init ebpf vm: 1679160709
+Startup trace (nsec): jit ebpf: 1682418574
+Startup trace (nsec): init ebpf done: 1685717131
+Startup trace (nsec): init ebpf vm: 1689068957
+Startup trace (nsec): jit ebpf: 1692337752
+Startup trace (nsec): init ebpf done: 1695632729
+Startup trace (nsec): init ebpf vm: 1698995981
+Startup trace (nsec): jit ebpf: 1702255299
+Startup trace (nsec): init ebpf done: 1705552457
+Startup trace (nsec): init ebpf vm: 1708902699
+Startup trace (nsec): jit ebpf: 1712160907
+Startup trace (nsec): init ebpf done: 1715456975
+Startup trace (nsec): init ebpf vm: 1718813269
+Startup trace (nsec): jit ebpf: 1722067024
+Startup trace (nsec): init ebpf done: 1725362970
+Startup trace (nsec): init ebpf vm: 1728729580
+Startup trace (nsec): jit ebpf: 1731985206
+Startup trace (nsec): init ebpf done: 1735288491
+Startup trace (nsec): init ebpf vm: 1738644367
+Startup trace (nsec): jit ebpf: 1741899706
+Startup trace (nsec): init ebpf done: 1745201731
+Startup trace (nsec): init ebpf vm: 1748571679
+Startup trace (nsec): jit ebpf: 1751831491
+Startup trace (nsec): init ebpf done: 1755132468
+Startup trace (nsec): init ebpf vm: 1758482959
+Startup trace (nsec): jit ebpf: 1761737824
+Startup trace (nsec): init ebpf done: 1765052424
+Startup trace (nsec): init ebpf vm: 1768399715
+Startup trace (nsec): jit ebpf: 1771652217
+Startup trace (nsec): init ebpf done: 1774949025
+Startup trace (nsec): init ebpf vm: 1778319515
+Startup trace (nsec): jit ebpf: 1781572756
+Startup trace (nsec): init ebpf done: 1784872007
+Startup trace (nsec): init ebpf vm: 1788234615
+Startup trace (nsec): jit ebpf: 1791496864
+Startup trace (nsec): init ebpf done: 1794800388
+Startup trace (nsec): init ebpf vm: 1798162671
+Startup trace (nsec): jit ebpf: 1801435951
+Startup trace (nsec): init ebpf done: 1804738379
+Startup trace (nsec): init ebpf vm: 1808088188
+Startup trace (nsec): jit ebpf: 1811344107
+Startup trace (nsec): init ebpf done: 1814645791
+Startup trace (nsec): init ebpf vm: 1817997852
+Startup trace (nsec): jit ebpf: 1821261018
+Startup trace (nsec): init ebpf done: 1824561533
+Startup trace (nsec): init ebpf vm: 1827915865
+Startup trace (nsec): jit ebpf: 1831177339
+Startup trace (nsec): init ebpf done: 1834485325
+Startup trace (nsec): init ebpf vm: 1837839502
+Startup trace (nsec): jit ebpf: 1841106597
+Startup trace (nsec): init ebpf done: 1844406496
+Startup trace (nsec): init ebpf vm: 1847757139
+Startup trace (nsec): jit ebpf: 1851028741
+Startup trace (nsec): init ebpf done: 1854330486
+Startup trace (nsec): init ebpf vm: 1857682044
+Startup trace (nsec): jit ebpf: 1860938516
+Startup trace (nsec): init ebpf done: 1864237485
+Startup trace (nsec): init ebpf vm: 1867596697
+Startup trace (nsec): jit ebpf: 1870856446
+Startup trace (nsec): init ebpf done: 1874158180
+Startup trace (nsec): init ebpf vm: 1877509955
+Startup trace (nsec): jit ebpf: 1880771460
+Startup trace (nsec): init ebpf done: 1884078412
+Startup trace (nsec): init ebpf vm: 1887421524
+Startup trace (nsec): jit ebpf: 1890682555
+Startup trace (nsec): init ebpf done: 1893982043
+Startup trace (nsec): init ebpf vm: 1897347684
+Startup trace (nsec): jit ebpf: 1900604382
+Startup trace (nsec): init ebpf done: 1903902657
+Startup trace (nsec): init ebpf vm: 1907269705
+Startup trace (nsec): jit ebpf: 1910533970
+Startup trace (nsec): init ebpf done: 1913845870
+Startup trace (nsec): init ebpf vm: 1917200042
+Startup trace (nsec): jit ebpf: 1920460842
+Startup trace (nsec): init ebpf done: 1923788663
+Startup trace (nsec): init ebpf vm: 1927123373
+Startup trace (nsec): jit ebpf: 1930382181
+Startup trace (nsec): init ebpf done: 1933679939
+Startup trace (nsec): init ebpf vm: 1937034344
+Startup trace (nsec): jit ebpf: 1940294732
+Startup trace (nsec): init ebpf done: 1943601315
+Startup trace (nsec): init ebpf vm: 1946958556
+Startup trace (nsec): jit ebpf: 1950221691
+Startup trace (nsec): init ebpf done: 1953522224
+Startup trace (nsec): init ebpf vm: 1956873653
+Startup trace (nsec): jit ebpf: 1960136218
+Startup trace (nsec): init ebpf done: 1963434305
+Startup trace (nsec): init ebpf vm: 1966801737
+Startup trace (nsec): jit ebpf: 1970070872
+Startup trace (nsec): init ebpf done: 1973367338
+Startup trace (nsec): init ebpf vm: 1976732519
+Startup trace (nsec): jit ebpf: 1979994969
+Startup trace (nsec): init ebpf done: 1983295041
+Startup trace (nsec): init ebpf vm: 1986662434
+Startup trace (nsec): jit ebpf: 1989919778
+Startup trace (nsec): init ebpf done: 1993219183
+Startup trace (nsec): init ebpf vm: 1996571841
+Startup trace (nsec): jit ebpf: 1999824936
+Startup trace (nsec): init ebpf done: 2003126471
+Startup trace (nsec): init ebpf vm: 2006472473
+Startup trace (nsec): jit ebpf: 2009736276
+Startup trace (nsec): init ebpf done: 2013086091
+Startup trace (nsec): init ebpf vm: 2016442910
+Startup trace (nsec): jit ebpf: 2019699138
+Startup trace (nsec): init ebpf done: 2022996745
+Startup trace (nsec): init ebpf vm: 2026352011
+Startup trace (nsec): jit ebpf: 2029613849
+Startup trace (nsec): init ebpf done: 2032931739
+Startup trace (nsec): init ebpf vm: 2036287770
+Startup trace (nsec): jit ebpf: 2039550471
+Startup trace (nsec): init ebpf done: 2042870580
+Startup trace (nsec): init ebpf vm: 2046236357
+Startup trace (nsec): jit ebpf: 2049511119
+Startup trace (nsec): init ebpf done: 2052804743
+Startup trace (nsec): init ebpf vm: 2056154193
+Startup trace (nsec): jit ebpf: 2059410525
+Startup trace (nsec): init ebpf done: 2062708794
+Startup trace (nsec): init ebpf vm: 2066069053
+Startup trace (nsec): jit ebpf: 2069323228
+Startup trace (nsec): init ebpf done: 2072617503
+Startup trace (nsec): init ebpf vm: 2075974562
+Startup trace (nsec): jit ebpf: 2079232382
+Startup trace (nsec): init ebpf done: 2082526605
+Startup trace (nsec): init ebpf vm: 2085894654
+Startup trace (nsec): jit ebpf: 2089154453
+Startup trace (nsec): init ebpf done: 2092449789
+Startup trace (nsec): init ebpf vm: 2095800388
+Startup trace (nsec): jit ebpf: 2099059997
+Startup trace (nsec): init ebpf done: 2102358711
+Startup trace (nsec): init ebpf vm: 2105704822
+Startup trace (nsec): jit ebpf: 2108958083
+Startup trace (nsec): init ebpf done: 2112256127
+Startup trace (nsec): init ebpf vm: 2115590513
+Startup trace (nsec): jit ebpf: 2118845896
+Startup trace (nsec): init ebpf done: 2122157251
+Startup trace (nsec): init ebpf vm: 2125498076
+Startup trace (nsec): jit ebpf: 2128748665
+Startup trace (nsec): init ebpf done: 2132039424
+Startup trace (nsec): init ebpf vm: 2135384979
+Startup trace (nsec): jit ebpf: 2138635578
+Startup trace (nsec): init ebpf done: 2141925892
+Startup trace (nsec): init ebpf vm: 2145276119
+Startup trace (nsec): jit ebpf: 2148525473
+Startup trace (nsec): init ebpf done: 2151816380
+Startup trace (nsec): init ebpf vm: 2155176268
+Startup trace (nsec): jit ebpf: 2158439699
+Startup trace (nsec): init ebpf done: 2161732337
+Startup trace (nsec): init ebpf vm: 2165076558
+Startup trace (nsec): jit ebpf: 2168341526
+Startup trace (nsec): init ebpf done: 2171654294
+Startup trace (nsec): init ebpf vm: 2174983031
+Startup trace (nsec): jit ebpf: 2178251560
+Startup trace (nsec): init ebpf done: 2181546006
+Startup trace (nsec): init ebpf vm: 2184892794
+Startup trace (nsec): jit ebpf: 2188154151
+Startup trace (nsec): init ebpf done: 2191448008
+Startup trace (nsec): init ebpf vm: 2194807495
+Startup trace (nsec): jit ebpf: 2198062246
+Startup trace (nsec): init ebpf done: 2201354949
+Startup trace (nsec): init ebpf vm: 2204704881
+Startup trace (nsec): jit ebpf: 2207964249
+Startup trace (nsec): init ebpf done: 2211266385
+Startup trace (nsec): init ebpf vm: 2214604090
+Startup trace (nsec): jit ebpf: 2217856683
+Startup trace (nsec): init ebpf done: 2221159641
+Startup trace (nsec): init ebpf vm: 2224509719
+Startup trace (nsec): jit ebpf: 2227762876
+Startup trace (nsec): init ebpf done: 2231074046
+Startup trace (nsec): init ebpf vm: 2234424167
+Startup trace (nsec): jit ebpf: 2237681796
+Startup trace (nsec): init ebpf done: 2240978328
+Startup trace (nsec): init ebpf vm: 2244332684
+Startup trace (nsec): jit ebpf: 2247589355
+Startup trace (nsec): init ebpf done: 2250888348
+Startup trace (nsec): init ebpf vm: 2254243720
+Startup trace (nsec): jit ebpf: 2257509024
+Startup trace (nsec): init ebpf done: 2260805492
+Startup trace (nsec): init ebpf vm: 2264177671
+Startup trace (nsec): jit ebpf: 2267430327
+Startup trace (nsec): init ebpf done: 2270719900
+Startup trace (nsec): init ebpf vm: 2274068738
+Startup trace (nsec): jit ebpf: 2277318938
+Startup trace (nsec): init ebpf done: 2280611778
+Startup trace (nsec): init ebpf vm: 2283979413
+Startup trace (nsec): jit ebpf: 2287231370
+Startup trace (nsec): init ebpf done: 2290522362
+Startup trace (nsec): init ebpf vm: 2293866248
+Startup trace (nsec): jit ebpf: 2297119580
+Startup trace (nsec): init ebpf done: 2300422127
+Startup trace (nsec): init ebpf vm: 2303766391
+Startup trace (nsec): jit ebpf: 2307024973
+Startup trace (nsec): init ebpf done: 2310324756
+Startup trace (nsec): init ebpf vm: 2313682452
+Startup trace (nsec): jit ebpf: 2316936400
+Startup trace (nsec): init ebpf done: 2320235118
+Startup trace (nsec): init ebpf vm: 2323584965
+Startup trace (nsec): jit ebpf: 2326838575
+Startup trace (nsec): init ebpf done: 2330142001
+Startup trace (nsec): init ebpf vm: 2333501652
+Startup trace (nsec): jit ebpf: 2336770037
+Startup trace (nsec): init ebpf done: 2340069861
+Startup trace (nsec): init ebpf vm: 2343405227
+Startup trace (nsec): jit ebpf: 2346657794
+Startup trace (nsec): init ebpf done: 2349948818
+Startup trace (nsec): init ebpf vm: 2353290778
+Startup trace (nsec): jit ebpf: 2356545048
+Startup trace (nsec): init ebpf done: 2359838860
+Startup trace (nsec): init ebpf vm: 2363208537
+Startup trace (nsec): jit ebpf: 2366461427
+Startup trace (nsec): init ebpf done: 2369756201
+Startup trace (nsec): init ebpf vm: 2373114241
+Startup trace (nsec): jit ebpf: 2376372605
+Startup trace (nsec): init ebpf done: 2379669204
+Startup trace (nsec): init ebpf vm: 2383038089
+Startup trace (nsec): jit ebpf: 2386304155
+Startup trace (nsec): init ebpf done: 2389602969
+Startup trace (nsec): init ebpf vm: 2392957580
+Startup trace (nsec): jit ebpf: 2396222248
+Startup trace (nsec): init ebpf done: 2399521713
+Startup trace (nsec): init ebpf vm: 2402875752
+Startup trace (nsec): jit ebpf: 2406139330
+Startup trace (nsec): init ebpf done: 2409441561
+Startup trace (nsec): init ebpf vm: 2412786874
+Startup trace (nsec): jit ebpf: 2416050503
+Startup trace (nsec): init ebpf done: 2419347357
+Startup trace (nsec): init ebpf vm: 2422697246
+Startup trace (nsec): jit ebpf: 2425988260
+Startup trace (nsec): init ebpf done: 2429291182
+Startup trace (nsec): init ebpf vm: 2432648213
+Startup trace (nsec): jit ebpf: 2435901806
+Startup trace (nsec): init ebpf done: 2439200223
+Startup trace (nsec): init ebpf vm: 2442560231
+Startup trace (nsec): jit ebpf: 2445817465
+Startup trace (nsec): init ebpf done: 2449118800
+Startup trace (nsec): init ebpf vm: 2452471610
+Startup trace (nsec): jit ebpf: 2455729099
+Startup trace (nsec): init ebpf done: 2459036640
+Startup trace (nsec): init ebpf vm: 2462400418
+Startup trace (nsec): jit ebpf: 2465665919
+Startup trace (nsec): init ebpf done: 2468962073
+Startup trace (nsec): init ebpf vm: 2472305233
+Startup trace (nsec): jit ebpf: 2475561203
+Startup trace (nsec): init ebpf done: 2478865165
+Startup trace (nsec): init ebpf vm: 2482225795
+Startup trace (nsec): jit ebpf: 2485480863
+Startup trace (nsec): init ebpf done: 2488775111
+Startup trace (nsec): init ebpf vm: 2492131863
+Startup trace (nsec): jit ebpf: 2495382498
+Startup trace (nsec): init ebpf done: 2498676094
+Startup trace (nsec): init ebpf vm: 2502018576
+Startup trace (nsec): jit ebpf: 2505276644
+Startup trace (nsec): init ebpf done: 2508568236
+Startup trace (nsec): init ebpf vm: 2511926446
+Startup trace (nsec): jit ebpf: 2515193104
+Startup trace (nsec): init ebpf done: 2518492329
+Startup trace (nsec): init ebpf vm: 2521845068
+Startup trace (nsec): jit ebpf: 2525106544
+Startup trace (nsec): init ebpf done: 2528405635
+Startup trace (nsec): init ebpf vm: 2531756314
+Startup trace (nsec): jit ebpf: 2535014525
+Startup trace (nsec): init ebpf done: 2538315183
+Startup trace (nsec): init ebpf vm: 2541665856
+Startup trace (nsec): jit ebpf: 2544921783
+Startup trace (nsec): init ebpf done: 2548222614
+Startup trace (nsec): init ebpf vm: 2551573381
+Startup trace (nsec): jit ebpf: 2554831739
+Startup trace (nsec): init ebpf done: 2558128501
+Startup trace (nsec): init ebpf vm: 2561473878
+Startup trace (nsec): jit ebpf: 2564725452
+Startup trace (nsec): init ebpf done: 2568016107
+Startup trace (nsec): init ebpf vm: 2571385267
+Startup trace (nsec): jit ebpf: 2574636502
+Startup trace (nsec): init ebpf done: 2577929208
+Startup trace (nsec): init ebpf vm: 2581276820
+Startup trace (nsec): jit ebpf: 2584527496
+Startup trace (nsec): init ebpf done: 2587829577
+Startup trace (nsec): init ebpf vm: 2591193746
+Startup trace (nsec): jit ebpf: 2594461219
+Startup trace (nsec): init ebpf done: 2597759123
+Startup trace (nsec): init ebpf vm: 2601112679
+Startup trace (nsec): jit ebpf: 2604370021
+Startup trace (nsec): init ebpf done: 2607667247
+Startup trace (nsec): init ebpf vm: 2611034095
+Startup trace (nsec): jit ebpf: 2614288890
+Startup trace (nsec): init ebpf done: 2617584322
+Startup trace (nsec): init ebpf vm: 2620939543
+Startup trace (nsec): jit ebpf: 2624202298
+Startup trace (nsec): init ebpf done: 2627496479
+Startup trace (nsec): init ebpf vm: 2630851797
+Startup trace (nsec): jit ebpf: 2634111657
+Startup trace (nsec): init ebpf done: 2637401855
+Startup trace (nsec): init ebpf vm: 2640749521
+Startup trace (nsec): jit ebpf: 2644000127
+Startup trace (nsec): init ebpf done: 2647301403
+Startup trace (nsec): init ebpf vm: 2650648200
+Startup trace (nsec): jit ebpf: 2653897915
+Startup trace (nsec): init ebpf done: 2657205053
+Startup trace (nsec): init ebpf vm: 2660574345
+Startup trace (nsec): jit ebpf: 2663830145
+Startup trace (nsec): init ebpf done: 2667136835
+Startup trace (nsec): init ebpf vm: 2670476502
+Startup trace (nsec): jit ebpf: 2673793143
+Startup trace (nsec): init ebpf done: 2677096053
+Startup trace (nsec): init ebpf vm: 2680439948
+Startup trace (nsec): jit ebpf: 2683703595
+Startup trace (nsec): init ebpf done: 2687005564
+Startup trace (nsec): init ebpf vm: 2690363680
+Startup trace (nsec): jit ebpf: 2693631556
+Startup trace (nsec): init ebpf done: 2696929612
+Startup trace (nsec): init ebpf vm: 2700276574
+Startup trace (nsec): jit ebpf: 2703532349
+Startup trace (nsec): init ebpf done: 2706827992
+Startup trace (nsec): init ebpf vm: 2710189948
+Startup trace (nsec): jit ebpf: 2713445770
+Startup trace (nsec): init ebpf done: 2716742214
+Startup trace (nsec): init ebpf vm: 2720092242
+Startup trace (nsec): jit ebpf: 2723349675
+Startup trace (nsec): init ebpf done: 2726642989
+Startup trace (nsec): init ebpf vm: 2729994278
+Startup trace (nsec): jit ebpf: 2733253477
+Startup trace (nsec): init ebpf done: 2736554270
+Startup trace (nsec): init ebpf vm: 2739911731
+Startup trace (nsec): jit ebpf: 2743171890
+Startup trace (nsec): init ebpf done: 2746481047
+Startup trace (nsec): init ebpf vm: 2749833710
+Startup trace (nsec): jit ebpf: 2753092179
+Startup trace (nsec): init ebpf done: 2756392270
+Startup trace (nsec): init ebpf vm: 2759747283
+Startup trace (nsec): jit ebpf: 2763014276
+Startup trace (nsec): init ebpf done: 2766321108
+Startup trace (nsec): init ebpf vm: 2769685928
+Startup trace (nsec): jit ebpf: 2772942877
+Startup trace (nsec): init ebpf done: 2776253235
+Startup trace (nsec): init ebpf vm: 2779599560
+Startup trace (nsec): jit ebpf: 2782858427
+Startup trace (nsec): init ebpf done: 2786163293
+Startup trace (nsec): init ebpf vm: 2789524539
+Startup trace (nsec): jit ebpf: 2792782507
+Startup trace (nsec): init ebpf done: 2796083874
+Startup trace (nsec): init ebpf vm: 2799433138
+Startup trace (nsec): jit ebpf: 2802703613
+Startup trace (nsec): init ebpf done: 2806009398
+Startup trace (nsec): init ebpf vm: 2809372951
+Startup trace (nsec): jit ebpf: 2812631231
+Startup trace (nsec): init ebpf done: 2815930257
+Startup trace (nsec): init ebpf vm: 2819275541
+Startup trace (nsec): jit ebpf: 2822530478
+Startup trace (nsec): init ebpf done: 2825829856
+Startup trace (nsec): init ebpf vm: 2829197539
+Startup trace (nsec): jit ebpf: 2832456679
+Startup trace (nsec): init ebpf done: 2835759512
+Startup trace (nsec): init ebpf vm: 2839100978
+Startup trace (nsec): jit ebpf: 2842355410
+Startup trace (nsec): init ebpf done: 2845648062
+Startup trace (nsec): init ebpf vm: 2849009436
+Startup trace (nsec): jit ebpf: 2852262698
+Startup trace (nsec): init ebpf done: 2855557129
+Startup trace (nsec): init ebpf vm: 2858907990
+Startup trace (nsec): jit ebpf: 2862166452
+Startup trace (nsec): init ebpf done: 2865463773
+Startup trace (nsec): init ebpf vm: 2868823506
+Startup trace (nsec): jit ebpf: 2872101136
+Startup trace (nsec): init ebpf done: 2875400661
+Startup trace (nsec): init ebpf vm: 2878746120
+Startup trace (nsec): jit ebpf: 2882020430
+Startup trace (nsec): init ebpf done: 2885327540
+Startup trace (nsec): init ebpf vm: 2888701334
+Startup trace (nsec): jit ebpf: 2891962179
+Startup trace (nsec): init ebpf done: 2895269657
+Startup trace (nsec): init ebpf vm: 2898627520
+Startup trace (nsec): jit ebpf: 2901890465
+Startup trace (nsec): init ebpf done: 2905201481
+Startup trace (nsec): init ebpf vm: 2908576761
+Startup trace (nsec): jit ebpf: 2911835054
+Startup trace (nsec): init ebpf done: 2915139420
+Startup trace (nsec): init ebpf vm: 2918495105
+Startup trace (nsec): jit ebpf: 2921748157
+Startup trace (nsec): init ebpf done: 2925053601
+Startup trace (nsec): init ebpf vm: 2928409474
+Startup trace (nsec): jit ebpf: 2931666108
+Startup trace (nsec): init ebpf done: 2934964819
+Startup trace (nsec): init ebpf vm: 2938333540
+Startup trace (nsec): jit ebpf: 2941590343
+Startup trace (nsec): init ebpf done: 2944902520
+Startup trace (nsec): init ebpf vm: 2948256387
+Startup trace (nsec): jit ebpf: 2951513773
+Startup trace (nsec): init ebpf done: 2954813242
+Startup trace (nsec): init ebpf vm: 2958169922
+Startup trace (nsec): jit ebpf: 2961425866
+Startup trace (nsec): init ebpf done: 2964724834
+Startup trace (nsec): init ebpf vm: 2968082519
+Startup trace (nsec): jit ebpf: 2971334860
+Startup trace (nsec): init ebpf done: 2974635959
+Startup trace (nsec): init ebpf vm: 2978007973
+Startup trace (nsec): jit ebpf: 2981272387
+Startup trace (nsec): init ebpf done: 2984575514
+Startup trace (nsec): init ebpf vm: 2987928737
+Startup trace (nsec): jit ebpf: 2991189383
+Startup trace (nsec): init ebpf done: 2994491044
+Startup trace (nsec): init ebpf vm: 2997856471
+Startup trace (nsec): jit ebpf: 3001128274
+Startup trace (nsec): init ebpf done: 3004425717
+Startup trace (nsec): init ebpf vm: 3007791633
+Startup trace (nsec): jit ebpf: 3011056648
+Startup trace (nsec): init ebpf done: 3014351005
+Startup trace (nsec): init ebpf vm: 3017711657
+Startup trace (nsec): jit ebpf: 3020968586
+Startup trace (nsec): init ebpf done: 3024268913
+Startup trace (nsec): init ebpf vm: 3027630214
+Startup trace (nsec): jit ebpf: 3030886414
+Startup trace (nsec): init ebpf done: 3034188051
+Startup trace (nsec): init ebpf vm: 3037536822
+Startup trace (nsec): jit ebpf: 3040796135
+Startup trace (nsec): init ebpf done: 3044099628
+Startup trace (nsec): init ebpf vm: 3047463609
+Startup trace (nsec): jit ebpf: 3050721868
+Startup trace (nsec): init ebpf done: 3054020217
+Startup trace (nsec): init ebpf vm: 3057367082
+Startup trace (nsec): jit ebpf: 3060620896
+Startup trace (nsec): init ebpf done: 3063918021
+Startup trace (nsec): init ebpf vm: 3067283440
+Startup trace (nsec): jit ebpf: 3070538612
+Startup trace (nsec): init ebpf done: 3073835213
+Startup trace (nsec): init ebpf vm: 3077189544
+Startup trace (nsec): jit ebpf: 3080444607
+Startup trace (nsec): init ebpf done: 3083739455
+Startup trace (nsec): init ebpf vm: 3087108477
+Startup trace (nsec): jit ebpf: 3090366089
+Startup trace (nsec): init ebpf done: 3093667730
+Startup trace (nsec): init ebpf vm: 3097023105
+Startup trace (nsec): jit ebpf: 3100277462
+Startup trace (nsec): init ebpf done: 3103574314
+Startup trace (nsec): init ebpf vm: 3106922430
+Startup trace (nsec): jit ebpf: 3110181594
+Startup trace (nsec): init ebpf done: 3113477902
+Startup trace (nsec): init ebpf vm: 3116849220
+Startup trace (nsec): jit ebpf: 3120103947
+Startup trace (nsec): init ebpf done: 3123405975
+Startup trace (nsec): init ebpf vm: 3126753317
+Startup trace (nsec): jit ebpf: 3130021788
+Startup trace (nsec): init ebpf done: 3133317485
+Startup trace (nsec): init ebpf vm: 3136662225
+Startup trace (nsec): jit ebpf: 3139918300
+Startup trace (nsec): init ebpf done: 3143211940
+Startup trace (nsec): init ebpf vm: 3146571872
+Startup trace (nsec): jit ebpf: 3149823412
+Startup trace (nsec): init ebpf done: 3153124459
+Startup trace (nsec): init ebpf vm: 3156471842
+Startup trace (nsec): jit ebpf: 3159732711
+Startup trace (nsec): init ebpf done: 3163036920
+Startup trace (nsec): init ebpf vm: 3166402044
+Startup trace (nsec): jit ebpf: 3169662151
+Startup trace (nsec): init ebpf done: 3172963346
+Startup trace (nsec): init ebpf vm: 3176319896
+Startup trace (nsec): jit ebpf: 3179578403
+Startup trace (nsec): init ebpf done: 3182877913
+Startup trace (nsec): init ebpf vm: 3186251126
+Startup trace (nsec): jit ebpf: 3189508161
+Startup trace (nsec): init ebpf done: 3192813253
+Startup trace (nsec): init ebpf vm: 3196180508
+Startup trace (nsec): jit ebpf: 3199440322
+Startup trace (nsec): init ebpf done: 3202739829
+Startup trace (nsec): init ebpf vm: 3206091170
+Startup trace (nsec): jit ebpf: 3209349305
+Startup trace (nsec): init ebpf done: 3212644055
+Startup trace (nsec): init ebpf vm: 3216012248
+Startup trace (nsec): jit ebpf: 3219275740
+Startup trace (nsec): init ebpf done: 3222573409
+Startup trace (nsec): init ebpf vm: 3225914759
+Startup trace (nsec): jit ebpf: 3229181473
+Startup trace (nsec): init ebpf done: 3232479995
+Startup trace (nsec): init ebpf vm: 3235831214
+Startup trace (nsec): jit ebpf: 3239088768
+Startup trace (nsec): init ebpf done: 3242391151
+Startup trace (nsec): init ebpf vm: 3245757710
+Startup trace (nsec): jit ebpf: 3249021099
+Startup trace (nsec): init ebpf done: 3252317885
+Startup trace (nsec): init ebpf vm: 3255668093
+Startup trace (nsec): jit ebpf: 3258924330
+Startup trace (nsec): init ebpf done: 3262221845
+Startup trace (nsec): init ebpf vm: 3265591585
+Startup trace (nsec): jit ebpf: 3268847290
+Startup trace (nsec): init ebpf done: 3272145033
+Startup trace (nsec): init ebpf vm: 3275492887
+Startup trace (nsec): jit ebpf: 3278747428
+Startup trace (nsec): init ebpf done: 3282056991
+Startup trace (nsec): init ebpf vm: 3285418111
+Startup trace (nsec): jit ebpf: 3288671017
+Startup trace (nsec): init ebpf done: 3291965241
+Startup trace (nsec): init ebpf vm: 3295318361
+Startup trace (nsec): jit ebpf: 3298576464
+Startup trace (nsec): init ebpf done: 3301878683
+Startup trace (nsec): init ebpf vm: 3305230690
+Startup trace (nsec): jit ebpf: 3308491580
+Startup trace (nsec): init ebpf done: 3311790690
+Startup trace (nsec): init ebpf vm: 3315161927
+Startup trace (nsec): jit ebpf: 3318422170
+Startup trace (nsec): init ebpf done: 3321720865
+Startup trace (nsec): init ebpf vm: 3325095609
+Startup trace (nsec): jit ebpf: 3328348833
+Startup trace (nsec): init ebpf done: 3331646998
+Startup trace (nsec): init ebpf vm: 3335000861
+Startup trace (nsec): jit ebpf: 3338262499
+Startup trace (nsec): init ebpf done: 3341562768
+Startup trace (nsec): init ebpf vm: 3344925189
+Startup trace (nsec): jit ebpf: 3348180680
+Startup trace (nsec): init ebpf done: 3351483729
+Startup trace (nsec): init ebpf vm: 3354831422
+Startup trace (nsec): jit ebpf: 3358087066
+Startup trace (nsec): init ebpf done: 3361383192
+Startup trace (nsec): init ebpf vm: 3364746098
+Startup trace (nsec): jit ebpf: 3368006787
+Startup trace (nsec): init ebpf done: 3371305038
+Startup trace (nsec): init ebpf vm: 3374666599
+Startup trace (nsec): jit ebpf: 3377921678
+Startup trace (nsec): init ebpf done: 3381221916
+Startup trace (nsec): init ebpf vm: 3384586451
+Startup trace (nsec): jit ebpf: 3387844151
+Startup trace (nsec): init ebpf done: 3391144093
+Startup trace (nsec): init ebpf vm: 3394509932
+Startup trace (nsec): jit ebpf: 3397768238
+Startup trace (nsec): init ebpf done: 3401079993
+Startup trace (nsec): init ebpf vm: 3404437984
+Startup trace (nsec): jit ebpf: 3407703191
+Startup trace (nsec): init ebpf done: 3411005704
+Startup trace (nsec): init ebpf vm: 3414351992
+Startup trace (nsec): jit ebpf: 3417609971
+Startup trace (nsec): init ebpf done: 3420907647
+Startup trace (nsec): init ebpf vm: 3424264363
+Startup trace (nsec): jit ebpf: 3427527942
+Startup trace (nsec): init ebpf done: 3430825088
+Startup trace (nsec): init ebpf vm: 3434180149
+Startup trace (nsec): jit ebpf: 3437435708
+Startup trace (nsec): init ebpf done: 3440737539
+Startup trace (nsec): init ebpf vm: 3444102896
+Startup trace (nsec): jit ebpf: 3447362776
+Startup trace (nsec): init ebpf done: 3450665364
+Startup trace (nsec): init ebpf vm: 3454025140
+Startup trace (nsec): jit ebpf: 3457290859
+Startup trace (nsec): init ebpf done: 3460589384
+Startup trace (nsec): init ebpf vm: 3463941984
+Startup trace (nsec): jit ebpf: 3467214081
+Startup trace (nsec): init ebpf done: 3470515442
+Startup trace (nsec): init ebpf vm: 3473872383
+Startup trace (nsec): jit ebpf: 3477137443
+Startup trace (nsec): init ebpf done: 3480454604
+Startup trace (nsec): init ebpf vm: 3483812089
+Startup trace (nsec): jit ebpf: 3487085963
+Startup trace (nsec): init ebpf done: 3490390548
+Startup trace (nsec): init ebpf vm: 3493747481
+Startup trace (nsec): jit ebpf: 3497019602
+Startup trace (nsec): init ebpf done: 3500325400
+Startup trace (nsec): init ebpf vm: 3503678499
+Startup trace (nsec): jit ebpf: 3506949718
+Startup trace (nsec): init ebpf done: 3510256166
+Startup trace (nsec): init ebpf vm: 3513616464
+Startup trace (nsec): jit ebpf: 3516898059
+Startup trace (nsec): init ebpf done: 3520204379
+Startup trace (nsec): init ebpf vm: 3523565036
+Startup trace (nsec): jit ebpf: 3526830627
+Startup trace (nsec): init ebpf done: 3530146168
+Startup trace (nsec): init ebpf vm: 3533502520
+Startup trace (nsec): jit ebpf: 3536764250
+Startup trace (nsec): init ebpf done: 3540071732
+Startup trace (nsec): init ebpf vm: 3543435444
+Startup trace (nsec): jit ebpf: 3546696381
+Startup trace (nsec): init ebpf done: 3549998740
+Startup trace (nsec): init ebpf vm: 3553361325
+Startup trace (nsec): jit ebpf: 3556624936
+Startup trace (nsec): init ebpf done: 3559929424
+Startup trace (nsec): init ebpf vm: 3563291400
+Startup trace (nsec): jit ebpf: 3566550095
+Startup trace (nsec): init ebpf done: 3569854575
+Startup trace (nsec): init ebpf vm: 3573227498
+Startup trace (nsec): jit ebpf: 3576490602
+Startup trace (nsec): init ebpf done: 3579792357
+Startup trace (nsec): init ebpf vm: 3583151971
+Startup trace (nsec): jit ebpf: 3586411907
+Startup trace (nsec): init ebpf done: 3589713331
+Startup trace (nsec): init ebpf vm: 3593062250
+Startup trace (nsec): jit ebpf: 3596318385
+Startup trace (nsec): init ebpf done: 3599616559
+Startup trace (nsec): init ebpf vm: 3602977015
+Startup trace (nsec): jit ebpf: 3606230524
+Startup trace (nsec): init ebpf done: 3609532504
+Startup trace (nsec): init ebpf vm: 3612898345
+Startup trace (nsec): jit ebpf: 3616156475
+Startup trace (nsec): init ebpf done: 3619452738
+Startup trace (nsec): init ebpf vm: 3622815157
+Startup trace (nsec): jit ebpf: 3626082240
+Startup trace (nsec): init ebpf done: 3629385883
+Startup trace (nsec): init ebpf vm: 3632756002
+Startup trace (nsec): jit ebpf: 3636031340
+Startup trace (nsec): init ebpf done: 3639336664
+Startup trace (nsec): init ebpf vm: 3642697255
+Startup trace (nsec): jit ebpf: 3645962186
+Startup trace (nsec): init ebpf done: 3649265072
+Startup trace (nsec): init ebpf vm: 3652619101
+Startup trace (nsec): jit ebpf: 3655885481
+Startup trace (nsec): init ebpf done: 3659197693
+Startup trace (nsec): init ebpf vm: 3662564645
+Startup trace (nsec): jit ebpf: 3665824096
+Startup trace (nsec): init ebpf done: 3669125099
+Startup trace (nsec): init ebpf vm: 3672481216
+Startup trace (nsec): jit ebpf: 3675739835
+Startup trace (nsec): init ebpf done: 3679041804
+Startup trace (nsec): init ebpf vm: 3682409899
+Startup trace (nsec): jit ebpf: 3685666247
+Startup trace (nsec): init ebpf done: 3688971777
+Startup trace (nsec): init ebpf vm: 3692325422
+Startup trace (nsec): jit ebpf: 3695595635
+Startup trace (nsec): init ebpf done: 3698898092
+Startup trace (nsec): init ebpf vm: 3702259061
+Startup trace (nsec): jit ebpf: 3705530605
+Startup trace (nsec): init ebpf done: 3708836518
+Startup trace (nsec): init ebpf vm: 3712205800
+Startup trace (nsec): jit ebpf: 3715470814
+Startup trace (nsec): init ebpf done: 3718777416
+Startup trace (nsec): init ebpf vm: 3722143883
+Startup trace (nsec): jit ebpf: 3725408916
+Startup trace (nsec): init ebpf done: 3728712353
+Startup trace (nsec): init ebpf vm: 3732076020
+Startup trace (nsec): jit ebpf: 3735334604
+Startup trace (nsec): init ebpf done: 3738641115
+Startup trace (nsec): init ebpf vm: 3741986917
+Startup trace (nsec): jit ebpf: 3745245280
+Startup trace (nsec): init ebpf done: 3748544093
+Startup trace (nsec): init ebpf vm: 3751900367
+Startup trace (nsec): jit ebpf: 3755162675
+Startup trace (nsec): init ebpf done: 3758458849
+Startup trace (nsec): init ebpf vm: 3761825934
+Startup trace (nsec): jit ebpf: 3765092985
+Startup trace (nsec): init ebpf done: 3768407932
+Startup trace (nsec): init ebpf vm: 3771767219
+Startup trace (nsec): jit ebpf: 3775031234
+Startup trace (nsec): init ebpf done: 3778334067
+Startup trace (nsec): init ebpf vm: 3781689378
+Startup trace (nsec): jit ebpf: 3784956034
+Startup trace (nsec): init ebpf done: 3788262254
+Startup trace (nsec): init ebpf vm: 3791638705
+Startup trace (nsec): jit ebpf: 3794908928
+Startup trace (nsec): init ebpf done: 3798214033
+Startup trace (nsec): init ebpf vm: 3801579599
+Startup trace (nsec): jit ebpf: 3804837135
+Startup trace (nsec): init ebpf done: 3808136688
+Startup trace (nsec): init ebpf vm: 3811486871
+Startup trace (nsec): jit ebpf: 3814740565
+Startup trace (nsec): init ebpf done: 3818049331
+Startup trace (nsec): init ebpf vm: 3821402639
+Startup trace (nsec): jit ebpf: 3824666222
+Startup trace (nsec): init ebpf done: 3827970296
+Startup trace (nsec): init ebpf vm: 3831342725
+Startup trace (nsec): jit ebpf: 3834615906
+Startup trace (nsec): init ebpf done: 3837922902
+Startup trace (nsec): init ebpf vm: 3841279087
+Startup trace (nsec): jit ebpf: 3844546687
+Startup trace (nsec): init ebpf done: 3847848114
+Startup trace (nsec): init ebpf vm: 3851206311
+Startup trace (nsec): jit ebpf: 3854459244
+Startup trace (nsec): init ebpf done: 3857756382
+Startup trace (nsec): init ebpf vm: 3861112405
+Startup trace (nsec): jit ebpf: 3864370180
+Startup trace (nsec): init ebpf done: 3867665850
+Startup trace (nsec): init ebpf vm: 3871029732
+Startup trace (nsec): jit ebpf: 3874295211
+Startup trace (nsec): init ebpf done: 3877594179
+Startup trace (nsec): init ebpf vm: 3880942317
+Startup trace (nsec): jit ebpf: 3884194202
+Startup trace (nsec): init ebpf done: 3887487718
+Startup trace (nsec): init ebpf vm: 3890853071
+Startup trace (nsec): jit ebpf: 3894109743
+Startup trace (nsec): init ebpf done: 3897415605
+Startup trace (nsec): init ebpf vm: 3900768915
+Startup trace (nsec): jit ebpf: 3904031088
+Startup trace (nsec): init ebpf done: 3907323786
+Startup trace (nsec): init ebpf vm: 3910684198
+Startup trace (nsec): jit ebpf: 3913946528
+Startup trace (nsec): init ebpf done: 3917255044
+Startup trace (nsec): init ebpf vm: 3920614031
+Startup trace (nsec): jit ebpf: 3923891922
+Startup trace (nsec): init ebpf done: 3927193870
+Startup trace (nsec): init ebpf vm: 3930535764
+Startup trace (nsec): jit ebpf: 3933792109
+Startup trace (nsec): init ebpf done: 3937098976
+Startup trace (nsec): init ebpf vm: 3940451238
+Startup trace (nsec): jit ebpf: 3943709897
+Startup trace (nsec): init ebpf done: 3947027226
+Startup trace (nsec): init ebpf vm: 3950370866
+Startup trace (nsec): jit ebpf: 3953627593
+Startup trace (nsec): init ebpf done: 3956922421
+Startup trace (nsec): init ebpf vm: 3960283068
+Startup trace (nsec): jit ebpf: 3963546560
+Startup trace (nsec): init ebpf done: 3966843035
+Startup trace (nsec): init ebpf vm: 3970211376
+Startup trace (nsec): jit ebpf: 3973472128
+Startup trace (nsec): init ebpf done: 3976769627
+Startup trace (nsec): init ebpf vm: 3980110672
+Startup trace (nsec): jit ebpf: 3983374169
+Startup trace (nsec): init ebpf done: 3986673094
+Startup trace (nsec): init ebpf vm: 3990044121
+Startup trace (nsec): jit ebpf: 3993302085
+Startup trace (nsec): init ebpf done: 3996598803
+Startup trace (nsec): init ebpf vm: 3999955169
+Startup trace (nsec): jit ebpf: 4003212767
+Startup trace (nsec): init ebpf done: 4006510311
+Startup trace (nsec): init ebpf vm: 4009860735
+Startup trace (nsec): jit ebpf: 4013127191
+Startup trace (nsec): init ebpf done: 4016431159
+Startup trace (nsec): init ebpf vm: 4019792781
+Startup trace (nsec): jit ebpf: 4023046569
+Startup trace (nsec): init ebpf done: 4026358509
+Startup trace (nsec): init ebpf vm: 4029705409
+Startup trace (nsec): jit ebpf: 4032963713
+Startup trace (nsec): init ebpf done: 4036255026
+Startup trace (nsec): init ebpf vm: 4039606125
+Startup trace (nsec): jit ebpf: 4042857464
+Startup trace (nsec): init ebpf done: 4046154941
+Startup trace (nsec): init ebpf vm: 4049506827
+Startup trace (nsec): jit ebpf: 4052781292
+Startup trace (nsec): init ebpf done: 4056079475
+Startup trace (nsec): init ebpf vm: 4059426572
+Startup trace (nsec): jit ebpf: 4062675692
+Startup trace (nsec): init ebpf done: 4065972376
+Startup trace (nsec): init ebpf vm: 4069329266
+Startup trace (nsec): jit ebpf: 4072579383
+Startup trace (nsec): init ebpf done: 4075871165
+Startup trace (nsec): init ebpf vm: 4079222109
+Startup trace (nsec): jit ebpf: 4082473035
+Startup trace (nsec): init ebpf done: 4085762387
+Startup trace (nsec): init ebpf vm: 4089142014
+Startup trace (nsec): jit ebpf: 4092386305
+Startup trace (nsec): init ebpf done: 4095672499
+Startup trace (nsec): init ebpf vm: 4099021217
+Startup trace (nsec): jit ebpf: 4102268027
+Startup trace (nsec): init ebpf done: 4105555909
+Startup trace (nsec): init ebpf vm: 4108899051
+Startup trace (nsec): jit ebpf: 4112147111
+Startup trace (nsec): init ebpf done: 4115433965
+Startup trace (nsec): init ebpf vm: 4118789078
+Startup trace (nsec): jit ebpf: 4122042147
+Startup trace (nsec): init ebpf done: 4125343848
+Startup trace (nsec): init ebpf vm: 4128695365
+Startup trace (nsec): jit ebpf: 4131958079
+Startup trace (nsec): init ebpf done: 4135254588
+Startup trace (nsec): init ebpf vm: 4138617736
+Startup trace (nsec): jit ebpf: 4141874573
+Startup trace (nsec): init ebpf done: 4145175575
+Startup trace (nsec): init ebpf vm: 4148543162
+Startup trace (nsec): jit ebpf: 4151798172
+Startup trace (nsec): init ebpf done: 4155109339
+Startup trace (nsec): init ebpf vm: 4158448984
+Startup trace (nsec): jit ebpf: 4161713120
+Startup trace (nsec): init ebpf done: 4165014732
+Startup trace (nsec): init ebpf vm: 4168379667
+Startup trace (nsec): jit ebpf: 4171636642
+Startup trace (nsec): init ebpf done: 4174939892
+Startup trace (nsec): init ebpf vm: 4178293145
+Startup trace (nsec): jit ebpf: 4181551384
+Startup trace (nsec): init ebpf done: 4184849939
+Startup trace (nsec): init ebpf vm: 4188219409
+Startup trace (nsec): jit ebpf: 4191475942
+Startup trace (nsec): init ebpf done: 4194779414
+Startup trace (nsec): init ebpf vm: 4198149706
+Startup trace (nsec): jit ebpf: 4201409597
+Startup trace (nsec): init ebpf done: 4204712495
+Startup trace (nsec): init ebpf vm: 4208060778
+Startup trace (nsec): jit ebpf: 4211321784
+Startup trace (nsec): init ebpf done: 4214624818
+Startup trace (nsec): init ebpf vm: 4217995788
+Startup trace (nsec): jit ebpf: 4221257996
+Startup trace (nsec): init ebpf done: 4224557701
+Startup trace (nsec): init ebpf vm: 4227911842
+Startup trace (nsec): jit ebpf: 4231186066
+Startup trace (nsec): init ebpf done: 4234494544
+Startup trace (nsec): init ebpf vm: 4237848004
+Startup trace (nsec): jit ebpf: 4241110723
+Startup trace (nsec): init ebpf done: 4244409898
+Startup trace (nsec): init ebpf vm: 4247778515
+Startup trace (nsec): jit ebpf: 4251039102
+Startup trace (nsec): init ebpf done: 4254339323
+Startup trace (nsec): init ebpf vm: 4257696777
+Startup trace (nsec): jit ebpf: 4260967447
+Startup trace (nsec): init ebpf done: 4264270408
+Startup trace (nsec): init ebpf vm: 4267625934
+Startup trace (nsec): jit ebpf: 4270888568
+Startup trace (nsec): init ebpf done: 4274193386
+Startup trace (nsec): init ebpf vm: 4277562190
+Startup trace (nsec): jit ebpf: 4280830900
+Startup trace (nsec): init ebpf done: 4284137766
+Startup trace (nsec): init ebpf vm: 4287493641
+Startup trace (nsec): jit ebpf: 4290756549
+Startup trace (nsec): init ebpf done: 4294063951
+Startup trace (nsec): init ebpf vm: 4297429817
+Startup trace (nsec): jit ebpf: 4300691613
+Startup trace (nsec): init ebpf done: 4304006302
+Startup trace (nsec): init ebpf vm: 4307357822
+Startup trace (nsec): jit ebpf: 4310617211
+Startup trace (nsec): init ebpf done: 4313920549
+Startup trace (nsec): init ebpf vm: 4317272321
+Startup trace (nsec): jit ebpf: 4320530708
+Startup trace (nsec): init ebpf done: 4323831648
+Startup trace (nsec): init ebpf vm: 4327199846
+Startup trace (nsec): jit ebpf: 4330461530
+Startup trace (nsec): init ebpf done: 4333760949
+Startup trace (nsec): init ebpf vm: 4337126722
+Startup trace (nsec): jit ebpf: 4340394090
+Startup trace (nsec): init ebpf done: 4343695073
+Startup trace (nsec): init ebpf vm: 4347071254
+Startup trace (nsec): jit ebpf: 4350330590
+Startup trace (nsec): init ebpf done: 4353634104
+Startup trace (nsec): init ebpf vm: 4356986069
+Startup trace (nsec): jit ebpf: 4360246789
+Startup trace (nsec): init ebpf done: 4363553192
+Startup trace (nsec): init ebpf vm: 4366925720
+Startup trace (nsec): jit ebpf: 4370187474
+Startup trace (nsec): init ebpf done: 4373487730
+Startup trace (nsec): init ebpf vm: 4376851579
+Startup trace (nsec): jit ebpf: 4380111290
+Startup trace (nsec): init ebpf done: 4383408527
+Startup trace (nsec): init ebpf vm: 4386772798
+Startup trace (nsec): jit ebpf: 4390031209
+Startup trace (nsec): init ebpf done: 4393330670
+Startup trace (nsec): init ebpf vm: 4396689644
+Startup trace (nsec): jit ebpf: 4399953520
+Startup trace (nsec): init ebpf done: 4403253567
+Startup trace (nsec): init ebpf vm: 4406609563
+Startup trace (nsec): jit ebpf: 4409877563
+Startup trace (nsec): init ebpf done: 4413177786
+Startup trace (nsec): init ebpf vm: 4416534541
+Startup trace (nsec): jit ebpf: 4419799921
+Startup trace (nsec): init ebpf done: 4423107565
+Startup trace (nsec): init ebpf vm: 4426474396
+Startup trace (nsec): jit ebpf: 4429733976
+Startup trace (nsec): init ebpf done: 4433042030
+Startup trace (nsec): init ebpf vm: 4436397975
+Startup trace (nsec): jit ebpf: 4439656669
+Startup trace (nsec): init ebpf done: 4442974551
+Startup trace (nsec): init ebpf vm: 4446324841
+Startup trace (nsec): jit ebpf: 4449584308
+Startup trace (nsec): init ebpf done: 4452885202
+Startup trace (nsec): init ebpf vm: 4456257632
+Startup trace (nsec): jit ebpf: 4459522728
+Startup trace (nsec): init ebpf done: 4462820851
+Startup trace (nsec): init ebpf vm: 4466189642
+Startup trace (nsec): jit ebpf: 4469449257
+Startup trace (nsec): init ebpf done: 4472746087
+Startup trace (nsec): init ebpf vm: 4476113728
+Startup trace (nsec): jit ebpf: 4479372261
+Startup trace (nsec): init ebpf done: 4482680294
+Startup trace (nsec): init ebpf vm: 4486027151
+Startup trace (nsec): jit ebpf: 4489291264
+Startup trace (nsec): init ebpf done: 4492591946
+Startup trace (nsec): init ebpf vm: 4495958303
+Startup trace (nsec): jit ebpf: 4499217747
+Startup trace (nsec): init ebpf done: 4502518626
+Startup trace (nsec): init ebpf vm: 4505866622
+Startup trace (nsec): jit ebpf: 4509127952
+Startup trace (nsec): init ebpf done: 4512429985
+Startup trace (nsec): init ebpf vm: 4515778831
+Startup trace (nsec): jit ebpf: 4519048111
+Startup trace (nsec): init ebpf done: 4522344119
+Startup trace (nsec): init ebpf vm: 4525698060
+Startup trace (nsec): jit ebpf: 4528958886
+Startup trace (nsec): init ebpf done: 4532255514
+Startup trace (nsec): init ebpf vm: 4535606882
+Startup trace (nsec): jit ebpf: 4538874055
+Startup trace (nsec): init ebpf done: 4542177126
+Startup trace (nsec): init ebpf vm: 4545542063
+Startup trace (nsec): jit ebpf: 4548801006
+Startup trace (nsec): init ebpf done: 4552111237
+Startup trace (nsec): init ebpf vm: 4555471738
+Startup trace (nsec): jit ebpf: 4558732172
+Startup trace (nsec): init ebpf done: 4562036489
+Startup trace (nsec): init ebpf vm: 4565393854
+Startup trace (nsec): jit ebpf: 4568655992
+Startup trace (nsec): init ebpf done: 4571970879
+Startup trace (nsec): init ebpf vm: 4575343326
+Startup trace (nsec): jit ebpf: 4578605052
+Startup trace (nsec): init ebpf done: 4581914720
+Startup trace (nsec): init ebpf vm: 4585257442
+Startup trace (nsec): jit ebpf: 4588526115
+Startup trace (nsec): init ebpf done: 4591826798
+Startup trace (nsec): init ebpf vm: 4595195598
+Startup trace (nsec): jit ebpf: 4598453787
+Startup trace (nsec): init ebpf done: 4601758769
+Startup trace (nsec): init ebpf vm: 4605111457
+Startup trace (nsec): jit ebpf: 4608371574
+Startup trace (nsec): init ebpf done: 4611671992
+Startup trace (nsec): init ebpf vm: 4615028908
+Startup trace (nsec): jit ebpf: 4618290603
+Startup trace (nsec): init ebpf done: 4621590860
+Startup trace (nsec): init ebpf vm: 4624978639
+Startup trace (nsec): jit ebpf: 4628237949
+Startup trace (nsec): init ebpf done: 4631541236
+Startup trace (nsec): init ebpf vm: 4634901209
+Startup trace (nsec): jit ebpf: 4638161247
+Startup trace (nsec): init ebpf done: 4641464295
+Startup trace (nsec): init ebpf vm: 4644816936
+Startup trace (nsec): jit ebpf: 4648090658
+Startup trace (nsec): init ebpf done: 4651392963
+Startup trace (nsec): init ebpf vm: 4654762845
+Startup trace (nsec): jit ebpf: 4658026700
+Startup trace (nsec): init ebpf done: 4661338759
+Startup trace (nsec): init ebpf vm: 4664688953
+Startup trace (nsec): jit ebpf: 4667949184
+Startup trace (nsec): init ebpf done: 4671244387
+Startup trace (nsec): init ebpf vm: 4674616862
+Startup trace (nsec): jit ebpf: 4677873485
+Startup trace (nsec): init ebpf done: 4681169939
+Startup trace (nsec): init ebpf vm: 4684518143
+Startup trace (nsec): jit ebpf: 4687775417
+Startup trace (nsec): init ebpf done: 4691079272
+Startup trace (nsec): init ebpf vm: 4694429465
+Startup trace (nsec): jit ebpf: 4697698703
+Startup trace (nsec): init ebpf done: 4701007465
+Startup trace (nsec): init ebpf vm: 4704375392
+Startup trace (nsec): jit ebpf: 4707635908
+Startup trace (nsec): init ebpf done: 4710943816
+Startup trace (nsec): init ebpf vm: 4714321206
+Startup trace (nsec): jit ebpf: 4717586825
+Startup trace (nsec): init ebpf done: 4720896174
+Startup trace (nsec): init ebpf vm: 4724254672
+Startup trace (nsec): jit ebpf: 4727518889
+Startup trace (nsec): init ebpf done: 4730830696
+Startup trace (nsec): init ebpf vm: 4734196117
+Startup trace (nsec): jit ebpf: 4737449232
+Startup trace (nsec): init ebpf done: 4740742966
+Startup trace (nsec): init ebpf vm: 4744096208
+Startup trace (nsec): jit ebpf: 4747352673
+Startup trace (nsec): init ebpf done: 4750649099
+Startup trace (nsec): init ebpf vm: 4754021611
+Startup trace (nsec): jit ebpf: 4757279437
+Startup trace (nsec): init ebpf done: 4760577430
+Startup trace (nsec): init ebpf vm: 4763929352
+Startup trace (nsec): jit ebpf: 4767185510
+Startup trace (nsec): init ebpf done: 4770496272
+Startup trace (nsec): init ebpf vm: 4773866616
+Startup trace (nsec): jit ebpf: 4777132543
+Startup trace (nsec): init ebpf done: 4780438609
+Startup trace (nsec): init ebpf vm: 4783794082
+Startup trace (nsec): jit ebpf: 4787057174
+Startup trace (nsec): init ebpf done: 4790357293
+Startup trace (nsec): init ebpf vm: 4796215303
+Startup trace (nsec): jit ebpf: 4799484184
+Startup trace (nsec): init ebpf done: 4802789670
+Startup trace (nsec): init ebpf vm: 4806169786
+Startup trace (nsec): jit ebpf: 4809422232
+Startup trace (nsec): init ebpf done: 4812718941
+Startup trace (nsec): init ebpf vm: 4816072720
+Startup trace (nsec): jit ebpf: 4819325415
+Startup trace (nsec): init ebpf done: 4822620818
+Startup trace (nsec): init ebpf vm: 4825993250
+Startup trace (nsec): jit ebpf: 4829249627
+Startup trace (nsec): init ebpf done: 4832547384
+Startup trace (nsec): init ebpf vm: 4835894426
+Startup trace (nsec): jit ebpf: 4839152197
+Startup trace (nsec): init ebpf done: 4842464336
+Startup trace (nsec): init ebpf vm: 4845820433
+Startup trace (nsec): jit ebpf: 4849088266
+Startup trace (nsec): init ebpf done: 4852392942
+Startup trace (nsec): init ebpf vm: 4855754523
+Startup trace (nsec): jit ebpf: 4859025010
+Startup trace (nsec): init ebpf done: 4862328954
+Startup trace (nsec): init ebpf vm: 4865691429
+Startup trace (nsec): jit ebpf: 4868956047
+Startup trace (nsec): init ebpf done: 4872258885
+Startup trace (nsec): init ebpf vm: 4875629293
+Startup trace (nsec): jit ebpf: 4878897542
+Startup trace (nsec): init ebpf done: 4882199547
+Startup trace (nsec): init ebpf vm: 4885537559
+Startup trace (nsec): jit ebpf: 4888794662
+Startup trace (nsec): init ebpf done: 4892093245
+Startup trace (nsec): init ebpf vm: 4895452971
+Startup trace (nsec): jit ebpf: 4898708341
+Startup trace (nsec): init ebpf done: 4902007600
+Startup trace (nsec): init ebpf vm: 4905361594
+Startup trace (nsec): jit ebpf: 4908618914
+Startup trace (nsec): init ebpf done: 4911921595
+Startup trace (nsec): init ebpf vm: 4915285621
+Startup trace (nsec): jit ebpf: 4918543745
+Startup trace (nsec): init ebpf done: 4921852543
+Startup trace (nsec): init ebpf vm: 4925213366
+Startup trace (nsec): jit ebpf: 4928472956
+Startup trace (nsec): init ebpf done: 4931773977
+Startup trace (nsec): init ebpf vm: 4935146182
+Startup trace (nsec): jit ebpf: 4938405940
+Startup trace (nsec): init ebpf done: 4941705736
+Startup trace (nsec): init ebpf vm: 4945065787
+Startup trace (nsec): jit ebpf: 4948326940
+Startup trace (nsec): init ebpf done: 4951631907
+Startup trace (nsec): init ebpf vm: 4954997382
+Startup trace (nsec): jit ebpf: 4958252420
+Startup trace (nsec): init ebpf done: 4961552113
+Startup trace (nsec): init ebpf vm: 4964907962
+Startup trace (nsec): jit ebpf: 4968158316
+Startup trace (nsec): init ebpf done: 4971451790
+Startup trace (nsec): init ebpf vm: 4974810610
+Startup trace (nsec): jit ebpf: 4978068886
+Startup trace (nsec): init ebpf done: 4981364064
+Startup trace (nsec): init ebpf vm: 4984733272
+Startup trace (nsec): jit ebpf: 4988003987
+Startup trace (nsec): init ebpf done: 4991306907
+Startup trace (nsec): init ebpf vm: 4994678370
+Startup trace (nsec): jit ebpf: 4997940812
+Startup trace (nsec): init ebpf done: 5001242975
+Startup trace (nsec): init ebpf vm: 5004599139
+Startup trace (nsec): jit ebpf: 5007860383
+Startup trace (nsec): init ebpf done: 5011164229
+Startup trace (nsec): init ebpf vm: 5014517918
+Startup trace (nsec): jit ebpf: 5017782137
+Startup trace (nsec): init ebpf done: 5021092916
+Startup trace (nsec): init ebpf vm: 5024455008
+Startup trace (nsec): jit ebpf: 5027708693
+Startup trace (nsec): init ebpf done: 5031011324
+Startup trace (nsec): init ebpf vm: 5034363018
+Startup trace (nsec): jit ebpf: 5037616593
+Startup trace (nsec): init ebpf done: 5040920494
+Startup trace (nsec): init ebpf vm: 5044272146
+Startup trace (nsec): jit ebpf: 5047524649
+Startup trace (nsec): init ebpf done: 5050820051
+Startup trace (nsec): init ebpf vm: 5054167130
+Startup trace (nsec): jit ebpf: 5057434627
+Startup trace (nsec): init ebpf done: 5060735742
+Startup trace (nsec): init ebpf vm: 5064101554
+Startup trace (nsec): jit ebpf: 5067362581
+Startup trace (nsec): init ebpf done: 5070662406
+Startup trace (nsec): init ebpf vm: 5074034164
+Startup trace (nsec): jit ebpf: 5077292957
+Startup trace (nsec): init ebpf done: 5080590964
+Startup trace (nsec): init ebpf vm: 5083948188
+Startup trace (nsec): jit ebpf: 5087205492
+Startup trace (nsec): init ebpf done: 5090513820
+Startup trace (nsec): init ebpf vm: 5093890080
+Startup trace (nsec): jit ebpf: 5097145257
+Startup trace (nsec): init ebpf done: 5100436092
+Startup trace (nsec): init ebpf vm: 5103788389
+Startup trace (nsec): jit ebpf: 5107045037
+Startup trace (nsec): init ebpf done: 5110342150
+Startup trace (nsec): init ebpf vm: 5113705234
+Startup trace (nsec): jit ebpf: 5116966592
+Startup trace (nsec): init ebpf done: 5120265666
+Startup trace (nsec): init ebpf vm: 5123629371
+Startup trace (nsec): jit ebpf: 5126887565
+Startup trace (nsec): init ebpf done: 5130200929
+Startup trace (nsec): init ebpf vm: 5133557662
+Startup trace (nsec): jit ebpf: 5136824488
+Startup trace (nsec): init ebpf done: 5140128973
+Startup trace (nsec): init ebpf vm: 5143475605
+Startup trace (nsec): jit ebpf: 5146740894
+Startup trace (nsec): init ebpf done: 5150049335
+Startup trace (nsec): init ebpf vm: 5153408708
+Startup trace (nsec): jit ebpf: 5156672122
+Startup trace (nsec): init ebpf done: 5159984249
+Startup trace (nsec): init ebpf vm: 5163340575
+Startup trace (nsec): jit ebpf: 5166602420
+Startup trace (nsec): init ebpf done: 5169909008
+Startup trace (nsec): init ebpf vm: 5173273592
+Startup trace (nsec): jit ebpf: 5176532015
+Startup trace (nsec): init ebpf done: 5179826767
+Startup trace (nsec): init ebpf vm: 5183181194
+Startup trace (nsec): jit ebpf: 5186433931
+Startup trace (nsec): init ebpf done: 5189734360
+Startup trace (nsec): init ebpf vm: 5193074184
+Startup trace (nsec): jit ebpf: 5196331998
+Startup trace (nsec): init ebpf done: 5199638398
+Startup trace (nsec): init ebpf vm: 5203008437
+Startup trace (nsec): jit ebpf: 5206264717
+Startup trace (nsec): init ebpf done: 5209564146
+Startup trace (nsec): init ebpf vm: 5212917773
+Startup trace (nsec): jit ebpf: 5216180007
+Startup trace (nsec): init ebpf done: 5219480930
+Startup trace (nsec): init ebpf vm: 5222846311
+Startup trace (nsec): jit ebpf: 5226110996
+Startup trace (nsec): init ebpf done: 5229409385
+Startup trace (nsec): init ebpf vm: 5232767058
+Startup trace (nsec): jit ebpf: 5236038096
+Startup trace (nsec): init ebpf done: 5239333130
+Startup trace (nsec): init ebpf vm: 5242684989
+Startup trace (nsec): jit ebpf: 5245939978
+Startup trace (nsec): init ebpf done: 5249238880
+Startup trace (nsec): init ebpf vm: 5252594129
+Startup trace (nsec): jit ebpf: 5255845981
+Startup trace (nsec): init ebpf done: 5259147856
+Startup trace (nsec): init ebpf vm: 5262489307
+Startup trace (nsec): jit ebpf: 5265743727
+Startup trace (nsec): init ebpf done: 5269047072
+Startup trace (nsec): init ebpf vm: 5272429870
+Startup trace (nsec): jit ebpf: 5275695903
+Startup trace (nsec): init ebpf done: 5279004175
+Startup trace (nsec): init ebpf vm: 5282360855
+Startup trace (nsec): jit ebpf: 5285622545
+Startup trace (nsec): init ebpf done: 5288929373
+Startup trace (nsec): init ebpf vm: 5292285877
+Startup trace (nsec): jit ebpf: 5295548803
+Startup trace (nsec): init ebpf done: 5298865990
+Startup trace (nsec): init ebpf vm: 5302237034
+Startup trace (nsec): jit ebpf: 5305506022
+Startup trace (nsec): init ebpf done: 5308813412
+Startup trace (nsec): init ebpf vm: 5312168568
+Startup trace (nsec): jit ebpf: 5315427301
+Startup trace (nsec): init ebpf done: 5318725594
+Startup trace (nsec): init ebpf vm: 5322088488
+Startup trace (nsec): jit ebpf: 5325346144
+Startup trace (nsec): init ebpf done: 5328644970
+Startup trace (nsec): init ebpf vm: 5331999867
+Startup trace (nsec): jit ebpf: 5335257063
+Startup trace (nsec): init ebpf done: 5338556278
+Startup trace (nsec): init ebpf vm: 5341910287
+Startup trace (nsec): jit ebpf: 5345180948
+Startup trace (nsec): init ebpf done: 5348483018
+Startup trace (nsec): init ebpf vm: 5351856576
+Startup trace (nsec): jit ebpf: 5355121067
+Startup trace (nsec): init ebpf done: 5358427203
+Startup trace (nsec): init ebpf vm: 5361794245
+Startup trace (nsec): jit ebpf: 5365062550
+Startup trace (nsec): init ebpf done: 5368371232
+Startup trace (nsec): init ebpf vm: 5371724569
+Startup trace (nsec): jit ebpf: 5374987759
+Startup trace (nsec): init ebpf done: 5378303802
+Startup trace (nsec): init ebpf vm: 5381664758
+Startup trace (nsec): jit ebpf: 5384927509
+Startup trace (nsec): init ebpf done: 5388225553
+Startup trace (nsec): init ebpf vm: 5391571097
+Startup trace (nsec): jit ebpf: 5394830635
+Startup trace (nsec): init ebpf done: 5398138543
+Startup trace (nsec): init ebpf vm: 5401500577
+Startup trace (nsec): jit ebpf: 5404763247
+Startup trace (nsec): init ebpf done: 5408065058
+Startup trace (nsec): init ebpf vm: 5411419165
+Startup trace (nsec): jit ebpf: 5414687992
+Startup trace (nsec): init ebpf done: 5417995468
+Startup trace (nsec): init ebpf vm: 5421349710
+Startup trace (nsec): jit ebpf: 5424613196
+Startup trace (nsec): init ebpf done: 5427920616
+Startup trace (nsec): init ebpf vm: 5431274614
+Startup trace (nsec): jit ebpf: 5434545686
+Startup trace (nsec): init ebpf done: 5437856565
+Startup trace (nsec): init ebpf vm: 5441215617
+Startup trace (nsec): jit ebpf: 5444477745
+Startup trace (nsec): init ebpf done: 5447778998
+Startup trace (nsec): init ebpf vm: 5451150755
+Startup trace (nsec): jit ebpf: 5454408478
+Startup trace (nsec): init ebpf done: 5457704102
+Startup trace (nsec): init ebpf vm: 5461060462
+Startup trace (nsec): jit ebpf: 5464316320
+Startup trace (nsec): init ebpf done: 5467613964
+Startup trace (nsec): init ebpf vm: 5470979156
+Startup trace (nsec): jit ebpf: 5474240373
+Startup trace (nsec): init ebpf done: 5477538957
+Startup trace (nsec): init ebpf vm: 5480900576
+Startup trace (nsec): jit ebpf: 5484157981
+Startup trace (nsec): init ebpf done: 5487467990
+Startup trace (nsec): init ebpf vm: 5490839317
+Startup trace (nsec): jit ebpf: 5494107759
+Startup trace (nsec): init ebpf done: 5497411478
+Startup trace (nsec): init ebpf vm: 5500760701
+Startup trace (nsec): jit ebpf: 5504029827
+Startup trace (nsec): init ebpf done: 5507340939
+Startup trace (nsec): init ebpf vm: 5510694468
+Startup trace (nsec): jit ebpf: 5513960703
+Startup trace (nsec): init ebpf done: 5517261751
+Startup trace (nsec): init ebpf vm: 5520630641
+Startup trace (nsec): jit ebpf: 5523897841
+Startup trace (nsec): init ebpf done: 5527193567
+Startup trace (nsec): init ebpf vm: 5530546570
+Startup trace (nsec): jit ebpf: 5533800388
+Startup trace (nsec): init ebpf done: 5537102403
+Startup trace (nsec): init ebpf vm: 5540455226
+Startup trace (nsec): jit ebpf: 5543709917
+Startup trace (nsec): init ebpf done: 5547009718
+Startup trace (nsec): init ebpf vm: 5550362101
+Startup trace (nsec): jit ebpf: 5553616679
+Startup trace (nsec): init ebpf done: 5556917750
+Startup trace (nsec): init ebpf vm: 5560287463
+Startup trace (nsec): jit ebpf: 5563551098
+Startup trace (nsec): init ebpf done: 5566857960
+Startup trace (nsec): init ebpf vm: 5570214950
+Startup trace (nsec): jit ebpf: 5573473974
+Startup trace (nsec): init ebpf done: 5576776358
+Startup trace (nsec): init ebpf vm: 5580131970
+Startup trace (nsec): jit ebpf: 5583392549
+Startup trace (nsec): init ebpf done: 5586702407
+Startup trace (nsec): init ebpf vm: 5590076881
+Startup trace (nsec): jit ebpf: 5593350461
+Startup trace (nsec): init ebpf done: 5596650032
+Startup trace (nsec): init ebpf vm: 5600006596
+Startup trace (nsec): jit ebpf: 5603262672
+Startup trace (nsec): init ebpf done: 5606556881
+Startup trace (nsec): init ebpf vm: 5609918619
+Startup trace (nsec): jit ebpf: 5613175521
+Startup trace (nsec): init ebpf done: 5616473340
+Startup trace (nsec): init ebpf vm: 5619835980
+Startup trace (nsec): jit ebpf: 5623090932
+Startup trace (nsec): init ebpf done: 5626392994
+Startup trace (nsec): init ebpf vm: 5629758449
+Startup trace (nsec): jit ebpf: 5633025741
+Startup trace (nsec): init ebpf done: 5636328104
+Startup trace (nsec): init ebpf vm: 5639683979
+Startup trace (nsec): jit ebpf: 5642952822
+Startup trace (nsec): init ebpf done: 5646254060
+Startup trace (nsec): init ebpf vm: 5649622577
+Startup trace (nsec): jit ebpf: 5652885155
+Startup trace (nsec): init ebpf done: 5656185157
+Startup trace (nsec): init ebpf vm: 5659543718
+Startup trace (nsec): jit ebpf: 5662803090
+Startup trace (nsec): init ebpf done: 5666118246
+Startup trace (nsec): init ebpf vm: 5669478437
+Startup trace (nsec): jit ebpf: 5672730532
+Startup trace (nsec): init ebpf done: 5676027534
+Startup trace (nsec): init ebpf vm: 5679366471
+Startup trace (nsec): jit ebpf: 5682622442
+Startup trace (nsec): init ebpf done: 5685928324
+Startup trace (nsec): init ebpf vm: 5689296519
+Startup trace (nsec): jit ebpf: 5692555731
+Startup trace (nsec): init ebpf done: 5695861966
+Startup trace (nsec): init ebpf vm: 5699226861
+Startup trace (nsec): jit ebpf: 5702498064
+Startup trace (nsec): init ebpf done: 5705802945
+Startup trace (nsec): init ebpf vm: 5709165625
+Startup trace (nsec): jit ebpf: 5712431502
+Startup trace (nsec): init ebpf done: 5715742747
+Startup trace (nsec): init ebpf vm: 5719104318
+Startup trace (nsec): jit ebpf: 5722366190
+Startup trace (nsec): init ebpf done: 5725666559
+Startup trace (nsec): init ebpf vm: 5729024289
+Startup trace (nsec): jit ebpf: 5732286817
+Startup trace (nsec): init ebpf done: 5735585266
+Startup trace (nsec): init ebpf vm: 5738943207
+Startup trace (nsec): jit ebpf: 5742196861
+Startup trace (nsec): init ebpf done: 5745494802
+Startup trace (nsec): init ebpf vm: 5748859573
+Startup trace (nsec): jit ebpf: 5752114694
+Startup trace (nsec): init ebpf done: 5755410917
+Startup trace (nsec): init ebpf vm: 5758763752
+Startup trace (nsec): jit ebpf: 5762019920
+Startup trace (nsec): init ebpf done: 5765319254
+Startup trace (nsec): init ebpf vm: 5768683414
+Startup trace (nsec): jit ebpf: 5771954922
+Startup trace (nsec): init ebpf done: 5775251222
+Startup trace (nsec): init ebpf vm: 5778612280
+Startup trace (nsec): jit ebpf: 5781868188
+Startup trace (nsec): init ebpf done: 5785162485
+Startup trace (nsec): init ebpf vm: 5788519432
+Startup trace (nsec): jit ebpf: 5791773793
+Startup trace (nsec): init ebpf done: 5795077327
+Startup trace (nsec): init ebpf vm: 5798423785
+Startup trace (nsec): jit ebpf: 5801673501
+Startup trace (nsec): init ebpf done: 5804974602
+Startup trace (nsec): init ebpf vm: 5808338404
+Startup trace (nsec): jit ebpf: 5811591374
+Startup trace (nsec): init ebpf done: 5814891123
+Startup trace (nsec): init ebpf vm: 5818249992
+Startup trace (nsec): jit ebpf: 5821506827
+Startup trace (nsec): init ebpf done: 5824811691
+Startup trace (nsec): init ebpf vm: 5828178016
+Startup trace (nsec): jit ebpf: 5831439298
+Startup trace (nsec): init ebpf done: 5834735544
+Startup trace (nsec): init ebpf vm: 5838079286
+Startup trace (nsec): jit ebpf: 5841338096
+Startup trace (nsec): init ebpf done: 5844650069
+Startup trace (nsec): init ebpf vm: 5847993648
+Startup trace (nsec): jit ebpf: 5851244089
+Startup trace (nsec): init ebpf done: 5854541028
+Startup trace (nsec): init ebpf vm: 5857902352
+Startup trace (nsec): jit ebpf: 5861156439
+Startup trace (nsec): init ebpf done: 5864454066
+Startup trace (nsec): init ebpf vm: 5867797858
+Startup trace (nsec): jit ebpf: 5871052879
+Startup trace (nsec): init ebpf done: 5874347715
+Startup trace (nsec): init ebpf vm: 5877691405
+Startup trace (nsec): jit ebpf: 5880964048
+Startup trace (nsec): init ebpf done: 5884257016
+Startup trace (nsec): init ebpf vm: 5887610143
+Startup trace (nsec): jit ebpf: 5890867011
+Startup trace (nsec): init ebpf done: 5894164674
+Startup trace (nsec): init ebpf vm: 5897525249
+Startup trace (nsec): jit ebpf: 5900783335
+Startup trace (nsec): init ebpf done: 5904081662
+Startup trace (nsec): init ebpf vm: 5907434880
+Startup trace (nsec): jit ebpf: 5910688973
+Startup trace (nsec): init ebpf done: 5913987670
+Startup trace (nsec): init ebpf vm: 5917344151
+Startup trace (nsec): jit ebpf: 5920594371
+Startup trace (nsec): init ebpf done: 5923897891
+Startup trace (nsec): init ebpf vm: 5927246717
+Startup trace (nsec): jit ebpf: 5930498349
+Startup trace (nsec): init ebpf done: 5933794314
+Startup trace (nsec): init ebpf vm: 5937138631
+Startup trace (nsec): jit ebpf: 5940387444
+Startup trace (nsec): init ebpf done: 5943679875
+Startup trace (nsec): init ebpf vm: 5947038476
+Startup trace (nsec): jit ebpf: 5950295950
+Startup trace (nsec): init ebpf done: 5953595257
+Startup trace (nsec): init ebpf vm: 5956956588
+Startup trace (nsec): jit ebpf: 5960211815
+Startup trace (nsec): init ebpf done: 5963506770
+Startup trace (nsec): init ebpf vm: 5966856628
+Startup trace (nsec): jit ebpf: 5970110699
+Startup trace (nsec): init ebpf done: 5973407600
+Startup trace (nsec): init ebpf vm: 5976754774
+Startup trace (nsec): jit ebpf: 5980013907
+Startup trace (nsec): init ebpf done: 5983308294
+Startup trace (nsec): init ebpf vm: 5986661028
+Startup trace (nsec): jit ebpf: 5989915907
+Startup trace (nsec): init ebpf done: 5993211499
+Startup trace (nsec): init ebpf vm: 5996571830
+Startup trace (nsec): jit ebpf: 5999836584
+Startup trace (nsec): init ebpf done: 6003134106
+Startup trace (nsec): init ebpf vm: 6006482214
+Startup trace (nsec): jit ebpf: 6009745616
+Startup trace (nsec): init ebpf done: 6013045079
+Startup trace (nsec): init ebpf vm: 6016403562
+Startup trace (nsec): jit ebpf: 6019658873
+Startup trace (nsec): init ebpf done: 6022971388
+Startup trace (nsec): init ebpf vm: 6026329327
+Startup trace (nsec): jit ebpf: 6029587490
+Startup trace (nsec): init ebpf done: 6032888426
+Startup trace (nsec): init ebpf vm: 6036250869
+Startup trace (nsec): jit ebpf: 6039509063
+Startup trace (nsec): init ebpf done: 6042813144
+Startup trace (nsec): init ebpf vm: 6046169547
+Startup trace (nsec): jit ebpf: 6049427738
+Startup trace (nsec): init ebpf done: 6052726138
+Startup trace (nsec): init ebpf vm: 6056080795
+Startup trace (nsec): jit ebpf: 6059343322
+Startup trace (nsec): init ebpf done: 6062637737
+Startup trace (nsec): init ebpf vm: 6065987416
+Startup trace (nsec): jit ebpf: 6069238687
+Startup trace (nsec): init ebpf done: 6072546001
+Startup trace (nsec): init ebpf vm: 6075901901
+Startup trace (nsec): jit ebpf: 6079153780
+Startup trace (nsec): init ebpf done: 6082446742
+Startup trace (nsec): init ebpf vm: 6085797104
+Startup trace (nsec): jit ebpf: 6089052870
+Startup trace (nsec): init ebpf done: 6092346677
+Startup trace (nsec): init ebpf vm: 6095715907
+Startup trace (nsec): jit ebpf: 6098976140
+Startup trace (nsec): init ebpf done: 6102272760
+Startup trace (nsec): init ebpf vm: 6105629980
+Startup trace (nsec): jit ebpf: 6108889122
+Startup trace (nsec): init ebpf done: 6112184232
+Startup trace (nsec): init ebpf vm: 6115547308
+Startup trace (nsec): jit ebpf: 6118807578
+Startup trace (nsec): init ebpf done: 6122105162
+Startup trace (nsec): init ebpf vm: 6125455056
+Startup trace (nsec): jit ebpf: 6128714432
+Startup trace (nsec): init ebpf done: 6132028605
+Startup trace (nsec): init ebpf vm: 6135387813
+Startup trace (nsec): jit ebpf: 6138649654
+Startup trace (nsec): init ebpf done: 6141948517
+Startup trace (nsec): init ebpf vm: 6145297136
+Startup trace (nsec): jit ebpf: 6148550884
+Startup trace (nsec): init ebpf done: 6151850083
+Startup trace (nsec): init ebpf vm: 6155209419
+Startup trace (nsec): jit ebpf: 6158464009
+Startup trace (nsec): init ebpf done: 6161763210
+Startup trace (nsec): init ebpf vm: 6165116961
+Startup trace (nsec): jit ebpf: 6168373380
+Startup trace (nsec): init ebpf done: 6171672776
+Startup trace (nsec): init ebpf vm: 6175023719
+Startup trace (nsec): jit ebpf: 6178277478
+Startup trace (nsec): init ebpf done: 6181574538
+Startup trace (nsec): init ebpf vm: 6184938754
+Startup trace (nsec): jit ebpf: 6188195118
+Startup trace (nsec): init ebpf done: 6191492113
+Startup trace (nsec): init ebpf vm: 6194845321
+Startup trace (nsec): jit ebpf: 6198100710
+Startup trace (nsec): init ebpf done: 6201414466
+Startup trace (nsec): init ebpf vm: 6204776318
+Startup trace (nsec): jit ebpf: 6208039200
+Startup trace (nsec): init ebpf done: 6211335892
+Startup trace (nsec): init ebpf vm: 6214676048
+Startup trace (nsec): jit ebpf: 6217937069
+Startup trace (nsec): init ebpf done: 6221230829
+Startup trace (nsec): init ebpf vm: 6224579752
+Startup trace (nsec): jit ebpf: 6227836787
+Startup trace (nsec): init ebpf done: 6231129320
+Startup trace (nsec): init ebpf vm: 6234483947
+Startup trace (nsec): jit ebpf: 6237749073
+Startup trace (nsec): init ebpf done: 6241047839
+Startup trace (nsec): init ebpf vm: 6244398538
+Startup trace (nsec): jit ebpf: 6247654749
+Startup trace (nsec): init ebpf done: 6250955926
+Startup trace (nsec): init ebpf vm: 6254313899
+Startup trace (nsec): jit ebpf: 6257571600
+Startup trace (nsec): init ebpf done: 6260871331
+Startup trace (nsec): init ebpf vm: 6264226112
+Startup trace (nsec): jit ebpf: 6267482742
+Startup trace (nsec): init ebpf done: 6270776788
+Startup trace (nsec): init ebpf vm: 6274136651
+Startup trace (nsec): jit ebpf: 6277389008
+Startup trace (nsec): init ebpf done: 6280682140
+Startup trace (nsec): init ebpf vm: 6284042001
+Startup trace (nsec): jit ebpf: 6287297286
+Startup trace (nsec): init ebpf done: 6290594753
+Startup trace (nsec): init ebpf vm: 6293943861
+Startup trace (nsec): jit ebpf: 6297200376
+Startup trace (nsec): init ebpf done: 6300498261
+Startup trace (nsec): init ebpf vm: 6303867063
+Startup trace (nsec): jit ebpf: 6307122531
+Startup trace (nsec): init ebpf done: 6310424300
+Startup trace (nsec): init ebpf vm: 6313771080
+Startup trace (nsec): jit ebpf: 6317027465
+Startup trace (nsec): init ebpf done: 6320325328
+Startup trace (nsec): init ebpf vm: 6323681273
+Startup trace (nsec): jit ebpf: 6326941022
+Startup trace (nsec): init ebpf done: 6330258281
+Received packet:   96 | 3333ffa9 03cffe79 37a903cf 86dd6000 00000020 3aff0000
+[    6.337767] ERR:  [libclick] <bpfrewriter.cc @   67> BPFRewriter: Unsupported action: 4294967295
+Received packet:  200 | 33330000 0016767e 90d49854 86dd6000 00000088 0001fe80
+[    6.348691] ERR:  [libclick] <bpfrewriter.cc @   67> BPFRewriter: Unsupported action: 4294967295
+Received packet:   78 | 01005e00 00fc767e 90d49854 08004500 00361c68 0000ff11
+[    6.359550] ERR:  [libclick] <bpfrewriter.cc @   67> BPFRewriter: Unsupported action: 4294967295
+Received packet:  132 | 33330000 00fb767e 90d49854 86dd6009 ed030044 11fffe80
+[    6.370410] ERR:  [libclick] <bpfrewriter.cc @   67> BPFRewriter: Unsupported action: 4294967295
+Received packet:   98 | 33330001 0003767e 90d49854 86dd600b c7de0022 11fffe80
+[    6.381244] ERR:  [libclick] <bpfrewriter.cc @   67> BPFRewriter: Unsupported action: 4294967295
+Received packet:  100 | 01005e00 00fb767e 90d49854 08004500 004c26a1 0000ff11
+[    6.392066] ERR:  [libclick] <bpfrewriter.cc @   67> BPFRewriter: Unsupported action: 4294967295
+Received packet:   98 | 33330001 0003767e 90d49854 86dd600b c7de0022 11fffe80
+[    6.402889] ERR:  [libclick] <bpfrewriter.cc @   67> BPFRewriter: Unsupported action: 4294967295
+Received packet:  132 | 33330000 00fb767e 90d49854 86dd6009 ed030044 11fffe80
+[    6.413737] ERR:  [libclick] <bpfrewriter.cc @   67> BPFRewriter: Unsupported action: 4294967295
+Received packet:  100 | 01005e00 00fb767e 90d49854 08004500 004c271b 0000ff11
+[    6.424587] ERR:  [libclick] <bpfrewriter.cc @   67> BPFRewriter: Unsupported action: 4294967295
+Received packet:  212 | 33330000 00fb767e 90d49854 86dd6009 ed030094 11fffe80
+[    6.435439] ERR:  [libclick] <bpfrewriter.cc @   67> BPFRewriter: Unsupported action: 4294967295
+Received packet:  131 | 01005e00 00fb767e 90d49854 08004500 006b282c 0000ff11
+[    6.446271] ERR:  [libclick] <bpfrewriter.cc @   67> BPFRewriter: Unsupported action: 4294967295
+Received packet:  140 | 33330000 0016fe79 37a903cf 86dd6000 0000004c 0001fe80
+[    6.457097] ERR:  [libclick] <bpfrewriter.cc @   67> BPFRewriter: Unsupported action: 4294967295
+Received packet:  140 | 33330000 0016fe79 37a903cf 86dd6000 0000004c 0001fe80
+[    6.467938] ERR:  [libclick] <bpfrewriter.cc @   67> BPFRewriter: Unsupported action: 4294967295
+Received packet:  180 | 33330000 0016fe79 37a903cf 86dd6000 00000074 0001fe80
+[    6.478797] ERR:  [libclick] <bpfrewriter.cc @   67> BPFRewriter: Unsupported action: 4294967295
+Received packet:   98 | 33330001 0003fe79 37a903cf 86dd6001 d69f0022 11fffe80
+[    6.489652] ERR:  [libclick] <bpfrewriter.cc @   67> BPFRewriter: Unsupported action: 4294967295
+Received packet:  132 | 33330000 00fbfe79 37a903cf 86dd6005 64000044 11fffe80
+[    6.500504] ERR:  [libclick] <bpfrewriter.cc @   67> BPFRewriter: Unsupported action: 4294967295
+Received packet:   98 | 33330001 0003fe79 37a903cf 86dd6001 d69f0022 11fffe80
+[    6.511330] ERR:  [libclick] <bpfrewriter.cc @   67> BPFRewriter: Unsupported action: 4294967295
+Received packet:  132 | 33330000 00fbfe79 37a903cf 86dd6005 64000044 11fffe80
+[    6.522160] ERR:  [libclick] <bpfrewriter.cc @   67> BPFRewriter: Unsupported action: 4294967295
+Received packet:   98 | 33330001 0003fe79 37a903cf 86dd6001 d69f0022 11fffe80
+[    6.533014] ERR:  [libclick] <bpfrewriter.cc @   67> BPFRewriter: Unsupported action: 4294967295
+Received packet:  212 | 33330000 00fb767e 90d49854 86dd6009 ed030094 11fffe80
+[    6.543876] ERR:  [libclick] <bpfrewriter.cc @   67> BPFRewriter: Unsupported action: 4294967295
+Received packet:  132 | 33330000 00fbfe79 37a903cf 86dd6005 64000044 11fffe80
+[    6.554731] ERR:  [libclick] <bpfrewriter.cc @   67> BPFRewriter: Unsupported action: 4294967295
+Received packet:  140 | 33330000 0016fe79 37a903cf 86dd6000 0000004c 0001fe80
+[    6.565571] ERR:  [libclick] <bpfrewriter.cc @   67> BPFRewriter: Unsupported action: 4294967295
+Received packet:  131 | 01005e00 00fb767e 90d49854 08004500 006b2b13 0000ff11
+[    6.576403] ERR:  [libclick] <bpfrewriter.cc @   67> BPFRewriter: Unsupported action: 4294967295
+Received packet:  212 | 33330000 00fbfe79 37a903cf 86dd6005 64000094 11fffe80
+[    6.587227] ERR:  [libclick] <bpfrewriter.cc @   67> BPFRewriter: Unsupported action: 4294967295
+Received packet:  212 | 33330000 00fbfe79 37a903cf 86dd6005 64000094 11fffe80
+[    6.598081] ERR:  [libclick] <bpfrewriter.cc @   67> BPFRewriter: Unsupported action: 4294967295
+Startup trace (nsec): init ebpf vm: 6604762559
+Startup trace (nsec): jit ebpf: 6608030504
+Startup trace (nsec): init ebpf done: 6611350474
+Startup trace (nsec): init ebpf vm: 6614730799
+Startup trace (nsec): jit ebpf: 6618000052
+Startup trace (nsec): init ebpf done: 6621310486
+Startup trace (nsec): init ebpf vm: 6624696227
+Startup trace (nsec): jit ebpf: 6627955990
+Startup trace (nsec): init ebpf done: 6631251544
+Startup trace (nsec): init ebpf vm: 6634603270
+Startup trace (nsec): jit ebpf: 6637863399
+Startup trace (nsec): init ebpf done: 6641157824
+Startup trace (nsec): init ebpf vm: 6644510465
+Startup trace (nsec): jit ebpf: 6647765818
+Startup trace (nsec): init ebpf done: 6651066829
+Startup trace (nsec): init ebpf vm: 6654429866
+Startup trace (nsec): jit ebpf: 6657686891
+Startup trace (nsec): init ebpf done: 6661002660
+Startup trace (nsec): init ebpf vm: 6664362293
+Startup trace (nsec): jit ebpf: 6667623367
+Startup trace (nsec): init ebpf done: 6670931723
+Startup trace (nsec): init ebpf vm: 6674289234
+Startup trace (nsec): jit ebpf: 6677554928
+Startup trace (nsec): init ebpf done: 6680868160
+Startup trace (nsec): init ebpf vm: 6684237562
+Startup trace (nsec): jit ebpf: 6687500548
+Startup trace (nsec): init ebpf done: 6690810536
+Startup trace (nsec): init ebpf vm: 6694173910
+Startup trace (nsec): jit ebpf: 6697431095
+Startup trace (nsec): init ebpf done: 6700723647
+Startup trace (nsec): init ebpf vm: 6704092735
+Startup trace (nsec): jit ebpf: 6707345117
+Startup trace (nsec): init ebpf done: 6710640413
+Startup trace (nsec): init ebpf vm: 6714005045
+Startup trace (nsec): jit ebpf: 6717263326
+Startup trace (nsec): init ebpf done: 6720562961
+Startup trace (nsec): init ebpf vm: 6723919367
+Startup trace (nsec): jit ebpf: 6727177600
+Startup trace (nsec): init ebpf done: 6730497057
+Startup trace (nsec): init ebpf vm: 6733855466
+Startup trace (nsec): jit ebpf: 6737117102
+Startup trace (nsec): init ebpf done: 6740418778
+Startup trace (nsec): init ebpf vm: 6743779170
+Startup trace (nsec): jit ebpf: 6747043653
+Startup trace (nsec): init ebpf done: 6750346351
+Startup trace (nsec): init ebpf vm: 6753712196
+Startup trace (nsec): jit ebpf: 6756985401
+Startup trace (nsec): init ebpf done: 6760293505
+Startup trace (nsec): init ebpf vm: 6763648684
+Startup trace (nsec): jit ebpf: 6766922488
+Startup trace (nsec): init ebpf done: 6770221141
+Startup trace (nsec): init ebpf vm: 6773566273
+Startup trace (nsec): jit ebpf: 6776826432
+Startup trace (nsec): init ebpf done: 6780121490
+Startup trace (nsec): init ebpf vm: 6783481426
+Startup trace (nsec): jit ebpf: 6786739256
+Startup trace (nsec): init ebpf done: 6790036478
+Startup trace (nsec): init ebpf vm: 6793383492
+Startup trace (nsec): jit ebpf: 6796638611
+Startup trace (nsec): init ebpf done: 6799938240
+Startup trace (nsec): init ebpf vm: 6803310881
+Startup trace (nsec): jit ebpf: 6806572237
+Startup trace (nsec): init ebpf done: 6809879669
+Startup trace (nsec): init ebpf vm: 6813232988
+Startup trace (nsec): jit ebpf: 6816495114
+Startup trace (nsec): init ebpf done: 6819798127
+Startup trace (nsec): init ebpf vm: 6823147140
+Startup trace (nsec): jit ebpf: 6826408525
+Startup trace (nsec): init ebpf done: 6829708430
+Startup trace (nsec): init ebpf vm: 6833078720
+Startup trace (nsec): jit ebpf: 6836339711
+Startup trace (nsec): init ebpf done: 6839646157
+Startup trace (nsec): init ebpf vm: 6843001706
+Startup trace (nsec): jit ebpf: 6846259283
+Startup trace (nsec): init ebpf done: 6849555346
+Startup trace (nsec): init ebpf vm: 6852907929
+Startup trace (nsec): jit ebpf: 6856162622
+Startup trace (nsec): init ebpf done: 6859466211
+Startup trace (nsec): init ebpf vm: 6862832799
+Startup trace (nsec): jit ebpf: 6866088371
+Startup trace (nsec): init ebpf done: 6869385113
+Startup trace (nsec): init ebpf vm: 6872764598
+Startup trace (nsec): jit ebpf: 6876029424
+Startup trace (nsec): init ebpf done: 6879338292
+Startup trace (nsec): init ebpf vm: 6882713040
+Startup trace (nsec): jit ebpf: 6885978683
+Startup trace (nsec): init ebpf done: 6889284831
+Startup trace (nsec): init ebpf vm: 6892645615
+Startup trace (nsec): jit ebpf: 6895915091
+Startup trace (nsec): init ebpf done: 6899220725
+Startup trace (nsec): init ebpf vm: 6902591968
+Startup trace (nsec): jit ebpf: 6905858790
+Startup trace (nsec): init ebpf done: 6909188845
+Startup trace (nsec): init ebpf vm: 6912546055
+Startup trace (nsec): jit ebpf: 6915806463
+Startup trace (nsec): init ebpf done: 6919107886
+Startup trace (nsec): init ebpf vm: 6922458721
+Startup trace (nsec): jit ebpf: 6925717920
+Startup trace (nsec): init ebpf done: 6929023408
+Startup trace (nsec): init ebpf vm: 6932391179
+Startup trace (nsec): jit ebpf: 6935650176
+Startup trace (nsec): init ebpf done: 6938962429
+Startup trace (nsec): init ebpf vm: 6942317846
+Startup trace (nsec): jit ebpf: 6945591786
+Startup trace (nsec): init ebpf done: 6948905995
+Startup trace (nsec): init ebpf vm: 6952281035
+Startup trace (nsec): jit ebpf: 6955545661
+Startup trace (nsec): init ebpf done: 6958858446
+Startup trace (nsec): init ebpf vm: 6962224520
+Startup trace (nsec): jit ebpf: 6965490096
+Startup trace (nsec): init ebpf done: 6968812622
+Startup trace (nsec): init ebpf vm: 6972161419
+Startup trace (nsec): jit ebpf: 6975425560
+Startup trace (nsec): init ebpf done: 6978735185
+Startup trace (nsec): init ebpf vm: 6982122527
+Startup trace (nsec): jit ebpf: 6985377938
+Startup trace (nsec): init ebpf done: 6988673537
+Startup trace (nsec): init ebpf vm: 6992022376
+Startup trace (nsec): jit ebpf: 6995280075
+Startup trace (nsec): init ebpf done: 6998580228
+Startup trace (nsec): init ebpf vm: 7001951388
+Startup trace (nsec): jit ebpf: 7005209780
+Startup trace (nsec): init ebpf done: 7008509616
+Startup trace (nsec): init ebpf vm: 7011868597
+Startup trace (nsec): jit ebpf: 7015126031
+Startup trace (nsec): init ebpf done: 7018440304
+Startup trace (nsec): init ebpf vm: 7021802728
+Startup trace (nsec): jit ebpf: 7025064824
+Startup trace (nsec): init ebpf done: 7028369757
+Startup trace (nsec): init ebpf vm: 7031740889
+Startup trace (nsec): jit ebpf: 7035011504
+Startup trace (nsec): init ebpf done: 7038317109
+Startup trace (nsec): init ebpf vm: 7041688704
+Startup trace (nsec): jit ebpf: 7044954444
+Startup trace (nsec): init ebpf done: 7048259857
+Startup trace (nsec): init ebpf vm: 7051617764
+Startup trace (nsec): jit ebpf: 7054893117
+Startup trace (nsec): init ebpf done: 7058191618
+Startup trace (nsec): init ebpf vm: 7061559099
+Startup trace (nsec): jit ebpf: 7064823410
+Startup trace (nsec): init ebpf done: 7068130643
+Startup trace (nsec): init ebpf vm: 7071491138
+Startup trace (nsec): jit ebpf: 7074753896
+Startup trace (nsec): init ebpf done: 7078053251
+Startup trace (nsec): init ebpf vm: 7081395870
+Startup trace (nsec): jit ebpf: 7084654419
+Startup trace (nsec): init ebpf done: 7087971749
+Startup trace (nsec): init ebpf vm: 7091345354
+Startup trace (nsec): jit ebpf: 7094608475
+Startup trace (nsec): init ebpf done: 7097920887
+Startup trace (nsec): init ebpf vm: 7101281344
+Startup trace (nsec): jit ebpf: 7104543786
+Startup trace (nsec): init ebpf done: 7107855097
+Startup trace (nsec): init ebpf vm: 7111232314
+Startup trace (nsec): jit ebpf: 7114496965
+Startup trace (nsec): init ebpf done: 7117810780
+Startup trace (nsec): init ebpf vm: 7121169890
+Startup trace (nsec): jit ebpf: 7124444456
+Startup trace (nsec): init ebpf done: 7127750567
+Startup trace (nsec): init ebpf vm: 7131099158
+Startup trace (nsec): jit ebpf: 7134359357
+Startup trace (nsec): init ebpf done: 7137661254
+Startup trace (nsec): init ebpf vm: 7141029515
+Startup trace (nsec): jit ebpf: 7144301448
+Startup trace (nsec): init ebpf done: 7147604739
+Startup trace (nsec): init ebpf vm: 7150961013
+Startup trace (nsec): jit ebpf: 7154223796
+Startup trace (nsec): init ebpf done: 7157528230
+Startup trace (nsec): init ebpf vm: 7160924904
+Startup trace (nsec): jit ebpf: 7164194251
+Startup trace (nsec): init ebpf done: 7167503517
+Startup trace (nsec): init ebpf vm: 7170872671
+Startup trace (nsec): jit ebpf: 7174140600
+Startup trace (nsec): init ebpf done: 7177450684
+Startup trace (nsec): init ebpf vm: 7180827035
+Startup trace (nsec): jit ebpf: 7184090789
+Startup trace (nsec): init ebpf done: 7187399681
+Startup trace (nsec): init ebpf vm: 7190761088
+Startup trace (nsec): jit ebpf: 7194028424
+Startup trace (nsec): init ebpf done: 7197340665
+Startup trace (nsec): init ebpf vm: 7200691355
+Startup trace (nsec): jit ebpf: 7203955033
+Startup trace (nsec): init ebpf done: 7207253894
+Startup trace (nsec): init ebpf vm: 7210596801
+Startup trace (nsec): jit ebpf: 7213857133
+Startup trace (nsec): init ebpf done: 7217159766
+Startup trace (nsec): init ebpf vm: 7220526129
+Startup trace (nsec): jit ebpf: 7223786042
+Startup trace (nsec): init ebpf done: 7227082412
+Startup trace (nsec): init ebpf vm: 7230436233
+Startup trace (nsec): jit ebpf: 7233709034
+Startup trace (nsec): init ebpf done: 7237016864
+Startup trace (nsec): init ebpf vm: 7240390455
+Startup trace (nsec): jit ebpf: 7243656614
+Startup trace (nsec): init ebpf done: 7246962948
+Startup trace (nsec): init ebpf vm: 7250329007
+Startup trace (nsec): jit ebpf: 7253588088
+Startup trace (nsec): init ebpf done: 7256898968
+Startup trace (nsec): init ebpf vm: 7260273686
+Startup trace (nsec): jit ebpf: 7263534493
+Startup trace (nsec): init ebpf done: 7266845196
+Startup trace (nsec): init ebpf vm: 7270208970
+Startup trace (nsec): jit ebpf: 7273466272
+Startup trace (nsec): init ebpf done: 7276779337
+Startup trace (nsec): init ebpf vm: 7280142701
+Startup trace (nsec): jit ebpf: 7283399462
+Startup trace (nsec): init ebpf done: 7286698331
+Startup trace (nsec): init ebpf vm: 7290047513
+Startup trace (nsec): jit ebpf: 7293308303
+Startup trace (nsec): init ebpf done: 7296612122
+Startup trace (nsec): init ebpf vm: 7299985545
+Startup trace (nsec): jit ebpf: 7303258145
+Startup trace (nsec): init ebpf done: 7306570900
+Startup trace (nsec): init ebpf vm: 7309936207
+Startup trace (nsec): jit ebpf: 7313200638
+Startup trace (nsec): init ebpf done: 7316506794
+Startup trace (nsec): init ebpf vm: 7319885763
+Startup trace (nsec): jit ebpf: 7323149730
+Startup trace (nsec): init ebpf done: 7326456980
+Startup trace (nsec): init ebpf vm: 7329820547
+Startup trace (nsec): jit ebpf: 7333085710
+Startup trace (nsec): init ebpf done: 7336392066
+Startup trace (nsec): init ebpf vm: 7339782158
+Startup trace (nsec): jit ebpf: 7343040622
+Startup trace (nsec): init ebpf done: 7346343954
+Startup trace (nsec): init ebpf vm: 7349700118
+Startup trace (nsec): jit ebpf: 7352975404
+Startup trace (nsec): init ebpf done: 7356278625
+Startup trace (nsec): init ebpf vm: 7359646132
+Startup trace (nsec): jit ebpf: 7362910962
+Startup trace (nsec): init ebpf done: 7366256043
+Startup trace (nsec): init ebpf vm: 7369606427
+Startup trace (nsec): jit ebpf: 7372869207
+Startup trace (nsec): init ebpf done: 7376187681
+Startup trace (nsec): init ebpf vm: 7379572154
+Startup trace (nsec): jit ebpf: 7382841793
+Startup trace (nsec): init ebpf done: 7386161173
+Startup trace (nsec): init ebpf vm: 7389514490
+Startup trace (nsec): jit ebpf: 7392787218
+Startup trace (nsec): init ebpf done: 7396098881
+Startup trace (nsec): init ebpf vm: 7399473464
+Startup trace (nsec): jit ebpf: 7402747986
+Startup trace (nsec): init ebpf done: 7406053555
+Startup trace (nsec): init ebpf vm: 7409414636
+Startup trace (nsec): jit ebpf: 7412689382
+Startup trace (nsec): init ebpf done: 7415993833
+Startup trace (nsec): init ebpf vm: 7419352742
+Startup trace (nsec): jit ebpf: 7422613186
+Startup trace (nsec): init ebpf done: 7425918137
+Startup trace (nsec): init ebpf vm: 7429274276
+Startup trace (nsec): jit ebpf: 7432535902
+Startup trace (nsec): init ebpf done: 7435844669
+Startup trace (nsec): init ebpf vm: 7439206080
+Startup trace (nsec): jit ebpf: 7442467764
+Startup trace (nsec): init ebpf done: 7445770814
+Startup trace (nsec): init ebpf vm: 7449143952
+Startup trace (nsec): jit ebpf: 7452407979
+Startup trace (nsec): init ebpf done: 7455711524
+Startup trace (nsec): init ebpf vm: 7459088782
+Startup trace (nsec): jit ebpf: 7462351112
+Startup trace (nsec): init ebpf done: 7465660502
+Startup trace (nsec): init ebpf vm: 7469023468
+Startup trace (nsec): jit ebpf: 7472286949
+Startup trace (nsec): init ebpf done: 7475587760
+Startup trace (nsec): init ebpf vm: 7478949410
+Startup trace (nsec): jit ebpf: 7482230523
+Startup trace (nsec): init ebpf done: 7485530006
+Startup trace (nsec): init ebpf vm: 7488898239
+Startup trace (nsec): jit ebpf: 7492156136
+Startup trace (nsec): init ebpf done: 7495457215
+Startup trace (nsec): init ebpf vm: 7498811122
+Startup trace (nsec): jit ebpf: 7502071544
+Startup trace (nsec): init ebpf done: 7505375753
+Startup trace (nsec): init ebpf vm: 7508738814
+Startup trace (nsec): jit ebpf: 7511997461
+Startup trace (nsec): init ebpf done: 7515299843
+Startup trace (nsec): init ebpf vm: 7518664664
+Startup trace (nsec): jit ebpf: 7521931739
+Startup trace (nsec): init ebpf done: 7525235692
+Startup trace (nsec): init ebpf vm: 7528593836
+Startup trace (nsec): jit ebpf: 7531860005
+Startup trace (nsec): init ebpf done: 7535161858
+Startup trace (nsec): init ebpf vm: 7538529894
+Startup trace (nsec): jit ebpf: 7541796331
+Startup trace (nsec): init ebpf done: 7545106533
+Startup trace (nsec): init ebpf vm: 7548469813
+Startup trace (nsec): jit ebpf: 7551736002
+Startup trace (nsec): init ebpf done: 7555046378
+Startup trace (nsec): init ebpf vm: 7558398993
+Startup trace (nsec): jit ebpf: 7561660787
+Startup trace (nsec): init ebpf done: 7564961350
+Startup trace (nsec): init ebpf vm: 7568326483
+Startup trace (nsec): jit ebpf: 7571581349
+Startup trace (nsec): init ebpf done: 7574881853
+Startup trace (nsec): init ebpf vm: 7578232672
+Startup trace (nsec): jit ebpf: 7581487739
+Startup trace (nsec): init ebpf done: 7584790706
+Startup trace (nsec): init ebpf vm: 7588162915
+Startup trace (nsec): jit ebpf: 7591434962
+Startup trace (nsec): init ebpf done: 7594740834
+Startup trace (nsec): init ebpf vm: 7598096702
+Startup trace (nsec): jit ebpf: 7601357858
+Startup trace (nsec): init ebpf done: 7604660761
+Startup trace (nsec): init ebpf vm: 7608034723
+Startup trace (nsec): jit ebpf: 7611296462
+Startup trace (nsec): init ebpf done: 7614599057
+Startup trace (nsec): init ebpf vm: 7617963327
+Startup trace (nsec): jit ebpf: 7621222133
+Startup trace (nsec): init ebpf done: 7624520237
+Startup trace (nsec): init ebpf vm: 7627890090
+Startup trace (nsec): jit ebpf: 7631150651
+Startup trace (nsec): init ebpf done: 7634449926
+Startup trace (nsec): init ebpf vm: 7637811604
+Startup trace (nsec): jit ebpf: 7641069438
+Startup trace (nsec): init ebpf done: 7644367652
+Startup trace (nsec): init ebpf vm: 7647720902
+Startup trace (nsec): jit ebpf: 7650979953
+Startup trace (nsec): init ebpf done: 7654277183
+Startup trace (nsec): init ebpf vm: 7657630370
+Startup trace (nsec): jit ebpf: 7660907143
+Startup trace (nsec): init ebpf done: 7664214337
+Startup trace (nsec): init ebpf vm: 7667570875
+Startup trace (nsec): jit ebpf: 7670837742
+Startup trace (nsec): init ebpf done: 7674141217
+Startup trace (nsec): init ebpf vm: 7677504672
+Startup trace (nsec): jit ebpf: 7680768363
+Startup trace (nsec): init ebpf done: 7684070574
+Startup trace (nsec): init ebpf vm: 7687432241
+Startup trace (nsec): jit ebpf: 7690705521
+Startup trace (nsec): init ebpf done: 7694011105
+Startup trace (nsec): init ebpf vm: 7697384480
+Startup trace (nsec): jit ebpf: 7700641770
+Startup trace (nsec): init ebpf done: 7703943898
+Startup trace (nsec): init ebpf vm: 7707300498
+Startup trace (nsec): jit ebpf: 7710556740
+Startup trace (nsec): init ebpf done: 7713861358
+Startup trace (nsec): init ebpf vm: 7717215391
+Startup trace (nsec): jit ebpf: 7720473840
+Startup trace (nsec): init ebpf done: 7723779210
+Startup trace (nsec): init ebpf vm: 7727123521
+Startup trace (nsec): jit ebpf: 7730385954
+Startup trace (nsec): init ebpf done: 7733698621
+Startup trace (nsec): init ebpf vm: 7737053068
+Startup trace (nsec): jit ebpf: 7740316464
+Startup trace (nsec): init ebpf done: 7743621355
+Startup trace (nsec): init ebpf vm: 7746983032
+Startup trace (nsec): jit ebpf: 7750250327
+Startup trace (nsec): init ebpf done: 7753556501
+Startup trace (nsec): init ebpf vm: 7756907134
+Startup trace (nsec): jit ebpf: 7760172806
+Startup trace (nsec): init ebpf done: 7763475227
+Startup trace (nsec): init ebpf vm: 7766838536
+Startup trace (nsec): jit ebpf: 7770118139
+Startup trace (nsec): init ebpf done: 7773415640
+Startup trace (nsec): init ebpf vm: 7776761072
+Startup trace (nsec): jit ebpf: 7780019563
+Startup trace (nsec): init ebpf done: 7783317396
+Startup trace (nsec): init ebpf vm: 7786674846
+Startup trace (nsec): jit ebpf: 7789936274
+Startup trace (nsec): init ebpf done: 7793244654
+Startup trace (nsec): init ebpf vm: 7796594759
+Startup trace (nsec): jit ebpf: 7799858586
+Startup trace (nsec): init ebpf done: 7803160811
+Startup trace (nsec): init ebpf vm: 7806521782
+Startup trace (nsec): jit ebpf: 7809791707
+Startup trace (nsec): init ebpf done: 7813095418
+Startup trace (nsec): init ebpf vm: 7816462508
+Startup trace (nsec): jit ebpf: 7819730757
+Startup trace (nsec): init ebpf done: 7823037472
+Startup trace (nsec): init ebpf vm: 7826401900
+Startup trace (nsec): jit ebpf: 7829672187
+Startup trace (nsec): init ebpf done: 7832993548
+Startup trace (nsec): init ebpf vm: 7836351385
+Startup trace (nsec): jit ebpf: 7839617479
+Startup trace (nsec): init ebpf done: 7842932966
+Startup trace (nsec): init ebpf vm: 7846280636
+Startup trace (nsec): jit ebpf: 7849534183
+Startup trace (nsec): init ebpf done: 7852837056
+Startup trace (nsec): init ebpf vm: 7856187141
+Startup trace (nsec): jit ebpf: 7859445677
+Startup trace (nsec): init ebpf done: 7862747942
+Startup trace (nsec): init ebpf vm: 7866100700
+Startup trace (nsec): jit ebpf: 7869359486
+Startup trace (nsec): init ebpf done: 7872663940
+Startup trace (nsec): init ebpf vm: 7876032215
+Startup trace (nsec): jit ebpf: 7879291523
+Startup trace (nsec): init ebpf done: 7882597429
+Startup trace (nsec): init ebpf vm: 7885948476
+Startup trace (nsec): jit ebpf: 7889209646
+Startup trace (nsec): init ebpf done: 7892512253
+Startup trace (nsec): init ebpf vm: 7895866263
+Startup trace (nsec): jit ebpf: 7899136062
+Startup trace (nsec): init ebpf done: 7902437212
+Startup trace (nsec): init ebpf vm: 7905790685
+Startup trace (nsec): jit ebpf: 7909053374
+Startup trace (nsec): init ebpf done: 7912370062
+Startup trace (nsec): init ebpf vm: 7915723096
+Startup trace (nsec): jit ebpf: 7918979810
+Startup trace (nsec): init ebpf done: 7922278733
+Startup trace (nsec): init ebpf vm: 7925621507
+Startup trace (nsec): jit ebpf: 7928894770
+Startup trace (nsec): init ebpf done: 7932192437
+Startup trace (nsec): init ebpf vm: 7935540661
+Startup trace (nsec): jit ebpf: 7938799593
+Startup trace (nsec): init ebpf done: 7942100006
+Startup trace (nsec): init ebpf vm: 7945455217
+Startup trace (nsec): jit ebpf: 7948735178
+Startup trace (nsec): init ebpf done: 7952037757
+Startup trace (nsec): init ebpf vm: 7955393840
+Startup trace (nsec): jit ebpf: 7958660437
+Startup trace (nsec): init ebpf done: 7961966593
+Startup trace (nsec): init ebpf vm: 7965324244
+Startup trace (nsec): jit ebpf: 7968587765
+Startup trace (nsec): init ebpf done: 7971893927
+Startup trace (nsec): init ebpf vm: 7975243374
+Startup trace (nsec): jit ebpf: 7978514818
+Startup trace (nsec): init ebpf done: 7981823950
+Startup trace (nsec): init ebpf vm: 7985180838
+Startup trace (nsec): jit ebpf: 7988441130
+Startup trace (nsec): init ebpf done: 7991760017
+Startup trace (nsec): init ebpf vm: 7995112563
+Startup trace (nsec): jit ebpf: 7998373862
+Startup trace (nsec): init ebpf done: 8001680565
+Startup trace (nsec): init ebpf vm: 8005033248
+Startup trace (nsec): jit ebpf: 8008292437
+Startup trace (nsec): init ebpf done: 8011593107
+Startup trace (nsec): init ebpf vm: 8014947232
+Startup trace (nsec): jit ebpf: 8018209773
+Startup trace (nsec): init ebpf done: 8021540414
+Startup trace (nsec): init ebpf vm: 8024897653
+Startup trace (nsec): jit ebpf: 8028163981
+Startup trace (nsec): init ebpf done: 8031469977
+Startup trace (nsec): init ebpf vm: 8034823090
+Startup trace (nsec): jit ebpf: 8038085464
+Startup trace (nsec): init ebpf done: 8041394184
+Startup trace (nsec): init ebpf vm: 8044746112
+Startup trace (nsec): jit ebpf: 8048010355
+Startup trace (nsec): init ebpf done: 8051314808
+Startup trace (nsec): init ebpf vm: 8054684406
+Startup trace (nsec): jit ebpf: 8057968823
+Startup trace (nsec): init ebpf done: 8061276805
+Startup trace (nsec): init ebpf vm: 8064639504
+Startup trace (nsec): jit ebpf: 8067909537
+Startup trace (nsec): init ebpf done: 8071220219
+Startup trace (nsec): init ebpf vm: 8074573470
+Startup trace (nsec): jit ebpf: 8077842795
+Startup trace (nsec): init ebpf done: 8081156726
+Startup trace (nsec): init ebpf vm: 8084518026
+Startup trace (nsec): jit ebpf: 8087793960
+Startup trace (nsec): init ebpf done: 8091116830
+Startup trace (nsec): init ebpf vm: 8094463819
+Startup trace (nsec): jit ebpf: 8097727697
+Startup trace (nsec): init ebpf done: 8101029396
+Startup trace (nsec): init ebpf vm: 8104391515
+Startup trace (nsec): jit ebpf: 8107662194
+Startup trace (nsec): init ebpf done: 8110969264
+Startup trace (nsec): init ebpf vm: 8114314425
+Startup trace (nsec): jit ebpf: 8117581709
+Startup trace (nsec): init ebpf done: 8120906869
+Startup trace (nsec): init ebpf vm: 8124254239
+Startup trace (nsec): jit ebpf: 8127535258
+Startup trace (nsec): init ebpf done: 8130848449
+Startup trace (nsec): init ebpf vm: 8134201760
+Startup trace (nsec): jit ebpf: 8137467336
+Startup trace (nsec): init ebpf done: 8140779252
+Startup trace (nsec): init ebpf vm: 8144149029
+Startup trace (nsec): jit ebpf: 8147415498
+Startup trace (nsec): init ebpf done: 8150723735
+Startup trace (nsec): init ebpf vm: 8154074208
+Startup trace (nsec): jit ebpf: 8157341728
+Startup trace (nsec): init ebpf done: 8160651096
+Startup trace (nsec): init ebpf vm: 8164025471
+Startup trace (nsec): jit ebpf: 8167289534
+Startup trace (nsec): init ebpf done: 8170594781
+Startup trace (nsec): init ebpf vm: 8173955300
+Startup trace (nsec): jit ebpf: 8177217413
+Startup trace (nsec): init ebpf done: 8180518710
+Startup trace (nsec): init ebpf vm: 8183885708
+Startup trace (nsec): jit ebpf: 8187150617
+Startup trace (nsec): init ebpf done: 8190453806
+Startup trace (nsec): init ebpf vm: 8193818913
+Startup trace (nsec): jit ebpf: 8197082878
+Startup trace (nsec): init ebpf done: 8200401096
+Startup trace (nsec): init ebpf vm: 8203765395
+Startup trace (nsec): jit ebpf: 8207031718
+Startup trace (nsec): init ebpf done: 8210343667
+Startup trace (nsec): init ebpf vm: 8213713382
+Startup trace (nsec): jit ebpf: 8216980175
+Startup trace (nsec): init ebpf done: 8220286397
+Startup trace (nsec): init ebpf vm: 8223643827
+Startup trace (nsec): jit ebpf: 8226914462
+Startup trace (nsec): init ebpf done: 8230223642
+Startup trace (nsec): init ebpf vm: 8233588646
+Startup trace (nsec): jit ebpf: 8236866881
+Startup trace (nsec): init ebpf done: 8240172610
+Startup trace (nsec): init ebpf vm: 8243517541
+Startup trace (nsec): jit ebpf: 8246781904
+Startup trace (nsec): init ebpf done: 8250092020
+Startup trace (nsec): init ebpf vm: 8253449407
+Startup trace (nsec): jit ebpf: 8256717341
+Startup trace (nsec): init ebpf done: 8260023685
+Startup trace (nsec): init ebpf vm: 8263382257
+Startup trace (nsec): jit ebpf: 8266647252
+Startup trace (nsec): init ebpf done: 8269964990
+Startup trace (nsec): init ebpf vm: 8273326164
+Startup trace (nsec): jit ebpf: 8276593041
+Startup trace (nsec): init ebpf done: 8279901636
+Startup trace (nsec): init ebpf vm: 8283265400
+Startup trace (nsec): jit ebpf: 8286534002
+Startup trace (nsec): init ebpf done: 8289851609
+Startup trace (nsec): init ebpf vm: 8293210036
+Startup trace (nsec): jit ebpf: 8296477357
+Startup trace (nsec): init ebpf done: 8299788287
+Startup trace (nsec): init ebpf vm: 8303153778
+Startup trace (nsec): jit ebpf: 8306434881
+Startup trace (nsec): init ebpf done: 8309745290
+Startup trace (nsec): init ebpf vm: 8313094352
+Startup trace (nsec): jit ebpf: 8316366200
+Startup trace (nsec): init ebpf done: 8319674865
+Startup trace (nsec): init ebpf vm: 8323025454
+Startup trace (nsec): jit ebpf: 8326289345
+Startup trace (nsec): init ebpf done: 8329593681
+Startup trace (nsec): init ebpf vm: 8332945373
+Startup trace (nsec): jit ebpf: 8336206528
+Startup trace (nsec): init ebpf done: 8339506194
+Startup trace (nsec): init ebpf vm: 8342885235
+Startup trace (nsec): jit ebpf: 8346155076
+Startup trace (nsec): init ebpf done: 8349460738
+Startup trace (nsec): init ebpf vm: 8352824886
+Startup trace (nsec): jit ebpf: 8356090196
+Startup trace (nsec): init ebpf done: 8359396235
+Startup trace (nsec): init ebpf vm: 8362756204
+Startup trace (nsec): jit ebpf: 8366022005
+Startup trace (nsec): init ebpf done: 8369326205
+Startup trace (nsec): init ebpf vm: 8372685153
+Startup trace (nsec): jit ebpf: 8375952718
+Startup trace (nsec): init ebpf done: 8379265614
+Startup trace (nsec): init ebpf vm: 8382617473
+Startup trace (nsec): jit ebpf: 8385888151
+Startup trace (nsec): init ebpf done: 8389190370
+Startup trace (nsec): init ebpf vm: 8392548814
+Startup trace (nsec): jit ebpf: 8395817471
+Startup trace (nsec): init ebpf done: 8399120233
+Startup trace (nsec): init ebpf vm: 8402478176
+Startup trace (nsec): jit ebpf: 8405745879
+Startup trace (nsec): init ebpf done: 8409048934
+Startup trace (nsec): init ebpf vm: 8412403447
+Startup trace (nsec): jit ebpf: 8415684762
+Startup trace (nsec): init ebpf done: 8419000173
+Startup trace (nsec): init ebpf vm: 8422362617
+Startup trace (nsec): jit ebpf: 8425629340
+Startup trace (nsec): init ebpf done: 8428940195
+Startup trace (nsec): init ebpf vm: 8432298336
+Startup trace (nsec): jit ebpf: 8435565297
+Startup trace (nsec): init ebpf done: 8438875623
+Startup trace (nsec): init ebpf vm: 8442243210
+Startup trace (nsec): jit ebpf: 8445508828
+Startup trace (nsec): init ebpf done: 8448831961
+Startup trace (nsec): init ebpf vm: 8452186396
+Startup trace (nsec): jit ebpf: 8455447055
+Startup trace (nsec): init ebpf done: 8458758534
+Startup trace (nsec): init ebpf vm: 8462117789
+Startup trace (nsec): jit ebpf: 8465380301
+Startup trace (nsec): init ebpf done: 8468686066
+Startup trace (nsec): init ebpf vm: 8472043882
+Startup trace (nsec): jit ebpf: 8475304792
+Startup trace (nsec): init ebpf done: 8478605897
+Startup trace (nsec): init ebpf vm: 8481964830
+Startup trace (nsec): jit ebpf: 8485240089
+Startup trace (nsec): init ebpf done: 8488548105
+Startup trace (nsec): init ebpf vm: 8491912218
+Startup trace (nsec): jit ebpf: 8495175346
+Startup trace (nsec): init ebpf done: 8498484433
+Startup trace (nsec): init ebpf vm: 8501845854
+Startup trace (nsec): jit ebpf: 8505114164
+Startup trace (nsec): init ebpf done: 8508420297
+Startup trace (nsec): init ebpf vm: 8511771928
+Startup trace (nsec): jit ebpf: 8515036030
+Startup trace (nsec): init ebpf done: 8518340174
+Startup trace (nsec): init ebpf vm: 8521728608
+Startup trace (nsec): jit ebpf: 8524990821
+Startup trace (nsec): init ebpf done: 8528294183
+Startup trace (nsec): init ebpf vm: 8531647474
+Startup trace (nsec): jit ebpf: 8534915952
+Startup trace (nsec): init ebpf done: 8538224132
+Startup trace (nsec): init ebpf vm: 8541586811
+Startup trace (nsec): jit ebpf: 8544856970
+Startup trace (nsec): init ebpf done: 8548159767
+Startup trace (nsec): init ebpf vm: 8551512844
+Startup trace (nsec): jit ebpf: 8554779769
+Startup trace (nsec): init ebpf done: 8558094588
+Startup trace (nsec): init ebpf vm: 8561449700
+Startup trace (nsec): jit ebpf: 8564719340
+Startup trace (nsec): init ebpf done: 8568032388
+Startup trace (nsec): init ebpf vm: 8571386920
+Startup trace (nsec): jit ebpf: 8574659406
+Startup trace (nsec): init ebpf done: 8577964404
+Startup trace (nsec): init ebpf vm: 8581314377
+Startup trace (nsec): jit ebpf: 8584586819
+Startup trace (nsec): init ebpf done: 8587893141
+Startup trace (nsec): init ebpf vm: 8591246487
+Startup trace (nsec): jit ebpf: 8594524541
+Startup trace (nsec): init ebpf done: 8597833281
+Startup trace (nsec): init ebpf vm: 8601196717
+Startup trace (nsec): jit ebpf: 8604460053
+Startup trace (nsec): init ebpf done: 8607766995
+Startup trace (nsec): init ebpf vm: 8611123674
+Startup trace (nsec): jit ebpf: 8614382483
+Startup trace (nsec): init ebpf done: 8617690429
+Startup trace (nsec): init ebpf vm: 8621048631
+Startup trace (nsec): jit ebpf: 8624309756
+Startup trace (nsec): init ebpf done: 8627619356
+Startup trace (nsec): init ebpf vm: 8630988931
+Startup trace (nsec): jit ebpf: 8634255941
+Startup trace (nsec): init ebpf done: 8637572057
+Startup trace (nsec): init ebpf vm: 8640924105
+Startup trace (nsec): jit ebpf: 8644187333
+Startup trace (nsec): init ebpf done: 8647491705
+Startup trace (nsec): init ebpf vm: 8650860539
+Startup trace (nsec): jit ebpf: 8654124242
+Startup trace (nsec): init ebpf done: 8657435955
+Startup trace (nsec): init ebpf vm: 8660801691
+Startup trace (nsec): jit ebpf: 8664081334
+Startup trace (nsec): init ebpf done: 8667386379
+Startup trace (nsec): init ebpf vm: 8670737205
+Startup trace (nsec): jit ebpf: 8673998445
+Startup trace (nsec): init ebpf done: 8677302977
+Startup trace (nsec): init ebpf vm: 8680660017
+Startup trace (nsec): jit ebpf: 8683924770
+Startup trace (nsec): init ebpf done: 8687227199
+Startup trace (nsec): init ebpf vm: 8690584698
+Startup trace (nsec): jit ebpf: 8693845914
+Startup trace (nsec): init ebpf done: 8697162631
+Startup trace (nsec): init ebpf vm: 8700530767
+Startup trace (nsec): jit ebpf: 8703806472
+Startup trace (nsec): init ebpf done: 8707116176
+Startup trace (nsec): init ebpf vm: 8710468696
+Startup trace (nsec): jit ebpf: 8713739297
+Startup trace (nsec): init ebpf done: 8717053162
+Startup trace (nsec): init ebpf vm: 8720416020
+Startup trace (nsec): jit ebpf: 8723685177
+Startup trace (nsec): init ebpf done: 8726992206
+Startup trace (nsec): init ebpf vm: 8730361880
+Startup trace (nsec): jit ebpf: 8733624171
+Startup trace (nsec): init ebpf done: 8736940730
+Startup trace (nsec): init ebpf vm: 8740288152
+Startup trace (nsec): jit ebpf: 8743549395
+Startup trace (nsec): init ebpf done: 8746857981
+Startup trace (nsec): init ebpf vm: 8750203702
+Startup trace (nsec): jit ebpf: 8753468133
+Startup trace (nsec): init ebpf done: 8756775208
+Startup trace (nsec): init ebpf vm: 8760138803
+Startup trace (nsec): jit ebpf: 8763402801
+Startup trace (nsec): init ebpf done: 8766712365
+Startup trace (nsec): init ebpf vm: 8770068327
+Startup trace (nsec): jit ebpf: 8773341412
+Startup trace (nsec): init ebpf done: 8776653287
+Startup trace (nsec): init ebpf vm: 8779999588
+Startup trace (nsec): jit ebpf: 8783264537
+Startup trace (nsec): init ebpf done: 8786569261
+Startup trace (nsec): init ebpf vm: 8789922626
+Startup trace (nsec): jit ebpf: 8793187453
+Startup trace (nsec): init ebpf done: 8796490964
+Startup trace (nsec): init ebpf vm: 8799844075
+Startup trace (nsec): jit ebpf: 8803106274
+Startup trace (nsec): init ebpf done: 8806411804
+Startup trace (nsec): init ebpf vm: 8809789361
+Startup trace (nsec): jit ebpf: 8813050707
+Startup trace (nsec): init ebpf done: 8816352776
+Startup trace (nsec): init ebpf vm: 8819716511
+Startup trace (nsec): jit ebpf: 8822979345
+Startup trace (nsec): init ebpf done: 8826281720
+Startup trace (nsec): init ebpf vm: 8829630972
+Startup trace (nsec): jit ebpf: 8832896711
+Startup trace (nsec): init ebpf done: 8836206099
+Startup trace (nsec): init ebpf vm: 8839563098
+Startup trace (nsec): jit ebpf: 8842839458
+Startup trace (nsec): init ebpf done: 8846143449
+Startup trace (nsec): init ebpf vm: 8849503727
+Startup trace (nsec): jit ebpf: 8852771397
+Startup trace (nsec): init ebpf done: 8856077343
+Startup trace (nsec): init ebpf vm: 8859433474
+Startup trace (nsec): jit ebpf: 8862699423
+Startup trace (nsec): init ebpf done: 8866004215
+Startup trace (nsec): init ebpf vm: 8869361394
+Startup trace (nsec): jit ebpf: 8872627467
+Startup trace (nsec): init ebpf done: 8875930861
+Startup trace (nsec): init ebpf vm: 8879288765
+Startup trace (nsec): jit ebpf: 8882547953
+Startup trace (nsec): init ebpf done: 8885851582
+Startup trace (nsec): init ebpf vm: 8889206646
+Startup trace (nsec): jit ebpf: 8892468243
+Startup trace (nsec): init ebpf done: 8895775751
+Startup trace (nsec): init ebpf vm: 8899123718
+Startup trace (nsec): jit ebpf: 8902385251
+Startup trace (nsec): init ebpf done: 8905700069
+Startup trace (nsec): init ebpf vm: 8909055189
+Startup trace (nsec): jit ebpf: 8912320304
+Startup trace (nsec): init ebpf done: 8915641408
+Startup trace (nsec): init ebpf vm: 8918991478
+Startup trace (nsec): jit ebpf: 8922258470
+Startup trace (nsec): init ebpf done: 8925565406
+Startup trace (nsec): init ebpf vm: 8928931511
+Startup trace (nsec): jit ebpf: 8932196530
+Startup trace (nsec): init ebpf done: 8935500704
+Startup trace (nsec): init ebpf vm: 8938876230
+Startup trace (nsec): jit ebpf: 8942143743
+Startup trace (nsec): init ebpf done: 8945448711
+Startup trace (nsec): init ebpf vm: 8948813869
+Startup trace (nsec): jit ebpf: 8952088735
+Startup trace (nsec): init ebpf done: 8955388234
+Startup trace (nsec): init ebpf vm: 8958746691
+Startup trace (nsec): jit ebpf: 8962017433
+Startup trace (nsec): init ebpf done: 8965318595
+Startup trace (nsec): init ebpf vm: 8968675296
+Startup trace (nsec): jit ebpf: 8971938257
+Startup trace (nsec): init ebpf done: 8975241770
+Startup trace (nsec): init ebpf vm: 8978602794
+Startup trace (nsec): jit ebpf: 8981867128
+Startup trace (nsec): init ebpf done: 8985166640
+Startup trace (nsec): init ebpf vm: 8988536720
+Startup trace (nsec): jit ebpf: 8991805263
+Startup trace (nsec): init ebpf done: 8995106930
+Startup trace (nsec): init ebpf vm: 8998457489
+Startup trace (nsec): jit ebpf: 9001724997
+Startup trace (nsec): init ebpf done: 9005027297
+Startup trace (nsec): init ebpf vm: 9008382433
+Startup trace (nsec): jit ebpf: 9011645165
+Startup trace (nsec): init ebpf done: 9014948311
+Startup trace (nsec): init ebpf vm: 9018323350
+Startup trace (nsec): jit ebpf: 9021599865
+Startup trace (nsec): init ebpf done: 9024906343
+Startup trace (nsec): init ebpf vm: 9028250339
+Startup trace (nsec): jit ebpf: 9031513185
+Startup trace (nsec): init ebpf done: 9034815068
+Startup trace (nsec): init ebpf vm: 9038160218
+Startup trace (nsec): jit ebpf: 9041419762
+Startup trace (nsec): init ebpf done: 9044735401
+Startup trace (nsec): init ebpf vm: 9048084067
+Startup trace (nsec): jit ebpf: 9051345903
+Startup trace (nsec): init ebpf done: 9054650222
+Startup trace (nsec): init ebpf vm: 9058023158
+Startup trace (nsec): jit ebpf: 9061285428
+Startup trace (nsec): init ebpf done: 9064592795
+Startup trace (nsec): init ebpf vm: 9067956183
+Startup trace (nsec): jit ebpf: 9071215979
+Startup trace (nsec): init ebpf done: 9074522413
+Startup trace (nsec): init ebpf vm: 9077882761
+Startup trace (nsec): jit ebpf: 9081147880
+Startup trace (nsec): init ebpf done: 9084450054
+Startup trace (nsec): init ebpf vm: 9087805455
+Startup trace (nsec): jit ebpf: 9091073946
+Startup trace (nsec): init ebpf done: 9094390380
+Startup trace (nsec): init ebpf vm: 9097745182
+Startup trace (nsec): jit ebpf: 9101009245
+Startup trace (nsec): init ebpf done: 9104313501
+Startup trace (nsec): init ebpf vm: 9107666904
+Startup trace (nsec): jit ebpf: 9110931121
+Startup trace (nsec): init ebpf done: 9114233539
+Startup trace (nsec): init ebpf vm: 9117595866
+Startup trace (nsec): jit ebpf: 9120867174
+Startup trace (nsec): init ebpf done: 9124170291
+Startup trace (nsec): init ebpf vm: 9127520457
+Startup trace (nsec): jit ebpf: 9130803988
+Startup trace (nsec): init ebpf done: 9134111753
+Startup trace (nsec): init ebpf vm: 9137475096
+Startup trace (nsec): jit ebpf: 9140746183
+Startup trace (nsec): init ebpf done: 9144060965
+Startup trace (nsec): init ebpf vm: 9147432322
+Startup trace (nsec): jit ebpf: 9150703455
+Startup trace (nsec): init ebpf done: 9154009279
+Startup trace (nsec): init ebpf vm: 9157363695
+Startup trace (nsec): jit ebpf: 9160635234
+Startup trace (nsec): init ebpf done: 9163940694
+Startup trace (nsec): init ebpf vm: 9167344018
+Startup trace (nsec): jit ebpf: 9170638074
+Startup trace (nsec): init ebpf done: 9173966545
+Startup trace (nsec): init ebpf vm: 9177360279
+Startup trace (nsec): jit ebpf: 9180651327
+Startup trace (nsec): init ebpf done: 9183978762
+Startup trace (nsec): init ebpf vm: 9187366984
+Startup trace (nsec): jit ebpf: 9190659146
+Startup trace (nsec): init ebpf done: 9193983309
+Startup trace (nsec): init ebpf vm: 9197357435
+Startup trace (nsec): jit ebpf: 9200650699
+Startup trace (nsec): init ebpf done: 9203980707
+Startup trace (nsec): init ebpf vm: 9207368518
+Startup trace (nsec): jit ebpf: 9210667943
+Startup trace (nsec): init ebpf done: 9213989467
+Startup trace (nsec): init ebpf vm: 9217362137
+Startup trace (nsec): jit ebpf: 9220648729
+Startup trace (nsec): init ebpf done: 9223980086
+Startup trace (nsec): init ebpf vm: 9227365948
+Startup trace (nsec): jit ebpf: 9230657673
+Startup trace (nsec): init ebpf done: 9233986771
+Startup trace (nsec): init ebpf vm: 9237374528
+Startup trace (nsec): jit ebpf: 9240665820
+Startup trace (nsec): init ebpf done: 9243993881
+Startup trace (nsec): init ebpf vm: 9247381834
+Startup trace (nsec): jit ebpf: 9250686110
+Startup trace (nsec): init ebpf done: 9254016295
+Startup trace (nsec): init ebpf vm: 9257405093
+Startup trace (nsec): jit ebpf: 9260700698
+Startup trace (nsec): init ebpf done: 9264033161
+Startup trace (nsec): init ebpf vm: 9267424248
+Startup trace (nsec): jit ebpf: 9270717710
+Startup trace (nsec): init ebpf done: 9274051884
+Startup trace (nsec): init ebpf vm: 9277436143
+Startup trace (nsec): jit ebpf: 9280730719
+Startup trace (nsec): init ebpf done: 9284060808
+Startup trace (nsec): init ebpf vm: 9287449039
+Startup trace (nsec): jit ebpf: 9290739066
+Startup trace (nsec): init ebpf done: 9294070982
+Startup trace (nsec): init ebpf vm: 9297457473
+Startup trace (nsec): jit ebpf: 9300747185
+Startup trace (nsec): init ebpf done: 9304076424
+Startup trace (nsec): init ebpf vm: 9307449184
+Startup trace (nsec): jit ebpf: 9310743228
+Startup trace (nsec): init ebpf done: 9314075607
+Startup trace (nsec): init ebpf vm: 9317461655
+Startup trace (nsec): jit ebpf: 9320757751
+Startup trace (nsec): init ebpf done: 9324085128
+Startup trace (nsec): init ebpf vm: 9327473618
+Startup trace (nsec): jit ebpf: 9330772527
+Startup trace (nsec): init ebpf done: 9334101162
+Startup trace (nsec): init ebpf vm: 9337499323
+Startup trace (nsec): jit ebpf: 9340792553
+Startup trace (nsec): init ebpf done: 9344119417
+Startup trace (nsec): init ebpf vm: 9347505836
+Startup trace (nsec): jit ebpf: 9350796815
+Startup trace (nsec): init ebpf done: 9354130147
+Startup trace (nsec): init ebpf vm: 9357518081
+Startup trace (nsec): jit ebpf: 9360811571
+Startup trace (nsec): init ebpf done: 9364142224
+Startup trace (nsec): init ebpf vm: 9367530646
+Startup trace (nsec): jit ebpf: 9370825647
+Startup trace (nsec): init ebpf done: 9374156358
+Startup trace (nsec): init ebpf vm: 9377547040
+Startup trace (nsec): jit ebpf: 9380842465
+Startup trace (nsec): init ebpf done: 9384175927
+Startup trace (nsec): init ebpf vm: 9387566123
+Startup trace (nsec): jit ebpf: 9390858889
+Startup trace (nsec): init ebpf done: 9394194413
+Startup trace (nsec): init ebpf vm: 9397582508
+Startup trace (nsec): jit ebpf: 9400878177
+Startup trace (nsec): init ebpf done: 9404219564
+Startup trace (nsec): init ebpf vm: 9407614359
+Startup trace (nsec): jit ebpf: 9410903172
+Startup trace (nsec): init ebpf done: 9414235177
+Startup trace (nsec): init ebpf vm: 9417628244
+Startup trace (nsec): jit ebpf: 9420910025
+Startup trace (nsec): init ebpf done: 9424234197
+Startup trace (nsec): init ebpf vm: 9427617341
+Startup trace (nsec): jit ebpf: 9430904734
+Startup trace (nsec): init ebpf done: 9434235949
+Startup trace (nsec): init ebpf vm: 9437622106
+Startup trace (nsec): jit ebpf: 9440904620
+Startup trace (nsec): init ebpf done: 9444227852
+Startup trace (nsec): init ebpf vm: 9447626794
+Startup trace (nsec): jit ebpf: 9450907360
+Startup trace (nsec): init ebpf done: 9454229266
+Startup trace (nsec): init ebpf vm: 9457622578
+Startup trace (nsec): jit ebpf: 9460905521
+Startup trace (nsec): init ebpf done: 9464225116
+Startup trace (nsec): init ebpf vm: 9467619001
+Startup trace (nsec): jit ebpf: 9470906087
+Startup trace (nsec): init ebpf done: 9474229503
+Startup trace (nsec): init ebpf vm: 9477614387
+Startup trace (nsec): jit ebpf: 9480899751
+Startup trace (nsec): init ebpf done: 9484221502
+Startup trace (nsec): init ebpf vm: 9487623319
+Startup trace (nsec): jit ebpf: 9490911688
+Startup trace (nsec): init ebpf done: 9494238802
+Startup trace (nsec): init ebpf vm: 9497626394
+Startup trace (nsec): jit ebpf: 9500909339
+Startup trace (nsec): init ebpf done: 9504237244
+Startup trace (nsec): init ebpf vm: 9507636408
+Startup trace (nsec): jit ebpf: 9510921743
+Startup trace (nsec): init ebpf done: 9514244218
+Startup trace (nsec): init ebpf vm: 9517628495
+Startup trace (nsec): jit ebpf: 9520909146
+Startup trace (nsec): init ebpf done: 9524234373
+Startup trace (nsec): init ebpf vm: 9527643071
+Startup trace (nsec): jit ebpf: 9530931765
+Startup trace (nsec): init ebpf done: 9534254311
+Startup trace (nsec): init ebpf vm: 9537657025
+Startup trace (nsec): jit ebpf: 9540948079
+Startup trace (nsec): init ebpf done: 9544272667
+Startup trace (nsec): init ebpf vm: 9547664170
+Startup trace (nsec): jit ebpf: 9550951241
+Startup trace (nsec): init ebpf done: 9554278342
+Startup trace (nsec): init ebpf vm: 9557669201
+Startup trace (nsec): jit ebpf: 9560955155
+Startup trace (nsec): init ebpf done: 9564284215
+Startup trace (nsec): init ebpf vm: 9567676877
+Startup trace (nsec): jit ebpf: 9570963946
+Startup trace (nsec): init ebpf done: 9574292630
+Startup trace (nsec): init ebpf vm: 9577680630
+Startup trace (nsec): jit ebpf: 9580968992
+Startup trace (nsec): init ebpf done: 9584294805
+Startup trace (nsec): init ebpf vm: 9587695965
+Startup trace (nsec): jit ebpf: 9590984359
+Startup trace (nsec): init ebpf done: 9594308908
+Startup trace (nsec): init ebpf vm: 9597685728
+Startup trace (nsec): jit ebpf: 9600969622
+Startup trace (nsec): init ebpf done: 9604299153
+Startup trace (nsec): init ebpf vm: 9607699319
+Startup trace (nsec): jit ebpf: 9610984006
+Startup trace (nsec): init ebpf done: 9614306468
+Startup trace (nsec): init ebpf vm: 9617689504
+Startup trace (nsec): jit ebpf: 9620973588
+Startup trace (nsec): init ebpf done: 9624300792
+Startup trace (nsec): init ebpf vm: 9627691108
+Startup trace (nsec): jit ebpf: 9630977195
+Startup trace (nsec): init ebpf done: 9634301554
+Startup trace (nsec): init ebpf vm: 9637677923
+Startup trace (nsec): jit ebpf: 9640969673
+Startup trace (nsec): init ebpf done: 9644294502
+Startup trace (nsec): init ebpf vm: 9647691618
+Startup trace (nsec): jit ebpf: 9650976039
+Startup trace (nsec): init ebpf done: 9654298979
+Startup trace (nsec): init ebpf vm: 9657701645
+Startup trace (nsec): jit ebpf: 9660987681
+Startup trace (nsec): init ebpf done: 9664312969
+Startup trace (nsec): init ebpf vm: 9667726123
+Startup trace (nsec): jit ebpf: 9671012897
+Startup trace (nsec): init ebpf done: 9674333059
+Startup trace (nsec): init ebpf vm: 9677720243
+Startup trace (nsec): jit ebpf: 9681007596
+Startup trace (nsec): init ebpf done: 9684333550
+Startup trace (nsec): init ebpf vm: 9687717577
+Startup trace (nsec): jit ebpf: 9691001702
+Startup trace (nsec): init ebpf done: 9694324466
+Startup trace (nsec): init ebpf vm: 9697706489
+Startup trace (nsec): jit ebpf: 9700991646
+Startup trace (nsec): init ebpf done: 9704317935
+Startup trace (nsec): init ebpf vm: 9707717772
+Startup trace (nsec): jit ebpf: 9711001321
+Startup trace (nsec): init ebpf done: 9714328741
+Startup trace (nsec): init ebpf vm: 9717719997
+Startup trace (nsec): jit ebpf: 9721004137
+Startup trace (nsec): init ebpf done: 9724330269
+Startup trace (nsec): init ebpf vm: 9727717495
+Startup trace (nsec): jit ebpf: 9731004099
+Startup trace (nsec): init ebpf done: 9734329025
+Startup trace (nsec): init ebpf vm: 9737728617
+Startup trace (nsec): jit ebpf: 9741015729
+Startup trace (nsec): init ebpf done: 9744348100
+Startup trace (nsec): init ebpf vm: 9747736413
+Startup trace (nsec): jit ebpf: 9751019700
+Startup trace (nsec): init ebpf done: 9754343758
+Startup trace (nsec): init ebpf vm: 9757745312
+Startup trace (nsec): jit ebpf: 9761029694
+Startup trace (nsec): init ebpf done: 9764356141
+Startup trace (nsec): init ebpf vm: 9767748270
+Startup trace (nsec): jit ebpf: 9771043716
+Startup trace (nsec): init ebpf done: 9774370196
+Startup trace (nsec): init ebpf vm: 9777771710
+Startup trace (nsec): jit ebpf: 9781059691
+Startup trace (nsec): init ebpf done: 9784388865
+Startup trace (nsec): init ebpf vm: 9787787230
+Startup trace (nsec): jit ebpf: 9791069106
+Startup trace (nsec): init ebpf done: 9794397548
+Startup trace (nsec): init ebpf vm: 9797779886
+Startup trace (nsec): jit ebpf: 9801065802
+Startup trace (nsec): init ebpf done: 9804391883
+Startup trace (nsec): init ebpf vm: 9807779574
+Startup trace (nsec): jit ebpf: 9811065416
+Startup trace (nsec): init ebpf done: 9814390501
+Startup trace (nsec): init ebpf vm: 9817792836
+Startup trace (nsec): jit ebpf: 9821077276
+Startup trace (nsec): init ebpf done: 9824401636
+Startup trace (nsec): init ebpf vm: 9827798031
+Startup trace (nsec): jit ebpf: 9831084471
+Startup trace (nsec): init ebpf done: 9834409960
+Startup trace (nsec): init ebpf vm: 9837807761
+Startup trace (nsec): jit ebpf: 9841095048
+Startup trace (nsec): init ebpf done: 9844419252
+Startup trace (nsec): init ebpf vm: 9847806236
+Startup trace (nsec): jit ebpf: 9851091065
+Startup trace (nsec): init ebpf done: 9854417052
+Startup trace (nsec): init ebpf vm: 9857806581
+Startup trace (nsec): jit ebpf: 9861095967
+Startup trace (nsec): init ebpf done: 9864422796
+Startup trace (nsec): init ebpf vm: 9867821984
+Startup trace (nsec): jit ebpf: 9871108646
+Startup trace (nsec): init ebpf done: 9874439300
+Startup trace (nsec): init ebpf vm: 9877825578
+Startup trace (nsec): jit ebpf: 9881110794
+Startup trace (nsec): init ebpf done: 9884435270
+Startup trace (nsec): init ebpf vm: 9887820145
+Startup trace (nsec): jit ebpf: 9891106651
+Startup trace (nsec): init ebpf done: 9894431962
+Startup trace (nsec): init ebpf vm: 9897839114
+Startup trace (nsec): jit ebpf: 9901123006
+Startup trace (nsec): init ebpf done: 9904448350
+Startup trace (nsec): init ebpf vm: 9907840969
+Startup trace (nsec): jit ebpf: 9911128043
+Startup trace (nsec): init ebpf done: 9914470874
+Startup trace (nsec): init ebpf vm: 9917857290
+Startup trace (nsec): jit ebpf: 9921142876
+Startup trace (nsec): init ebpf done: 9924469898
+Startup trace (nsec): init ebpf vm: 9927859759
+Startup trace (nsec): jit ebpf: 9931141274
+Startup trace (nsec): init ebpf done: 9934462542
+Startup trace (nsec): init ebpf vm: 9937849037
+Startup trace (nsec): jit ebpf: 9941129506
+Startup trace (nsec): init ebpf done: 9944453461
+Startup trace (nsec): init ebpf vm: 9947845658
+Startup trace (nsec): jit ebpf: 9951132776
+Startup trace (nsec): init ebpf done: 9954462451
+Startup trace (nsec): init ebpf vm: 9957862450
+Startup trace (nsec): jit ebpf: 9961147479
+Startup trace (nsec): init ebpf done: 9964474054
+Startup trace (nsec): init ebpf vm: 9967862104
+Startup trace (nsec): jit ebpf: 9971145440
+Startup trace (nsec): init ebpf done: 9974468876
+Startup trace (nsec): init ebpf vm: 9977876071
+Startup trace (nsec): jit ebpf: 9981159636
+Startup trace (nsec): init ebpf done: 9984481149
+Startup trace (nsec): init ebpf vm: 9987871482
+Startup trace (nsec): jit ebpf: 9991152900
+Startup trace (nsec): init ebpf done: 9994477120
+Startup trace (nsec): init ebpf vm: 9997873900
+Startup trace (nsec): jit ebpf: 10001160275
+Startup trace (nsec): init ebpf done: 10004516268
+Startup trace (nsec): init ebpf vm: 10007935548
+Startup trace (nsec): jit ebpf: 10011249726
+Startup trace (nsec): init ebpf done: 10014608260
+Startup trace (nsec): init ebpf vm: 10018035816
+Startup trace (nsec): jit ebpf: 10021350665
+Startup trace (nsec): init ebpf done: 10024707182
+Startup trace (nsec): init ebpf vm: 10028121987
+Startup trace (nsec): jit ebpf: 10031436963
+Startup trace (nsec): init ebpf done: 10034794434
+Startup trace (nsec): init ebpf vm: 10038222969
+Startup trace (nsec): jit ebpf: 10041555601
+Startup trace (nsec): init ebpf done: 10044910806
+Startup trace (nsec): init ebpf vm: 10048329367
+Startup trace (nsec): jit ebpf: 10051643982
+Startup trace (nsec): init ebpf done: 10054994822
+Startup trace (nsec): init ebpf vm: 10058410220
+Startup trace (nsec): jit ebpf: 10061725705
+Startup trace (nsec): init ebpf done: 10065077119
+Startup trace (nsec): init ebpf vm: 10068503764
+Startup trace (nsec): jit ebpf: 10071824102
+Startup trace (nsec): init ebpf done: 10075177867
+Startup trace (nsec): init ebpf vm: 10078598071
+Startup trace (nsec): jit ebpf: 10081924727
+Startup trace (nsec): init ebpf done: 10085278914
+Startup trace (nsec): init ebpf vm: 10088685112
+Startup trace (nsec): jit ebpf: 10091998164
+Startup trace (nsec): init ebpf done: 10095349962
+Startup trace (nsec): init ebpf vm: 10098779800
+Startup trace (nsec): jit ebpf: 10102092020
+Startup trace (nsec): init ebpf done: 10105452657
+Startup trace (nsec): init ebpf vm: 10108853859
+Startup trace (nsec): jit ebpf: 10112165624
+Startup trace (nsec): init ebpf done: 10115518672
+Startup trace (nsec): init ebpf vm: 10118949760
+Startup trace (nsec): jit ebpf: 10122265321
+Startup trace (nsec): init ebpf done: 10125624069
+Startup trace (nsec): init ebpf vm: 10129041463
+Startup trace (nsec): jit ebpf: 10132353317
+Startup trace (nsec): init ebpf done: 10135710052
+Startup trace (nsec): init ebpf vm: 10139116908
+Startup trace (nsec): jit ebpf: 10142434852
+Startup trace (nsec): init ebpf done: 10145792865
+Startup trace (nsec): init ebpf vm: 10149216089
+Startup trace (nsec): jit ebpf: 10152533043
+Startup trace (nsec): init ebpf done: 10155889810
+Startup trace (nsec): init ebpf vm: 10159303025
+Startup trace (nsec): jit ebpf: 10162623564
+Startup trace (nsec): init ebpf done: 10165972838
+Startup trace (nsec): init ebpf vm: 10169410714
+Startup trace (nsec): jit ebpf: 10172727425
+Startup trace (nsec): init ebpf done: 10176076223
+Startup trace (nsec): init ebpf vm: 10179484324
+Startup trace (nsec): jit ebpf: 10182807495
+Startup trace (nsec): init ebpf done: 10186173324
+Startup trace (nsec): init ebpf vm: 10189591398
+Startup trace (nsec): jit ebpf: 10192906948
+Startup trace (nsec): init ebpf done: 10196260907
+Startup trace (nsec): init ebpf vm: 10199682702
+Startup trace (nsec): jit ebpf: 10202998520
+Startup trace (nsec): init ebpf done: 10206352074
+Startup trace (nsec): init ebpf vm: 10209787798
+Startup trace (nsec): jit ebpf: 10213100060
+Startup trace (nsec): init ebpf done: 10216454356
+Startup trace (nsec): init ebpf vm: 10219875324
+Startup trace (nsec): jit ebpf: 10223190129
+Startup trace (nsec): init ebpf done: 10226548632
+Startup trace (nsec): init ebpf vm: 10229961994
+Startup trace (nsec): jit ebpf: 10233291470
+Startup trace (nsec): init ebpf done: 10236649699
+Startup trace (nsec): init ebpf vm: 10240050985
+Startup trace (nsec): jit ebpf: 10243363168
+Startup trace (nsec): init ebpf done: 10246721591
+Startup trace (nsec): init ebpf vm: 10250142334
+Startup trace (nsec): jit ebpf: 10253450028
+Startup trace (nsec): init ebpf done: 10256808918
+Startup trace (nsec): init ebpf vm: 10260221121
+Startup trace (nsec): jit ebpf: 10263535540
+Startup trace (nsec): init ebpf done: 10266901519
+Startup trace (nsec): init ebpf vm: 10270324506
+Startup trace (nsec): jit ebpf: 10273643509
+Startup trace (nsec): init ebpf done: 10276999946
+Startup trace (nsec): init ebpf vm: 10280416192
+Startup trace (nsec): jit ebpf: 10283738069
+Startup trace (nsec): init ebpf done: 10287093220
+Startup trace (nsec): init ebpf vm: 10290531709
+Startup trace (nsec): jit ebpf: 10293852120
+Startup trace (nsec): init ebpf done: 10297208651
+Startup trace (nsec): init ebpf vm: 10300626630
+Startup trace (nsec): jit ebpf: 10303947599
+Startup trace (nsec): init ebpf done: 10307305598
+Startup trace (nsec): init ebpf vm: 10310736227
+Startup trace (nsec): jit ebpf: 10314052471
+Startup trace (nsec): init ebpf done: 10317408030
+Startup trace (nsec): init ebpf vm: 10320818602
+Startup trace (nsec): jit ebpf: 10324137349
+Startup trace (nsec): init ebpf done: 10327494048
+Startup trace (nsec): init ebpf vm: 10330927647
+Startup trace (nsec): jit ebpf: 10334241884
+Startup trace (nsec): init ebpf done: 10337601620
+Startup trace (nsec): init ebpf vm: 10341017757
+Startup trace (nsec): jit ebpf: 10344331973
+Startup trace (nsec): init ebpf done: 10347687824
+Startup trace (nsec): init ebpf vm: 10351117264
+Startup trace (nsec): jit ebpf: 10354430268
+Startup trace (nsec): init ebpf done: 10357786572
+Startup trace (nsec): init ebpf vm: 10361216946
+Startup trace (nsec): jit ebpf: 10364533622
+Startup trace (nsec): init ebpf done: 10367894296
+Startup trace (nsec): init ebpf vm: 10371311068
+Startup trace (nsec): jit ebpf: 10374628475
+Startup trace (nsec): init ebpf done: 10377983200
+Startup trace (nsec): init ebpf vm: 10381410446
+Startup trace (nsec): jit ebpf: 10384731999
+Startup trace (nsec): init ebpf done: 10388087448
+Startup trace (nsec): init ebpf vm: 10391515822
+Startup trace (nsec): jit ebpf: 10394849534
+Startup trace (nsec): init ebpf done: 10398206715
+Startup trace (nsec): init ebpf vm: 10401630306
+Startup trace (nsec): jit ebpf: 10404949000
+Startup trace (nsec): init ebpf done: 10408307547
+Startup trace (nsec): init ebpf vm: 10411722295
+Startup trace (nsec): jit ebpf: 10415038863
+Startup trace (nsec): init ebpf done: 10418397326
+Startup trace (nsec): init ebpf vm: 10421813562
+Startup trace (nsec): jit ebpf: 10425150394
+Startup trace (nsec): init ebpf done: 10428509322
+Startup trace (nsec): init ebpf vm: 10431932863
+Startup trace (nsec): jit ebpf: 10435248651
+Startup trace (nsec): init ebpf done: 10438609661
+Startup trace (nsec): init ebpf vm: 10442021044
+Startup trace (nsec): jit ebpf: 10445334787
+Startup trace (nsec): init ebpf done: 10448694509
+Startup trace (nsec): init ebpf vm: 10452092974
+Startup trace (nsec): jit ebpf: 10455404072
+Startup trace (nsec): init ebpf done: 10458762585
+Startup trace (nsec): init ebpf vm: 10462187369
+Startup trace (nsec): jit ebpf: 10465505776
+Startup trace (nsec): init ebpf done: 10468863643
+Startup trace (nsec): init ebpf vm: 10472294102
+Startup trace (nsec): jit ebpf: 10475615754
+Startup trace (nsec): init ebpf done: 10478968823
+Startup trace (nsec): init ebpf vm: 10482381039
+Startup trace (nsec): jit ebpf: 10485698507
+Startup trace (nsec): init ebpf done: 10489056200
+Startup trace (nsec): init ebpf vm: 10492485089
+Startup trace (nsec): jit ebpf: 10495807050
+Startup trace (nsec): init ebpf done: 10499165473
+Startup trace (nsec): init ebpf vm: 10502598140
+Startup trace (nsec): jit ebpf: 10505913279
+Startup trace (nsec): init ebpf done: 10509268761
+Startup trace (nsec): init ebpf vm: 10512700497
+Startup trace (nsec): jit ebpf: 10516019129
+Startup trace (nsec): init ebpf done: 10519373427
+Startup trace (nsec): init ebpf vm: 10522795067
+Startup trace (nsec): jit ebpf: 10526107641
+Startup trace (nsec): init ebpf done: 10529460769
+Startup trace (nsec): init ebpf vm: 10532870927
+Startup trace (nsec): jit ebpf: 10536184952
+Startup trace (nsec): init ebpf done: 10539551384
+Startup trace (nsec): init ebpf vm: 10542966601
+Startup trace (nsec): jit ebpf: 10546285922
+Startup trace (nsec): init ebpf done: 10549651849
+Startup trace (nsec): init ebpf vm: 10553075925
+Startup trace (nsec): jit ebpf: 10556393551
+Startup trace (nsec): init ebpf done: 10559757463
+Startup trace (nsec): init ebpf vm: 10563180438
+Startup trace (nsec): jit ebpf: 10566497140
+Startup trace (nsec): init ebpf done: 10569855978
+Startup trace (nsec): init ebpf vm: 10573267149
+Startup trace (nsec): jit ebpf: 10576593876
+Startup trace (nsec): init ebpf done: 10579947317
+Startup trace (nsec): init ebpf vm: 10583363820
+Startup trace (nsec): jit ebpf: 10586683060
+Startup trace (nsec): init ebpf done: 10590034634
+Startup trace (nsec): init ebpf vm: 10593458837
+Startup trace (nsec): jit ebpf: 10596779862
+Startup trace (nsec): init ebpf done: 10600137757
+Startup trace (nsec): init ebpf vm: 10603577628
+Startup trace (nsec): jit ebpf: 10606889304
+Startup trace (nsec): init ebpf done: 10610240498
