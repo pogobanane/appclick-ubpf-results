@@ -42,7 +42,7 @@ throughput.pdf:
 relative_performance.pdf:
 	python3 relative_performance.py \
 		-o $(OUT_DIR)/relative_performance.pdf \
-		-W $(WIDTH2) -H 2 \
+		-W $(WIDTH) -H 2 \
 		--1-name stub --1 $(DATA)/throughput_*_vpp_*.csv \
 		--linux-histogram ./data/out7/latency_linux_64B_vpp_mirror_100kpps_rep2.histogram.csv \
 		--uk-histogram ./data/out7/latency_uk_64B_vpp_mirror_100kpps_rep2.histogram.csv \

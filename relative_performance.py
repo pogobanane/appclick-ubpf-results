@@ -214,14 +214,14 @@ def main():
                     value = speedup()
 
                 case ("mirror", "bi"):
-                    value = .1
+                    value = speedup()
                 case ("nat", "bi"):
                     value = speedup()
 
                 case ("mirror", "latency"):
                     value = linux_histogram._percentile50 / uk_histogram._percentile50
                 case ("nat", "latency"):
-                    value = 0.1
+                    value = 0
 
             # if direction = "tx":
             #     value = 1
@@ -327,7 +327,7 @@ def main():
     # plt.xlabel(XLABEL)
     # plt.ylabel(YLABEL)
 
-    # plt.ylim(0, 1)
+    plt.ylim(0, 4.5)
     if not args.logarithmic:
         plt.ylim(bottom=0)
     # for container in ax.containers:
