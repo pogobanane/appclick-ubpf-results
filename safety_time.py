@@ -170,7 +170,7 @@ def main():
 
     columns = ['system', 'contributor', 'restart_s']
     systems = [ "Out-of-band\n", "\nReconfiguration" ]
-    contributors = [ "Compile", "Verify", "Load", "Validate", "JIT", "Control" ]
+    contributors = [ "Compile", "Link", "Verify", "Load", "Validate", "JIT", "Control" ]
     rows = []
     for system in systems:
         for contributor in contributors:
@@ -178,7 +178,10 @@ def main():
             if system == systems[0]:
                 match contributor:
                     case "Compile":
-                        value = 250
+                        value = 230
+                    case "Link":
+                        # sudo bpftrace -e 'tracepoint:syscalls:sys_enter_execve /str(args->filename) == "/home/okelmann/.cargo/bin/bpf-linker"/ { @start = nsecs; @p = pid; print("asd\n"); } tracepoint:syscalls:sys_enter_exit* / pid == @p / { printf("Execution time: %d ms\n", (nsecs - @start) / 1000000); }'
+                        value = 20
                     case "Verify":
                         value = 85.603
             if system == systems[1]:
