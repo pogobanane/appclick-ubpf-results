@@ -45,7 +45,7 @@ system_map = {
         'click-linuxvm': 'Linux click',
         }
 
-YLABEL = 'Time [s]'
+YLABEL = 'Time [ms]'
 X1LABEL = ''
 X2LABEL = 'Replacement frequency'
 
@@ -170,15 +170,27 @@ def main():
 
     columns = ['system', 'contributor', 'restart_s']
     systems = [ "Out-of-band\n", "\nReconfiguration" ]
-    contributors = [ "compilation", "verification", "certification", "validation", "replacement", "map allocation", "JIT compilation" ]
+    contributors = [ "Compile", "Verify", "Load", "Validate", "JIT", "Control" ]
     rows = []
     for system in systems:
         for contributor in contributors:
-            value = 1
-            if system == "click-unikraftvm":
-                value = 3
-            if system == "click-linuxvm":
-                value = 2
+            value = 0
+            if system == systems[0]:
+                match contributor:
+                    case "Compile":
+                        value = 250
+                    case "Verify":
+                        value = 85.603
+            if system == systems[1]:
+                match contributor:
+                    case "Load":
+                        value = 0.02
+                    case "Validate":
+                        value = 0.16
+                    case "JIT":
+                        value = 0.26
+                    case "Control":
+                        value = 3.0
             rows += [[system, contributor, value]]
     df = pd.DataFrame(rows, columns=columns)
 
@@ -213,7 +225,7 @@ def main():
     # We define the amortized out-of-band overhead with a update frequency $f_u$, and a reconfiguration frequency $f_r$ given a verification time $t_v$ as $t_a = t_v * f_u / f_r$.
     HUE_LABEL = "Update frequency"
     columns = ['t_v', 'f_u', HUE_LABEL, 'f_r', 't_a']
-    t_v = 7 # in seconds
+    t_v = 335 # in seconds
     secondly = 1 # 1/s
     minutely = 1/60 # 1/min
     hourly= 1/(60*60) # 1/h
