@@ -170,3 +170,15 @@ def barplot_add_hatches(plot_in_grid: Axes, nr_hues: int, offset: int = 0, hatch
         hatch = hatches[(offset + hatches_used) % len(hatches)]
         print(bar, hatches_used, hatch)
         bar.set_hatch(hatch)
+
+def grid_set_titles(facet_grid, titles):
+    for ax, title in zip(facet_grid.axes.flat, titles):
+        ax.set_title(title)
+
+def map_grid_titles(facet_grid, map):
+    for ax in facet_grid.axes.flat:
+        new_title = map.get(ax.get_title(), ax.get_title())
+        # for some reason, we change the default font size if we don't specify it
+        fontsize = ax.title.get_fontsize()
+        ax.set_title(new_title, fontdict={'fontsize': fontsize})
+

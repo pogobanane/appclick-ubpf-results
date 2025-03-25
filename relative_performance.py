@@ -8,7 +8,9 @@ import pandas as pd
 from re import search, findall, MULTILINE
 from os.path import basename, getsize
 from typing import List, Any
-from plotting import HATCHES as hatches
+import plotting
+
+hatches = plotting.HATCHES
 
 
 COLORS = [ str(i) for i in range(20) ]
@@ -39,6 +41,10 @@ system_map = {
         'click-unikraftvm': 'Uk click',
         'click-linuxvm': 'Linux click',
         }
+
+grid_title_map = {
+    'direction = latency': 'Latency',
+}
 
 YLABEL = 'Speedup'
 XLABEL = 'VNF'
@@ -159,32 +165,69 @@ def main():
     # df_hue = map_hue(df_hue, hue_map)
     # df['is_passthrough'] = df.apply(lambda row: True if "vmux-pt" in row['interface'] or "vfio" in row['interface'] else False, axis=1)
 
+    df = df[df['size'] == 64]
+    df.loc[(df["vnf"] == "mirror") | (df["vnf"] == "nat"), "direction"] = "bi"
     df['pps'] = df['pps'].apply(lambda pps: pps / 1_000_000) # now mpps
+    dfa = df[(df['size'] == 64) & (df['direction'] == 'rx') & (df['vnf'] == 'empty')]
+    # b = a[a['system'] == 'uk'] / a[a['system'] == 'linux']
 
 
     columns = ['vnf', 'direction', 'pps']
-    vnfs = [ "none", "nat", "filter", "dpi", "latency" ]
+    vnfs = [ "empty", "filter", "ids", "mirror", "nat", "latency" ]
     rows = []
-    for vnf in vnfs:
-        for direction in ["rx", "tx"]:
-            value = 0
-            if direction == "tx":
-                value = 1
-            # if system == "click-unikraftvm":
-            #     value = 11
-            # if system == "click-linuxvm":
-            #     value = 9
-            if vnf == "none" and direction == "rx":
-                value = 3
-            if vnf == "filter" and direction == "rx":
-                value = 2.5
-            if vnf == "dpi" and direction == "rx":
-                value = 2
-            if vnf == "nat" and direction == "rx":
-                value = 2
-            if vnf == "latency" and direction == "rx":
-                value = 1.5
-            rows += [[vnf, direction, value]]
+    for direction in ["rx", "tx", "bi", "latency" ]:
+        for vnf in vnfs:
+            df_ = df[(df['vnf'] == vnf) & (df['direction'] == direction)]
+            value = None
+            def speedup():
+                old = df_[df_['system'] == 'linux']['pps'].mean()
+                new = df_[df_['system'] == 'uk']['pps'].mean()
+                return new / old
+            match (vnf, direction):
+                case ("empty", "rx"):
+                    value = speedup()
+                case ("filter", "rx"):
+                    value = speedup()
+                case ("ids", "rx"):
+                    value = speedup()
+
+                case ("empty", "tx"):
+                    value = speedup()
+                case ("filter", "tx"):
+                    value = speedup()
+                case ("ids", "tx"):
+                    value = speedup()
+
+                case ("mirror", "bi"):
+                    value = .1
+                case ("nat", "bi"):
+                    value = speedup()
+
+                case ("mirror", "latency"):
+                    value = 1
+                case ("nat", "latency"):
+                    value = 1
+
+            # if direction = "tx":
+            #     value = 1
+            # # if system == "click-unikraftvm":
+            # #     value = 11
+            # # if system == "click-linuxvm":
+            # #     value = 9
+            # if vnf == "none" and direction == "rx":
+            #     value = 3
+            # if vnf == "filter" and direction == "rx":
+            #     value = 2.5
+            # if vnf == "dpi" and direction == "rx":
+            #     value = 2
+            # if vnf == "nat" and direction == "rx":
+            #     value = 2
+            # if vnf == "latency" and direction == "rx":
+            #     value = 1.5
+
+
+            if value is not None:
+                rows += [[vnf, direction, value]]
     df = pd.DataFrame(rows, columns=columns)
 
     # df['system'] = df['system'].apply(lambda row: system_map.get(str(row), row))
@@ -198,7 +241,8 @@ def main():
             col='direction',
             sharey = True,
             sharex = False,
-            # gridspec_kws={"width_ratios": [11, 1]},
+            # col_wrap=2,
+            gridspec_kws={"width_ratios": [3, 3, 2, 2]},
     )
     grid.map_dataframe(sns.barplot,
                x='vnf',

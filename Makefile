@@ -41,6 +41,7 @@ throughput.pdf:
 
 relative_performance.pdf:
 	python3 relative_performance.py \
+		-o $(OUT_DIR)/relative_performance.pdf \
 		-W $(WIDTH2) -H 2 \
 		--1-name stub --1 $(DATA)/throughput_*_vpp_*.csv
 
