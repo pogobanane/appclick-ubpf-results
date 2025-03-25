@@ -56,6 +56,8 @@ class LatencyHistogram(object):
     _percentile75 = None
     _percentile99 = None
 
+    _mean = None
+
     def __init__(self, filepath):
         self._filepath = filepath
         self._filename = basename(filepath)
@@ -73,6 +75,7 @@ class LatencyHistogram(object):
         self._percentile50 = np.percentile(self._latencies, 50)
         self._percentile75 = np.percentile(self._latencies, 75)
         self._percentile99 = np.percentile(self._latencies, 99)
+        self._mean = np.mean(self._latencies)
 
     def filepath(self):
         return self._filepath

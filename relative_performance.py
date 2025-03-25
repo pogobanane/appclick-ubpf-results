@@ -9,6 +9,7 @@ from re import search, findall, MULTILINE
 from os.path import basename, getsize
 from typing import List, Any
 import plotting
+import latency_cdf
 
 hatches = plotting.HATCHES
 
@@ -102,6 +103,17 @@ def setup_parser():
                             help=f'''Name of {color} plot''',
                             )
 
+    parser.add_argument(f'--uk-histogram',
+                        type=argparse.FileType('r'),
+                        nargs='+',
+                        help=f'''Paths to UK histogram CSVs''',
+                        )
+    parser.add_argument(f'--linux-histogram',
+                        type=argparse.FileType('r'),
+                        nargs='+',
+                        help=f'''Paths to UK histogram CSVs''',
+                        )
+
     return parser
 
 
@@ -165,6 +177,9 @@ def main():
     # df_hue = map_hue(df_hue, hue_map)
     # df['is_passthrough'] = df.apply(lambda row: True if "vmux-pt" in row['interface'] or "vfio" in row['interface'] else False, axis=1)
 
+    linux_histogram = latency_cdf.LatencyHistogram(args.linux_histogram[0].name)
+    uk_histogram = latency_cdf.LatencyHistogram(args.uk_histogram[0].name)
+
     df = df[df['size'] == 64]
     df.loc[(df["vnf"] == "mirror") | (df["vnf"] == "nat"), "direction"] = "bi"
     df['pps'] = df['pps'].apply(lambda pps: pps / 1_000_000) # now mpps
@@ -204,9 +219,9 @@ def main():
                     value = speedup()
 
                 case ("mirror", "latency"):
-                    value = 1
+                    value = linux_histogram._percentile50 / uk_histogram._percentile50
                 case ("nat", "latency"):
-                    value = 1
+                    value = 0.1
 
             # if direction = "tx":
             #     value = 1
