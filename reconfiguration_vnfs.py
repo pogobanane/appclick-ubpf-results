@@ -305,21 +305,41 @@ def main():
     ukebpfjit_raw = df[(df['system'] == 'ukebpfjit') & (df['label'] != 'total')]
     set_spec = {
         'init ebpf vm': None,
-        'jit ebpf': None,
+        'read program': None,
+        'lock': None,
+        'load elf': None,
+        'signature': None,
+        'jit': None,
+        'print': None,
         'init ebpf done': None,
     }
     def calculate_ukebpfjit(set_nr, i, supp):
+        if set_nr == 0:
+            # first set is from boot which spends another ~5ms on init_ubpf_vm()
+            return dict()
         totals = supp[supp['label'] == 'total']
         j = set_nr % totals.shape[0]
         total = totals['nsec'].array[j]
         out = dict()
-        out['VNF configuration'] = i['init ebpf done'] - i['init ebpf vm']
-        out['other'] = total - out['VNF configuration']
+
+        # out['Read'] = i['read program']
+        # out['Lock'] = i['lock']
+        out['Load'] = i['read program'] + i['lock'] + i['load elf']
+        out['Validate'] = i['signature']
+        out['JIT'] = i['jit']
+        out['Print'] = i['print']
+        # out['VNF configuration'] = i['init ebpf done'] - i['init ebpf vm']
+        # out['VNF configuration > 1'] = i['jit ebpf'] - i['init ebpf vm']
+        # out['VNF configuration > 2'] = i['init ebpf done'] - i['jit ebpf']
+        out['other'] = total - (i['init ebpf done'] - i['init ebpf vm']) - out['Print']
+        # out['Init uBPF'] = out['VNF configuration'] - out['Read'] - out['Load'] - out['Validate'] - out['JIT'] # never called
         return out
     ukebpfjit = parse(ukebpfjit_raw, set_spec, calculate_ukebpfjit, supplementary_df=ukebpfjit_supp)
     ukebpfjit = pd.concat([ukebpfjit, ukebpfjit_supp])
 
     df = pd.concat([linux, uk, ukebpfjit])
+
+    breakpoint()
 
     # df.loc[(df["label"] == "total startup time"), "label"] = "total"
     df['msec'] = df['nsec'].apply(lambda nsec: nsec / 1_000_000.0)
