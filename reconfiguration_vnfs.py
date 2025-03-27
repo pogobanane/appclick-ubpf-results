@@ -298,9 +298,8 @@ def parse_data(df: pd.DataFrame) -> pd.DataFrame:
         if set_nr == 0:
             # first set is from boot which spends another ~5ms on init_ubpf_vm()
             return dict()
-        totals = supp[supp['label'] == 'total']
-        j = set_nr % totals.shape[0]
-        total = totals['nsec'].array[j]
+        j = set_nr % supp.shape[0]
+        total = supp['nsec'].array[j]
         out = dict()
 
         # out['Read'] = i['read program']
@@ -315,7 +314,8 @@ def parse_data(df: pd.DataFrame) -> pd.DataFrame:
         out['other'] = total - (i['init ebpf done'] - i['init ebpf vm']) - out['Print']
         # out['Init uBPF'] = out['VNF configuration'] - out['Read'] - out['Load'] - out['Validate'] - out['JIT'] # never called
         return out
-    ukebpfjit = parse(ukebpfjit_raw, set_spec, calculate_ukebpfjit, supplementary_df=ukebpfjit_supp)
+    ukebpfjit_supp_ = ukebpfjit_supp[ukebpfjit_supp['label'] == 'total']
+    ukebpfjit = parse(ukebpfjit_raw, set_spec, calculate_ukebpfjit, supplementary_df=ukebpfjit_supp_)
     ukebpfjit = pd.concat([ukebpfjit, ukebpfjit_supp])
 
     df = pd.concat([linux, uk, ukebpfjit])
