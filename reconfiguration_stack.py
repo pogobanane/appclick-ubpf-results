@@ -267,6 +267,7 @@ def main():
                hue="contributor",
                multiple="stack",
                # palette=palette,
+               palette="deep",
                edgecolor="dimgray",
                shrink=0.8,
                )

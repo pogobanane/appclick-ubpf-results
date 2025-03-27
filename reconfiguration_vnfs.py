@@ -406,7 +406,8 @@ def main():
                y='msec',
                hue="vnf",
                # palette=palette,
-               staturation=0.2,
+               palette="deep",
+               saturation=1,
                edgecolor="dimgray",
                )
 
