@@ -6,7 +6,7 @@ import argparse
 import seaborn as sns
 import pandas as pd
 from re import search, findall, MULTILINE
-from os.path import basename, getsize
+from os.path import basename, getsize, isfile
 from typing import List, Any
 from plotting import HATCHES as hatches
 from tqdm import tqdm
@@ -91,6 +91,10 @@ def setup_parser():
                         action='store_true',
                         help='Plot logarithmic latency axis',
                         )
+    parser.add_argument('-c', '--cached',
+                        action='store_true',
+                        help='Use cached version of parsed data',
+                        )
     parser.add_argument('-s', '--slides',
                         action='store_true',
                         help='Use other setting to plot for presentation slides',
@@ -135,45 +139,7 @@ def barplot_with_hatches(*args, **kwargs):
         hatches_used += 1
 
 
-def main():
-    parser = setup_parser()
-    args = parse_args(parser)
-
-    fig = plt.figure(figsize=(args.width, args.height))
-    # fig = plt.figure()
-    ax = fig.add_subplot(1, 1, 1)
-    # ax.set_axisbelow(True)
-    if args.title:
-        plt.title(args.title)
-    plt.grid()
-    # plt.xlim(0, 0.83)
-    log_scale = (False, True) if args.logarithmic else False
-    ax.set_yscale('log' if args.logarithmic else 'linear')
-
-    dfs = []
-    for color in COLORS:
-        if args.__dict__[color]:
-            log(f"Reading files for --name-{color}")
-            arg_dfs = [ pd.read_csv(f.name) for f in tqdm(args.__dict__[color]) ]
-            arg_df = pd.concat(arg_dfs)
-            name = args.__dict__[f'{color}_name']
-            arg_df["arglabel"] = name
-            dfs += [ arg_df ]
-            # throughput = ThroughputDatapoint(
-            #     moongen_log_filepaths=[f.name for f in args.__dict__[color]],
-            #     name=args.__dict__[f'{color}_name'],
-            #     color=color,
-            # )
-            # dfs += color_dfs
-    df = pd.concat(dfs, ignore_index=True)
-    # hue = ['repetitions', 'num_vms', 'interface', 'fastclick']
-    # groups = df.groupby(hue)
-    # summary = df.groupby(hue)['rxMppsCalc'].describe()
-    # df_hue = df.apply(lambda row: '_'.join(str(row[col]) for col in ['repetitions', 'interface', 'fastclick', 'rate']), axis=1)
-    # df_hue = map_hue(df_hue, hue_map)
-    # df['is_passthrough'] = df.apply(lambda row: True if "vmux-pt" in row['interface'] or "vfio" in row['interface'] else False, axis=1)
-
-
+def parse_data(df: pd.DataFrame) -> pd.DataFrame:
     # print("\n".join(df.to_string().splitlines()[:20]))
     def parse(df, set_spec, set_calculator, supplementary_df=None):
         rows = []
@@ -345,8 +311,54 @@ def main():
     ukebpfjit = parse(ukebpfjit_raw, set_spec, calculate_ukebpfjit, supplementary_df=ukebpfjit_supp)
     ukebpfjit = pd.concat([ukebpfjit, ukebpfjit_supp])
 
-    log("Preparing plotting data")
     df = pd.concat([linux, uk, ukebpfjit])
+    return df
+
+def main():
+    parser = setup_parser()
+    args = parse_args(parser)
+
+    fig = plt.figure(figsize=(args.width, args.height))
+    # fig = plt.figure()
+    ax = fig.add_subplot(1, 1, 1)
+    # ax.set_axisbelow(True)
+    if args.title:
+        plt.title(args.title)
+    plt.grid()
+    # plt.xlim(0, 0.83)
+    log_scale = (False, True) if args.logarithmic else False
+    ax.set_yscale('log' if args.logarithmic else 'linear')
+
+    if args.cached and isfile("/tmp/reconfiguration_vnf.pkl"):
+        log("Using cached data")
+        df = pd.read_pickle("/tmp/reconfiguration_vnf.pkl")
+    else:
+        dfs = []
+        for color in COLORS:
+            if args.__dict__[color]:
+                log(f"Reading files for --name-{color}")
+                arg_dfs = [ pd.read_csv(f.name) for f in tqdm(args.__dict__[color]) ]
+                arg_df = pd.concat(arg_dfs)
+                name = args.__dict__[f'{color}_name']
+                arg_df["arglabel"] = name
+                dfs += [ arg_df ]
+                # throughput = ThroughputDatapoint(
+                #     moongen_log_filepaths=[f.name for f in args.__dict__[color]],
+                #     name=args.__dict__[f'{color}_name'],
+                #     color=color,
+                # )
+                # dfs += color_dfs
+        df = pd.concat(dfs, ignore_index=True)
+        # hue = ['repetitions', 'num_vms', 'interface', 'fastclick']
+        # groups = df.groupby(hue)
+        # summary = df.groupby(hue)['rxMppsCalc'].describe()
+        # df_hue = df.apply(lambda row: '_'.join(str(row[col]) for col in ['repetitions', 'interface', 'fastclick', 'rate']), axis=1)
+        # df_hue = map_hue(df_hue, hue_map)
+        # df['is_passthrough'] = df.apply(lambda row: True if "vmux-pt" in row['interface'] or "vfio" in row['interface'] else False, axis=1)
+
+        df = parse_data(df)
+        df.to_pickle("/tmp/reconfiguration_vnf.pkl")
+    log("Preparing plotting data")
 
     # df.loc[(df["label"] == "total startup time"), "label"] = "total"
     df['msec'] = df['nsec'].apply(lambda nsec: nsec / 1_000_000.0)
@@ -394,6 +406,7 @@ def main():
                y='msec',
                hue="vnf",
                # palette=palette,
+               staturation=0.2,
                edgecolor="dimgray",
                )
 
