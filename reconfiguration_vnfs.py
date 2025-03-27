@@ -154,6 +154,7 @@ def parse_data(df: pd.DataFrame) -> pd.DataFrame:
             supplementary_data = supplementary_df_[reduce(operator.and_, column_equalities)]
             return supplementary_data
 
+        ignore_columns = None
         repeating_row = None
         set_supplement = None
         this_set = set_spec.copy()
@@ -161,6 +162,7 @@ def parse_data(df: pd.DataFrame) -> pd.DataFrame:
         for (i, row) in tqdm(df.iterrows(), total=df.shape[0]):
             # ensure that test inputs of a set are the same
             if repeating_row is None:
+                ignore_columns = np.array([ key in [ 'nsec', 'label', 'Unnamed: 0' ] for key in row.keys() ])
                 repeating_row = row
                 set_supplement = get_supplementary_data(supplementary_df, repeating_row)
             elif all(value is not None for value in this_set.values()):
@@ -169,7 +171,7 @@ def parse_data(df: pd.DataFrame) -> pd.DataFrame:
                 this_set = set_spec.copy()
                 repeating_row = row
                 set_supplement = get_supplementary_data(supplementary_df, repeating_row)
-            elif not repeating_row.drop('nsec').drop('label').drop("Unnamed: 0").equals(row.drop('nsec').drop('label').drop("Unnamed: 0")):
+            elif not all((repeating_row == row) | ignore_columns):
                 raise Exception(f"Different parameters within one set (expected {repeating_row} but got {row})")
 
             # fill values for this set
@@ -186,9 +188,11 @@ def parse_data(df: pd.DataFrame) -> pd.DataFrame:
                     new_row = repeating_row.copy()
                     new_row['label'] = key
                     new_row['nsec'] = value
-                    rows += [ new_row.drop("Unnamed: 0") ]
+                    rows += [ new_row ]
 
-        return pd.DataFrame(rows)
+        ret = pd.DataFrame(rows)
+        del ret['Unnamed: 0']
+        return ret
 
 
     log("Parsing linux")
