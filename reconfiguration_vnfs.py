@@ -481,16 +481,16 @@ def main():
     # grid.set_xlabels(XLABEL)
     # grid.set_ylabels(YLABEL)
     #
-    # grid.facet_axis(0, 0).annotate(
-    #     "↑ Higher is better", # or ↓ ← ↑ →
-    #     xycoords="axes points",
-    #     # xy=(0, 0),
-    #     xy=(0, 0),
-    #     xytext=(-37, -28),
-    #     # fontsize=FONT_SIZE,
-    #     color="navy",
-    #     weight="bold",
-    # )
+    plt.annotate(
+        "↓ Lower is better", # or ↓ ← ↑ →
+        xycoords="axes points",
+        # xy=(0, 0),
+        xy=(0, 0),
+        xytext=(-40, -27),
+        # fontsize=FONT_SIZE,
+        color="navy",
+        weight="bold",
+    )
 
     plt.xlabel(XLABEL)
     plt.ylabel(YLABEL)
@@ -522,7 +522,7 @@ def main():
     # legend.get_frame().set_alpha(0.8)
     # fig.tight_layout(rect = (0, 0, 0, 0.1))
     # ax.set_position((0.1, 0.1, 0.5, 0.8))
-    # plt.tight_layout(pad=0.1)
+    plt.tight_layout(pad=0.5)
     # plt.subplots_adjust(right=0.78)
     # fig.tight_layout(rect=(0, 0, 0.3, 1))
     plt.savefig(args.output.name)
