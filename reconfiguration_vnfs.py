@@ -49,6 +49,7 @@ system_map = {
 
 hue_map = {
     'firewall-10000': 'firewall-10k',
+    'firewall-1000': 'firewall-1k',
 }
 
 YLABEL = 'Restart time [ms]'
@@ -57,7 +58,8 @@ XLABEL = 'System'
 def map_hue(df_hue, hue_map):
     return df_hue.apply(lambda row: hue_map.get(str(row), row))
 
-
+def log(s: str):
+    print(s, flush=True)
 
 def setup_parser():
     parser = argparse.ArgumentParser(
@@ -151,7 +153,8 @@ def main():
     dfs = []
     for color in COLORS:
         if args.__dict__[color]:
-            arg_dfs = [ pd.read_csv(f.name) for f in args.__dict__[color] ]
+            log(f"Reading files for --name-{color}")
+            arg_dfs = [ pd.read_csv(f.name) for f in tqdm(args.__dict__[color]) ]
             arg_df = pd.concat(arg_dfs)
             name = args.__dict__[f'{color}_name']
             arg_df["arglabel"] = name
@@ -162,7 +165,7 @@ def main():
             #     color=color,
             # )
             # dfs += color_dfs
-    df = pd.concat(dfs)
+    df = pd.concat(dfs, ignore_index=True)
     # hue = ['repetitions', 'num_vms', 'interface', 'fastclick']
     # groups = df.groupby(hue)
     # summary = df.groupby(hue)['rxMppsCalc'].describe()
@@ -222,6 +225,7 @@ def main():
         return pd.DataFrame(rows)
 
 
+    log("Parsing linux")
     linux_raw = df[df['system'] == 'linux']
     set_spec = {
         'main': None,
@@ -238,6 +242,7 @@ def main():
         return out
     linux = parse(linux_raw, set_spec, calculate_linux)
 
+    log("Parsing uktrace")
     uktrace_raw = df[df['system'] == 'uktrace']
     set_spec = {
         # we collect the same metrics as with uk, but they are inaccurate here because of expensive tracing
@@ -263,6 +268,7 @@ def main():
     uktrace = parse(uktrace_raw, set_spec, calculate_uktrace)
     uktrace['system'] = 'uk' # we've processed the data to make it uk data
 
+    log("Parsing uk")
     uk_raw = df[df['system'] == 'uk']
     set_spec = {
         'click main()': None,
@@ -292,6 +298,7 @@ def main():
         return out
     uk = parse(uk_raw, set_spec, calculate_uk, supplementary_df=uktrace)
 
+    log("Parsing ukebpfjit_supp")
     ukebpfjit_supp_raw = df[df['system'] == 'ukebpfjit']
     set_spec = {
         'total': None,
@@ -302,6 +309,7 @@ def main():
         return out
     ukebpfjit_supp = parse(ukebpfjit_supp_raw, set_spec, calculate_ukebpfjit_supp)
 
+    log("Parsing ukebpfjit")
     ukebpfjit_raw = df[(df['system'] == 'ukebpfjit') & (df['label'] != 'total')]
     set_spec = {
         'init ebpf vm': None,
@@ -337,9 +345,8 @@ def main():
     ukebpfjit = parse(ukebpfjit_raw, set_spec, calculate_ukebpfjit, supplementary_df=ukebpfjit_supp)
     ukebpfjit = pd.concat([ukebpfjit, ukebpfjit_supp])
 
+    log("Preparing plotting data")
     df = pd.concat([linux, uk, ukebpfjit])
-
-    breakpoint()
 
     # df.loc[(df["label"] == "total startup time"), "label"] = "total"
     df['msec'] = df['nsec'].apply(lambda nsec: nsec / 1_000_000.0)
@@ -377,6 +384,8 @@ def main():
             clean = raw[(raw['msec'] < (50*raw['msec'].median()))]
             dfs += [ clean ]
     df = pd.concat(dfs)
+
+    log("Plotting data")
 
     # Plot using Seaborn
     sns.barplot(
