@@ -143,13 +143,14 @@ def parse_data(df: pd.DataFrame) -> pd.DataFrame:
     # print("\n".join(df.to_string().splitlines()[:20]))
     def parse(df, set_spec, set_calculator, supplementary_df=None):
         rows = []
+        ignore_labels = [ "nsec", "label", "Unnamed: 0" ]
 
         def get_supplementary_data(supplementary_df_, repeating_row_):
             if supplementary_df_ is None:
                 return None
 
             # choose supplementary data for this set
-            columns = [ column for column in supplementary_df_.columns if column not in ["nsec", "label", "Unnamed: 0"] ]
+            columns = [ column for column in supplementary_df_.columns if column not in ignore_labels ]
             column_equalities = [ supplementary_df_[column] == repeating_row_[column] for column in columns ]
             supplementary_data = supplementary_df_[reduce(operator.and_, column_equalities)]
             return supplementary_data
@@ -162,15 +163,17 @@ def parse_data(df: pd.DataFrame) -> pd.DataFrame:
         for (i, row) in tqdm(df.iterrows(), total=df.shape[0]):
             # ensure that test inputs of a set are the same
             if repeating_row is None:
-                ignore_columns = np.array([ key in [ 'nsec', 'label', 'Unnamed: 0' ] for key in row.keys() ])
+                ignore_columns = np.array([ key in ignore_labels for key in row.keys() ])
                 repeating_row = row
                 set_supplement = get_supplementary_data(supplementary_df, repeating_row)
             elif all(value is not None for value in this_set.values()):
                 # arrived at next set
                 set_nr += 1
                 this_set = set_spec.copy()
+                if not all((repeating_row == row) | ignore_columns):
+                    # new row is not the same
+                    set_supplement = get_supplementary_data(supplementary_df, repeating_row)
                 repeating_row = row
-                set_supplement = get_supplementary_data(supplementary_df, repeating_row)
             elif not all((repeating_row == row) | ignore_columns):
                 raise Exception(f"Different parameters within one set (expected {repeating_row} but got {row})")
 
