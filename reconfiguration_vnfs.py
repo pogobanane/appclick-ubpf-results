@@ -174,7 +174,7 @@ def parse_data(df: pd.DataFrame) -> pd.DataFrame:
                     # new row is not the same
                     set_supplement = get_supplementary_data(supplementary_df, repeating_row)
                 repeating_row = row
-            elif not all((repeating_row == row) | ignore_columns):
+            elif not np.all((repeating_row.values == row.values) | ignore_columns):
                 raise Exception(f"Different parameters within one set (expected {repeating_row} but got {row})")
 
             # fill values for this set
