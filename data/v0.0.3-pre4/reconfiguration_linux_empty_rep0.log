@@ -2,99 +2,111 @@ path '/home/okelmann/appclick-ubpf/benchmark' does not contain a 'flake.nix', se
 warning: Git tree '/home/okelmann/appclick-ubpf' is dirty
 Using saved setting for 'extra-substituters = https://tum-dse.cachix.org' from ~/.local/share/nix/trusted-settings.json.
 Using saved setting for 'extra-trusted-public-keys = tum-dse.cachix.org-1:v67rK18oLwgO0Z4b69l30SrV1yRtqxKpiHodG4YxhNM=' from ~/.local/share/nix/trusted-settings.json.
-    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.20s
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.31s
      Running `target/debug/bench-helper`
-Startup trace (nsec): main: 2149940723209100
-Startup trace (nsec): init done: 2149940724082808
-Received packet from device: 2149940724105054 ns:   76 | 60000000 00240001 fe800000 00000000 91dbc851 072ade9csleeping first increases startup time
-Bench-helper startup time (nsec): 15675574
+Startup trace (nsec): main: 2735167641160263
+Startup trace (nsec): init done: 2735167641749431
+Received packet from device: 2735167641770012 ns:   76 | 60000000 00240001 fe800000 00000000 a0c1043d d1a58406
+Bench-helper startup time (nsec): 15108177
 path '/home/okelmann/appclick-ubpf/benchmark' does not contain a 'flake.nix', searching up
 warning: Git tree '/home/okelmann/appclick-ubpf' is dirty
 Using saved setting for 'extra-substituters = https://tum-dse.cachix.org' from ~/.local/share/nix/trusted-settings.json.
 Using saved setting for 'extra-trusted-public-keys = tum-dse.cachix.org-1:v67rK18oLwgO0Z4b69l30SrV1yRtqxKpiHodG4YxhNM=' from ~/.local/share/nix/trusted-settings.json.
     Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.18s
      Running `target/debug/bench-helper`
-Startup trace (nsec): main: 2149946539686549
-Startup trace (nsec): init done: 2149946540567730
-Received packet from device: 2149946540588785 ns:   76 | 60000000 00240001 fe800000 00000000 35687b45 b5b4ba60sleeping first increases startup time
-Bench-helper startup time (nsec): 16314843
+Startup trace (nsec): main: 2735173371784343
+Startup trace (nsec): init done: 2735173372665533
+sleeping first increases startup time
+       wait 5ms
+Rx rate: 0
+Received packet from device: 2735173372715644 ns:   76 | 60000000 00240001 fe800000 00000000 e9154806 df7d9bab
+Bench-helper startup time (nsec): 15450169
 path '/home/okelmann/appclick-ubpf/benchmark' does not contain a 'flake.nix', searching up
 warning: Git tree '/home/okelmann/appclick-ubpf' is dirty
 Using saved setting for 'extra-substituters = https://tum-dse.cachix.org' from ~/.local/share/nix/trusted-settings.json.
 Using saved setting for 'extra-trusted-public-keys = tum-dse.cachix.org-1:v67rK18oLwgO0Z4b69l30SrV1yRtqxKpiHodG4YxhNM=' from ~/.local/share/nix/trusted-settings.json.
     Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.18s
      Running `target/debug/bench-helper`
-Startup trace (nsec): main: 2149952366879182
-Startup trace (nsec): init done: 2149952367478207
-Received packet from device: 2149952367499282 ns:   76 | 60000000 00240001 fe800000 00000000 fa7533e4 83a6c2b8sleeping first increases startup time
-Bench-helper startup time (nsec): 14975362
+Startup trace (nsec): main: 2735179195087939
+Startup trace (nsec): init done: 2735179195966159
+Received packet from device: 2735179195987808 ns:   76 | 60000000 00240001 fe800000 00000000 e9baf240 87adf18f
+Bench-helper startup time (nsec): 15437737
 path '/home/okelmann/appclick-ubpf/benchmark' does not contain a 'flake.nix', searching up
 warning: Git tree '/home/okelmann/appclick-ubpf' is dirty
 Using saved setting for 'extra-substituters = https://tum-dse.cachix.org' from ~/.local/share/nix/trusted-settings.json.
 Using saved setting for 'extra-trusted-public-keys = tum-dse.cachix.org-1:v67rK18oLwgO0Z4b69l30SrV1yRtqxKpiHodG4YxhNM=' from ~/.local/share/nix/trusted-settings.json.
     Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.18s
      Running `target/debug/bench-helper`
-Startup trace (nsec): main: 2149958188077172
-Startup trace (nsec): init done: 2149958188944659
-Received packet from device: 2149958188967249 ns:   76 | 60000000 00240001 fe800000 00000000 df0ad64b 8446fda7sleeping first increases startup time
-Bench-helper startup time (nsec): 15338592
-path '/home/okelmann/appclick-ubpf/benchmark' does not contain a 'flake.nix', searching up
-warning: Git tree '/home/okelmann/appclick-ubpf' is dirty
-Using saved setting for 'extra-substituters = https://tum-dse.cachix.org' from ~/.local/share/nix/trusted-settings.json.
-Using saved setting for 'extra-trusted-public-keys = tum-dse.cachix.org-1:v67rK18oLwgO0Z4b69l30SrV1yRtqxKpiHodG4YxhNM=' from ~/.local/share/nix/trusted-settings.json.
-    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.19s
-     Running `target/debug/bench-helper`
-Startup trace (nsec): main: 2149964068739869
-Startup trace (nsec): init done: 2149964069330486
-Received packet from device: 2149964069351326 ns:   76 | 60000000 00240001 fe800000 00000000 2b8af719 34c3e160sleeping first increases startup time
-Bench-helper startup time (nsec): 15416049
+Startup trace (nsec): main: 2735185085635688
+Startup trace (nsec): init done: 2735185086514728
+sleeping first increases startup time
+       wait 5ms
+Rx rate: 0
+Received packet from device: 2735185086567599 ns:   76 | 60000000 00240001 fe800000 00000000 05caa51e 064d47f8
+Bench-helper startup time (nsec): 16029940
 path '/home/okelmann/appclick-ubpf/benchmark' does not contain a 'flake.nix', searching up
 warning: Git tree '/home/okelmann/appclick-ubpf' is dirty
 Using saved setting for 'extra-substituters = https://tum-dse.cachix.org' from ~/.local/share/nix/trusted-settings.json.
 Using saved setting for 'extra-trusted-public-keys = tum-dse.cachix.org-1:v67rK18oLwgO0Z4b69l30SrV1yRtqxKpiHodG4YxhNM=' from ~/.local/share/nix/trusted-settings.json.
     Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.18s
      Running `target/debug/bench-helper`
-Startup trace (nsec): main: 2149969876301843
-Startup trace (nsec): init done: 2149969877194572
-Received packet from device: 2149969877216351 ns:   76 | 60000000 00240001 fe800000 00000000 b4fab2aa 2058cad5sleeping first increases startup time
-Bench-helper startup time (nsec): 15615539
+Startup trace (nsec): main: 2735190906587400
+Startup trace (nsec): init done: 2735190907451959
+Received packet from device: 2735190907476909 ns:   76 | 60000000 00240001 fe800000 00000000 382cca22 d051e574
+Bench-helper startup time (nsec): 15367438
 path '/home/okelmann/appclick-ubpf/benchmark' does not contain a 'flake.nix', searching up
 warning: Git tree '/home/okelmann/appclick-ubpf' is dirty
 Using saved setting for 'extra-substituters = https://tum-dse.cachix.org' from ~/.local/share/nix/trusted-settings.json.
 Using saved setting for 'extra-trusted-public-keys = tum-dse.cachix.org-1:v67rK18oLwgO0Z4b69l30SrV1yRtqxKpiHodG4YxhNM=' from ~/.local/share/nix/trusted-settings.json.
     Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.18s
      Running `target/debug/bench-helper`
-Startup trace (nsec): main: 2149975735379990
-Startup trace (nsec): init done: 2149975735956290
-Received packet from device: 2149975735975223 ns:   76 | 60000000 00240001 fe800000 00000000 e1b889c9 9b1f193asleeping first increases startup time
-Bench-helper startup time (nsec): 15159637
+Startup trace (nsec): main: 2735196723568587
+Startup trace (nsec): init done: 2735196724459093
+Received packet from device: 2735196724480694 ns:   76 | 60000000 00240001 fe800000 00000000 76371bad a55ddb46
+Bench-helper startup time (nsec): 15755388
 path '/home/okelmann/appclick-ubpf/benchmark' does not contain a 'flake.nix', searching up
 warning: Git tree '/home/okelmann/appclick-ubpf' is dirty
 Using saved setting for 'extra-substituters = https://tum-dse.cachix.org' from ~/.local/share/nix/trusted-settings.json.
 Using saved setting for 'extra-trusted-public-keys = tum-dse.cachix.org-1:v67rK18oLwgO0Z4b69l30SrV1yRtqxKpiHodG4YxhNM=' from ~/.local/share/nix/trusted-settings.json.
     Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.18s
      Running `target/debug/bench-helper`
-Startup trace (nsec): main: 2149981542931841
-Startup trace (nsec): init done: 2149981543801993
-Received packet from device: 2149981543823928 ns:   76 | 60000000 00240001 fe800000 00000000 1380dda5 cf9bb719sleeping first increases startup time
-Bench-helper startup time (nsec): 15572731
+Startup trace (nsec): main: 2735202574410862
+Startup trace (nsec): init done: 2735202575291052
+sleeping first increases startup time
+       wait 5ms
+Rx rate: 0
+Received packet from device: 2735202575342251 ns:   76 | 60000000 00240001 fe800000 00000000 fdab5a17 b946c3fa
+Bench-helper startup time (nsec): 15585051
 path '/home/okelmann/appclick-ubpf/benchmark' does not contain a 'flake.nix', searching up
 warning: Git tree '/home/okelmann/appclick-ubpf' is dirty
 Using saved setting for 'extra-substituters = https://tum-dse.cachix.org' from ~/.local/share/nix/trusted-settings.json.
 Using saved setting for 'extra-trusted-public-keys = tum-dse.cachix.org-1:v67rK18oLwgO0Z4b69l30SrV1yRtqxKpiHodG4YxhNM=' from ~/.local/share/nix/trusted-settings.json.
     Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.18s
      Running `target/debug/bench-helper`
-Startup trace (nsec): main: 2149987392778609
-Startup trace (nsec): init done: 2149987393683947
-Received packet from device: 2149987393705992 ns:   76 | 60000000 00240001 fe800000 00000000 181f137e 6a145e4asleeping first increases startup time
-Bench-helper startup time (nsec): 16921568
+Startup trace (nsec): main: 2735208461367329
+Startup trace (nsec): init done: 2735208462265395
+Received packet from device: 2735208462286709 ns:   76 | 60000000 00240001 fe800000 00000000 6b96fa9a 0802f2d3
+Bench-helper startup time (nsec): 15275629
 path '/home/okelmann/appclick-ubpf/benchmark' does not contain a 'flake.nix', searching up
 warning: Git tree '/home/okelmann/appclick-ubpf' is dirty
 Using saved setting for 'extra-substituters = https://tum-dse.cachix.org' from ~/.local/share/nix/trusted-settings.json.
 Using saved setting for 'extra-trusted-public-keys = tum-dse.cachix.org-1:v67rK18oLwgO0Z4b69l30SrV1yRtqxKpiHodG4YxhNM=' from ~/.local/share/nix/trusted-settings.json.
     Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.18s
      Running `target/debug/bench-helper`
-Startup trace (nsec): main: 2149993230163219
-Startup trace (nsec): init done: 2149993231079759
-Received packet from device: 2149993231101290 ns:   76 | 60000000 00240001 fe800000 00000000 55e3e1cf eea91f35sleeping first increases startup time
-Bench-helper startup time (nsec): 15816657
+Startup trace (nsec): main: 2735214308409881
+Startup trace (nsec): init done: 2735214309282046
+Received packet from device: 2735214309305389 ns:   76 | 60000000 00240001 fe800000 00000000 f6c8f4c9 278209c0
+Bench-helper startup time (nsec): 15966737
+path '/home/okelmann/appclick-ubpf/benchmark' does not contain a 'flake.nix', searching up
+warning: Git tree '/home/okelmann/appclick-ubpf' is dirty
+Using saved setting for 'extra-substituters = https://tum-dse.cachix.org' from ~/.local/share/nix/trusted-settings.json.
+Using saved setting for 'extra-trusted-public-keys = tum-dse.cachix.org-1:v67rK18oLwgO0Z4b69l30SrV1yRtqxKpiHodG4YxhNM=' from ~/.local/share/nix/trusted-settings.json.
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.18s
+     Running `target/debug/bench-helper`
+Startup trace (nsec): main: 2735220157416824
+Startup trace (nsec): init done: 2735220158291984
+sleeping first increases startup time
+       wait 5ms
+Rx rate: 0
+Received packet from device: 2735220158341249 ns:   76 | 60000000 00240001 fe800000 00000000 3aa4fea3 d9e61e62
+Bench-helper startup time (nsec): 15687532

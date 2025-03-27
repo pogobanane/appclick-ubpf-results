@@ -2,7 +2,7 @@ path '/home/okelmann/appclick-ubpf/benchmark' does not contain a 'flake.nix', se
 warning: Git tree '/home/okelmann/appclick-ubpf' is dirty
 Using saved setting for 'extra-substituters = https://tum-dse.cachix.org' from ~/.local/share/nix/trusted-settings.json.
 Using saved setting for 'extra-trusted-public-keys = tum-dse.cachix.org-1:v67rK18oLwgO0Z4b69l30SrV1yRtqxKpiHodG4YxhNM=' from ~/.local/share/nix/trusted-settings.json.
-    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.20s
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.23s
      Running `target/debug/bench-helper`
 c[?7l[2J[0mSeaBIOS (version rel-1.16.2-0-gea1b7a073390-prebuilt.qemu.org)
 
@@ -18,9 +18,9 @@ oO   oO ' _ `| | |/ /  _)' _` | |_|  _)
 oOo oOO| | | | |   (| | | (_) |  _) :_
  OoOoO ._, ._:_:_,\_._,  .__,_:_, \___)
          Telesto 0.16.3~e453b74a-custom
-Startup trace (nsec): click main(): 107573337
-Startup trace (nsec): print config: 109049595
-Received config (length 910):
+Startup trace (nsec): click main(): 107603091
+Startup trace (nsec): print config: 109090804
+Received config (length 751):
 define($MAC0 52:54:00:12:34:56);
 /* End unikraft-provided MAC preamble */
 
@@ -38,9 +38,6 @@ from :: FromDevice(0)
 
 Script(TYPE ACTIVE,
        print "sleeping first increases startup time"
-       print "sleeping first increases startup time"
-       print "sleeping first increases startup time"
-       print "sleeping first increases startup time"
        wait 5ms,
        label start,
        print "Rx rate: $(ic0.rate)",
@@ -48,15 +45,15 @@ Script(TYPE ACTIVE,
        goto start
        )
     
-Startup trace (nsec): print config done: 164476152
-Startup trace (nsec): initialize elements: 167802040
-Startup trace (nsec): initialize elements done: 171416449
+Startup trace (nsec): print config done: 154441666
+Startup trace (nsec): initialize elements: 157775331
+Startup trace (nsec): initialize elements done: 161396545
 [router_thread:250] Starting driver...
 
 
-Received packet from device: 181868333 ns:  200 | 33330000 0016767e 90d49854 86dd6000 00000088 0001fe80
-qemu-system-x86_64: terminating on signal 1 from pid 1262579 (sudo)
-Bench-helper startup time (nsec): 317671825
+Received packet from device: 171837699 ns:   72 | 01005e00 0016767e 90d49854 080046c0 00300000 40000102
+qemu-system-x86_64: terminating on signal 1 from pid 4030963 (sudo)
+Bench-helper startup time (nsec): 310255874
 path '/home/okelmann/appclick-ubpf/benchmark' does not contain a 'flake.nix', searching up
 warning: Git tree '/home/okelmann/appclick-ubpf' is dirty
 Using saved setting for 'extra-substituters = https://tum-dse.cachix.org' from ~/.local/share/nix/trusted-settings.json.
@@ -77,9 +74,9 @@ oO   oO ' _ `| | |/ /  _)' _` | |_|  _)
 oOo oOO| | | | |   (| | | (_) |  _) :_
  OoOoO ._, ._:_:_,\_._,  .__,_:_, \___)
          Telesto 0.16.3~e453b74a-custom
-Startup trace (nsec): click main(): 107679340
-Startup trace (nsec): print config: 109175497
-Received config (length 910):
+Startup trace (nsec): click main(): 107665405
+Startup trace (nsec): print config: 109150258
+Received config (length 751):
 define($MAC0 52:54:00:12:34:56);
 /* End unikraft-provided MAC preamble */
 
@@ -97,9 +94,6 @@ from :: FromDevice(0)
 
 Script(TYPE ACTIVE,
        print "sleeping first increases startup time"
-       print "sleeping first increases startup time"
-       print "sleeping first increases startup time"
-       print "sleeping first increases startup time"
        wait 5ms,
        label start,
        print "Rx rate: $(ic0.rate)",
@@ -107,15 +101,15 @@ Script(TYPE ACTIVE,
        goto start
        )
     
-Startup trace (nsec): print config done: 165316301
-Startup trace (nsec): initialize elements: 168691476
-Startup trace (nsec): initialize elements done: 172555132
+Startup trace (nsec): print config done: 154787369
+Startup trace (nsec): initialize elements: 158119622
+Startup trace (nsec): initialize elements done: 161735074
 [router_thread:250] Starting driver...
 
 
-Received packet from device: 183067743 ns:   72 | 01005e00 0016767e 90d49854 080046c0 00300000 40000102
-qemu-system-x86_64: terminating on signal 1 from pid 1262661 (sudo)
-Bench-helper startup time (nsec): 318387603
+Received packet from device: 172441489 ns:   72 | 01005e00 0016767e 90d49854 080046c0 00300000 40000102
+qemu-system-x86_64: terminating on signal 1 from pid 4031043 (sudo)
+Bench-helper startup time (nsec): 310236326
 path '/home/okelmann/appclick-ubpf/benchmark' does not contain a 'flake.nix', searching up
 warning: Git tree '/home/okelmann/appclick-ubpf' is dirty
 Using saved setting for 'extra-substituters = https://tum-dse.cachix.org' from ~/.local/share/nix/trusted-settings.json.
@@ -136,9 +130,9 @@ oO   oO ' _ `| | |/ /  _)' _` | |_|  _)
 oOo oOO| | | | |   (| | | (_) |  _) :_
  OoOoO ._, ._:_:_,\_._,  .__,_:_, \___)
          Telesto 0.16.3~e453b74a-custom
-Startup trace (nsec): click main(): 107733651
-Startup trace (nsec): print config: 109235157
-Received config (length 910):
+Startup trace (nsec): click main(): 107640025
+Startup trace (nsec): print config: 109127622
+Received config (length 751):
 define($MAC0 52:54:00:12:34:56);
 /* End unikraft-provided MAC preamble */
 
@@ -156,9 +150,6 @@ from :: FromDevice(0)
 
 Script(TYPE ACTIVE,
        print "sleeping first increases startup time"
-       print "sleeping first increases startup time"
-       print "sleeping first increases startup time"
-       print "sleeping first increases startup time"
        wait 5ms,
        label start,
        print "Rx rate: $(ic0.rate)",
@@ -166,15 +157,15 @@ Script(TYPE ACTIVE,
        goto start
        )
     
-Startup trace (nsec): print config done: 165333345
-Startup trace (nsec): initialize elements: 168692380
-Startup trace (nsec): initialize elements done: 172522471
+Startup trace (nsec): print config done: 154705579
+Startup trace (nsec): initialize elements: 158051307
+Startup trace (nsec): initialize elements done: 161843853
 [router_thread:250] Starting driver...
 
 
-Received packet from device: 183038659 ns:   72 | 01005e00 0016767e 90d49854 080046c0 00300000 40000102
-qemu-system-x86_64: terminating on signal 1 from pid 1262749 (sudo)
-Bench-helper startup time (nsec): 318719640
+Received packet from device: 172319178 ns:   72 | 01005e00 0016767e 90d49854 080046c0 00300000 40000102
+qemu-system-x86_64: terminating on signal 1 from pid 4031129 (sudo)
+Bench-helper startup time (nsec): 310555748
 path '/home/okelmann/appclick-ubpf/benchmark' does not contain a 'flake.nix', searching up
 warning: Git tree '/home/okelmann/appclick-ubpf' is dirty
 Using saved setting for 'extra-substituters = https://tum-dse.cachix.org' from ~/.local/share/nix/trusted-settings.json.
@@ -195,9 +186,9 @@ oO   oO ' _ `| | |/ /  _)' _` | |_|  _)
 oOo oOO| | | | |   (| | | (_) |  _) :_
  OoOoO ._, ._:_:_,\_._,  .__,_:_, \___)
          Telesto 0.16.3~e453b74a-custom
-Startup trace (nsec): click main(): 107632527
-Startup trace (nsec): print config: 109111768
-Received config (length 910):
+Startup trace (nsec): click main(): 107719462
+Startup trace (nsec): print config: 109205805
+Received config (length 751):
 define($MAC0 52:54:00:12:34:56);
 /* End unikraft-provided MAC preamble */
 
@@ -215,9 +206,6 @@ from :: FromDevice(0)
 
 Script(TYPE ACTIVE,
        print "sleeping first increases startup time"
-       print "sleeping first increases startup time"
-       print "sleeping first increases startup time"
-       print "sleeping first increases startup time"
        wait 5ms,
        label start,
        print "Rx rate: $(ic0.rate)",
@@ -225,74 +213,15 @@ Script(TYPE ACTIVE,
        goto start
        )
     
-Startup trace (nsec): print config done: 164755279
-Startup trace (nsec): initialize elements: 168103668
-Startup trace (nsec): initialize elements done: 171883653
+Startup trace (nsec): print config done: 155101266
+Startup trace (nsec): initialize elements: 158470558
+Startup trace (nsec): initialize elements done: 162315671
 [router_thread:250] Starting driver...
 
 
-Received packet from device: 182353069 ns:   72 | 01005e00 0016767e 90d49854 080046c0 00300000 40000102
-qemu-system-x86_64: terminating on signal 1 from pid 1262833 (sudo)
-Bench-helper startup time (nsec): 320622629
-path '/home/okelmann/appclick-ubpf/benchmark' does not contain a 'flake.nix', searching up
-warning: Git tree '/home/okelmann/appclick-ubpf' is dirty
-Using saved setting for 'extra-substituters = https://tum-dse.cachix.org' from ~/.local/share/nix/trusted-settings.json.
-Using saved setting for 'extra-trusted-public-keys = tum-dse.cachix.org-1:v67rK18oLwgO0Z4b69l30SrV1yRtqxKpiHodG4YxhNM=' from ~/.local/share/nix/trusted-settings.json.
-    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.09s
-     Running `target/debug/bench-helper`
-c[?7l[2J[0mSeaBIOS (version rel-1.16.2-0-gea1b7a073390-prebuilt.qemu.org)
-
-
-iPXE (http://ipxe.org) 00:03.0 CA00 PCI2.10 PnP PMM+BEFD0F40+BEF30F40 CA00
-Press Ctrl-B to configure iPXE (PCI 00:03.0)...                                                                               
-
-
-Booting from ROM..Powered by
-o.   .o       _ _               __ _
-Oo   Oo  ___ (_) | __ __  __ _ ' _) :_
-oO   oO ' _ `| | |/ /  _)' _` | |_|  _)
-oOo oOO| | | | |   (| | | (_) |  _) :_
- OoOoO ._, ._:_:_,\_._,  .__,_:_, \___)
-         Telesto 0.16.3~e453b74a-custom
-Startup trace (nsec): click main(): 107677631
-Startup trace (nsec): print config: 109159818
-Received config (length 910):
-define($MAC0 52:54:00:12:34:56);
-/* End unikraft-provided MAC preamble */
-
-from :: FromDevice(0)
- -> Print2('Received packet from device') 
-            // stripping only makes sense, once we've looked at the ethernet header
-            -> Classifier(12/0800)
-            // check ip header doesn't want ethernet header
-            -> Strip(14)
-            // some elements like IPFilter segfault with some packets if we don't check them
-            -> CheckIPHeader
-        -> IPFilter(deny dst port 1234, allow all)
--> ic0 :: AverageCounter()
--> Discard;
-
-Script(TYPE ACTIVE,
-       print "sleeping first increases startup time"
-       print "sleeping first increases startup time"
-       print "sleeping first increases startup time"
-       print "sleeping first increases startup time"
-       wait 5ms,
-       label start,
-       print "Rx rate: $(ic0.rate)",
-       wait 1s,
-       goto start
-       )
-    
-Startup trace (nsec): print config done: 165080917
-Startup trace (nsec): initialize elements: 168435315
-Startup trace (nsec): initialize elements done: 172252357
-[router_thread:250] Starting driver...
-
-
-Received packet from device: 182758862 ns:   72 | 01005e00 0016767e 90d49854 080046c0 00300000 40000102
-qemu-system-x86_64: terminating on signal 1 from pid 1262919 (sudo)
-Bench-helper startup time (nsec): 320348214
+Received packet from device: 172827591 ns:  200 | 33330000 0016767e 90d49854 86dd6000 00000088 0001fe80
+qemu-system-x86_64: terminating on signal 1 from pid 4031213 (sudo)
+Bench-helper startup time (nsec): 309123640
 path '/home/okelmann/appclick-ubpf/benchmark' does not contain a 'flake.nix', searching up
 warning: Git tree '/home/okelmann/appclick-ubpf' is dirty
 Using saved setting for 'extra-substituters = https://tum-dse.cachix.org' from ~/.local/share/nix/trusted-settings.json.
@@ -313,9 +242,9 @@ oO   oO ' _ `| | |/ /  _)' _` | |_|  _)
 oOo oOO| | | | |   (| | | (_) |  _) :_
  OoOoO ._, ._:_:_,\_._,  .__,_:_, \___)
          Telesto 0.16.3~e453b74a-custom
-Startup trace (nsec): click main(): 107693790
-Startup trace (nsec): print config: 109190994
-Received config (length 910):
+Startup trace (nsec): click main(): 107646326
+Startup trace (nsec): print config: 109133433
+Received config (length 751):
 define($MAC0 52:54:00:12:34:56);
 /* End unikraft-provided MAC preamble */
 
@@ -333,9 +262,6 @@ from :: FromDevice(0)
 
 Script(TYPE ACTIVE,
        print "sleeping first increases startup time"
-       print "sleeping first increases startup time"
-       print "sleeping first increases startup time"
-       print "sleeping first increases startup time"
        wait 5ms,
        label start,
        print "Rx rate: $(ic0.rate)",
@@ -343,15 +269,15 @@ Script(TYPE ACTIVE,
        goto start
        )
     
-Startup trace (nsec): print config done: 165364000
-Startup trace (nsec): initialize elements: 168732252
-Startup trace (nsec): initialize elements done: 172588682
+Startup trace (nsec): print config done: 154809930
+Startup trace (nsec): initialize elements: 158178641
+Startup trace (nsec): initialize elements done: 161847923
 [router_thread:250] Starting driver...
 
 
-Received packet from device: 183121908 ns:   72 | 01005e00 0016767e 90d49854 080046c0 00300000 40000102
-qemu-system-x86_64: terminating on signal 1 from pid 1263003 (sudo)
-Bench-helper startup time (nsec): 318847976
+Received packet from device: 172515710 ns:  200 | 33330000 0016767e 90d49854 86dd6000 00000088 0001fe80
+qemu-system-x86_64: terminating on signal 1 from pid 4031298 (sudo)
+Bench-helper startup time (nsec): 309499469
 path '/home/okelmann/appclick-ubpf/benchmark' does not contain a 'flake.nix', searching up
 warning: Git tree '/home/okelmann/appclick-ubpf' is dirty
 Using saved setting for 'extra-substituters = https://tum-dse.cachix.org' from ~/.local/share/nix/trusted-settings.json.
@@ -372,9 +298,9 @@ oO   oO ' _ `| | |/ /  _)' _` | |_|  _)
 oOo oOO| | | | |   (| | | (_) |  _) :_
  OoOoO ._, ._:_:_,\_._,  .__,_:_, \___)
          Telesto 0.16.3~e453b74a-custom
-Startup trace (nsec): click main(): 107602927
-Startup trace (nsec): print config: 109095787
-Received config (length 910):
+Startup trace (nsec): click main(): 107667011
+Startup trace (nsec): print config: 109149938
+Received config (length 751):
 define($MAC0 52:54:00:12:34:56);
 /* End unikraft-provided MAC preamble */
 
@@ -392,9 +318,6 @@ from :: FromDevice(0)
 
 Script(TYPE ACTIVE,
        print "sleeping first increases startup time"
-       print "sleeping first increases startup time"
-       print "sleeping first increases startup time"
-       print "sleeping first increases startup time"
        wait 5ms,
        label start,
        print "Rx rate: $(ic0.rate)",
@@ -402,15 +325,15 @@ Script(TYPE ACTIVE,
        goto start
        )
     
-Startup trace (nsec): print config done: 164698253
-Startup trace (nsec): initialize elements: 168033763
-Startup trace (nsec): initialize elements done: 171645278
+Startup trace (nsec): print config done: 154752926
+Startup trace (nsec): initialize elements: 158102823
+Startup trace (nsec): initialize elements done: 161744292
 [router_thread:250] Starting driver...
 
 
-Received packet from device: 182080072 ns:   72 | 01005e00 0016767e 90d49854 080046c0 00300000 40000102
-qemu-system-x86_64: terminating on signal 1 from pid 1263087 (sudo)
-Bench-helper startup time (nsec): 316404764
+Received packet from device: 172335759 ns:   72 | 01005e00 0016767e 90d49854 080046c0 00300000 40000102
+qemu-system-x86_64: terminating on signal 1 from pid 4031382 (sudo)
+Bench-helper startup time (nsec): 308429311
 path '/home/okelmann/appclick-ubpf/benchmark' does not contain a 'flake.nix', searching up
 warning: Git tree '/home/okelmann/appclick-ubpf' is dirty
 Using saved setting for 'extra-substituters = https://tum-dse.cachix.org' from ~/.local/share/nix/trusted-settings.json.
@@ -431,9 +354,9 @@ oO   oO ' _ `| | |/ /  _)' _` | |_|  _)
 oOo oOO| | | | |   (| | | (_) |  _) :_
  OoOoO ._, ._:_:_,\_._,  .__,_:_, \___)
          Telesto 0.16.3~e453b74a-custom
-Startup trace (nsec): click main(): 107699997
-Startup trace (nsec): print config: 109191205
-Received config (length 910):
+Startup trace (nsec): click main(): 107638041
+Startup trace (nsec): print config: 109114777
+Received config (length 751):
 define($MAC0 52:54:00:12:34:56);
 /* End unikraft-provided MAC preamble */
 
@@ -451,9 +374,6 @@ from :: FromDevice(0)
 
 Script(TYPE ACTIVE,
        print "sleeping first increases startup time"
-       print "sleeping first increases startup time"
-       print "sleeping first increases startup time"
-       print "sleeping first increases startup time"
        wait 5ms,
        label start,
        print "Rx rate: $(ic0.rate)",
@@ -461,15 +381,15 @@ Script(TYPE ACTIVE,
        goto start
        )
     
-Startup trace (nsec): print config done: 165469797
-Startup trace (nsec): initialize elements: 168855300
-Startup trace (nsec): initialize elements done: 172595227
+Startup trace (nsec): print config done: 154787213
+Startup trace (nsec): initialize elements: 158119994
+Startup trace (nsec): initialize elements done: 161768154
 [router_thread:250] Starting driver...
 
 
-Received packet from device: 183066089 ns:   72 | 01005e00 0016767e 90d49854 080046c0 00300000 40000102
-qemu-system-x86_64: terminating on signal 1 from pid 1263174 (sudo)
-Bench-helper startup time (nsec): 319503868
+Received packet from device: 172451607 ns:   72 | 01005e00 0016767e 90d49854 080046c0 00300000 40000102
+qemu-system-x86_64: terminating on signal 1 from pid 4031469 (sudo)
+Bench-helper startup time (nsec): 308398350
 path '/home/okelmann/appclick-ubpf/benchmark' does not contain a 'flake.nix', searching up
 warning: Git tree '/home/okelmann/appclick-ubpf' is dirty
 Using saved setting for 'extra-substituters = https://tum-dse.cachix.org' from ~/.local/share/nix/trusted-settings.json.
@@ -490,9 +410,9 @@ oO   oO ' _ `| | |/ /  _)' _` | |_|  _)
 oOo oOO| | | | |   (| | | (_) |  _) :_
  OoOoO ._, ._:_:_,\_._,  .__,_:_, \___)
          Telesto 0.16.3~e453b74a-custom
-Startup trace (nsec): click main(): 107614081
-Startup trace (nsec): print config: 109095261
-Received config (length 910):
+Startup trace (nsec): click main(): 107659655
+Startup trace (nsec): print config: 109155151
+Received config (length 751):
 define($MAC0 52:54:00:12:34:56);
 /* End unikraft-provided MAC preamble */
 
@@ -510,9 +430,6 @@ from :: FromDevice(0)
 
 Script(TYPE ACTIVE,
        print "sleeping first increases startup time"
-       print "sleeping first increases startup time"
-       print "sleeping first increases startup time"
-       print "sleeping first increases startup time"
        wait 5ms,
        label start,
        print "Rx rate: $(ic0.rate)",
@@ -520,15 +437,15 @@ Script(TYPE ACTIVE,
        goto start
        )
     
-Startup trace (nsec): print config done: 164470293
-Startup trace (nsec): initialize elements: 167792284
-Startup trace (nsec): initialize elements done: 171564890
+Startup trace (nsec): print config done: 155024628
+Startup trace (nsec): initialize elements: 158386697
+Startup trace (nsec): initialize elements done: 162217923
 [router_thread:250] Starting driver...
 
 
-Received packet from device: 181978913 ns:  200 | 33330000 0016767e 90d49854 86dd6000 00000088 0001fe80
-qemu-system-x86_64: terminating on signal 1 from pid 1263259 (sudo)
-Bench-helper startup time (nsec): 320271383
+Received packet from device: 172690173 ns:   72 | 01005e00 0016767e 90d49854 080046c0 00300000 40000102
+qemu-system-x86_64: terminating on signal 1 from pid 4031554 (sudo)
+Bench-helper startup time (nsec): 308122695
 path '/home/okelmann/appclick-ubpf/benchmark' does not contain a 'flake.nix', searching up
 warning: Git tree '/home/okelmann/appclick-ubpf' is dirty
 Using saved setting for 'extra-substituters = https://tum-dse.cachix.org' from ~/.local/share/nix/trusted-settings.json.
@@ -549,9 +466,9 @@ oO   oO ' _ `| | |/ /  _)' _` | |_|  _)
 oOo oOO| | | | |   (| | | (_) |  _) :_
  OoOoO ._, ._:_:_,\_._,  .__,_:_, \___)
          Telesto 0.16.3~e453b74a-custom
-Startup trace (nsec): click main(): 107697048
-Startup trace (nsec): print config: 109193278
-Received config (length 910):
+Startup trace (nsec): click main(): 107646946
+Startup trace (nsec): print config: 109141463
+Received config (length 751):
 define($MAC0 52:54:00:12:34:56);
 /* End unikraft-provided MAC preamble */
 
@@ -569,8 +486,61 @@ from :: FromDevice(0)
 
 Script(TYPE ACTIVE,
        print "sleeping first increases startup time"
-       print "sleeping first increases startup time"
-       print "sleeping first increases startup time"
+       wait 5ms,
+       label start,
+       print "Rx rate: $(ic0.rate)",
+       wait 1s,
+       goto start
+       )
+    
+Startup trace (nsec): print config done: 154870416
+Startup trace (nsec): initialize elements: 158220807
+Startup trace (nsec): initialize elements done: 162042241
+[router_thread:250] Starting driver...
+
+
+Received packet from device: 172546973 ns:   72 | 01005e00 0016767e 90d49854 080046c0 00300000 40000102
+qemu-system-x86_64: terminating on signal 1 from pid 4031638 (sudo)
+Bench-helper startup time (nsec): 309890488
+path '/home/okelmann/appclick-ubpf/benchmark' does not contain a 'flake.nix', searching up
+warning: Git tree '/home/okelmann/appclick-ubpf' is dirty
+Using saved setting for 'extra-substituters = https://tum-dse.cachix.org' from ~/.local/share/nix/trusted-settings.json.
+Using saved setting for 'extra-trusted-public-keys = tum-dse.cachix.org-1:v67rK18oLwgO0Z4b69l30SrV1yRtqxKpiHodG4YxhNM=' from ~/.local/share/nix/trusted-settings.json.
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.08s
+     Running `target/debug/bench-helper`
+c[?7l[2J[0mSeaBIOS (version rel-1.16.2-0-gea1b7a073390-prebuilt.qemu.org)
+
+
+iPXE (http://ipxe.org) 00:03.0 CA00 PCI2.10 PnP PMM+BEFD0F40+BEF30F40 CA00
+Press Ctrl-B to configure iPXE (PCI 00:03.0)...                                                                               
+
+
+Booting from ROM..Powered by
+o.   .o       _ _               __ _
+Oo   Oo  ___ (_) | __ __  __ _ ' _) :_
+oO   oO ' _ `| | |/ /  _)' _` | |_|  _)
+oOo oOO| | | | |   (| | | (_) |  _) :_
+ OoOoO ._, ._:_:_,\_._,  .__,_:_, \___)
+         Telesto 0.16.3~e453b74a-custom
+Startup trace (nsec): click main(): 107608545
+Startup trace (nsec): print config: 109097030
+Received config (length 751):
+define($MAC0 52:54:00:12:34:56);
+/* End unikraft-provided MAC preamble */
+
+from :: FromDevice(0)
+ -> Print2('Received packet from device') 
+            // stripping only makes sense, once we've looked at the ethernet header
+            -> Classifier(12/0800)
+            // check ip header doesn't want ethernet header
+            -> Strip(14)
+            // some elements like IPFilter segfault with some packets if we don't check them
+            -> CheckIPHeader
+        -> IPFilter(deny dst port 1234, allow all)
+-> ic0 :: AverageCounter()
+-> Discard;
+
+Script(TYPE ACTIVE,
        print "sleeping first increases startup time"
        wait 5ms,
        label start,
@@ -579,12 +549,12 @@ Script(TYPE ACTIVE,
        goto start
        )
     
-Startup trace (nsec): print config done: 165346197
-Startup trace (nsec): initialize elements: 168723683
-Startup trace (nsec): initialize elements done: 172586676
+Startup trace (nsec): print config done: 154599059
+Startup trace (nsec): initialize elements: 157938069
+Startup trace (nsec): initialize elements done: 161759351
 [router_thread:250] Starting driver...
 
 
-Received packet from device: 183101543 ns:   72 | 01005e00 0016767e 90d49854 080046c0 00300000 40000102
-qemu-system-x86_64: terminating on signal 1 from pid 1263347 (sudo)
-Bench-helper startup time (nsec): 319610882
+Received packet from device: 172179289 ns:  200 | 33330000 0016767e 90d49854 86dd6000 00000088 0001fe80
+qemu-system-x86_64: terminating on signal 1 from pid 4031721 (sudo)
+Bench-helper startup time (nsec): 311604072
