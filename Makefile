@@ -57,9 +57,9 @@ imagesize.pdf:
 latency_cdf.pdf:
 	python3 latency_cdf.py -W $(WIDTH) -H 2.1 -l \
   	-o $(OUT_DIR)/latency_cdf.pdf \
-  	--3-name "Linux: mirror" "l--" "magenta" --3 ./data/out7/latency_linux_64B_vpp_mirror_100kpps_rep2.histogram.csv \
-  	--5-name "UniBPF: mirror" "l-" "brown" --5 ./data/out7/latency_ukebpfjit_64B_vpp_mirror_100kpps_rep2.histogram.csv \
-  	--8-name "Unikraft: mirror" "l:" "cyan" --8 ./data/out7/latency_uk_64B_vpp_mirror_100kpps_rep2.histogram.csv \
+  	--3-name "Linux: mirror" "l--" "magenta" --3 $(DATA)/latency_linux_64B_vpp_mirror_100kpps_rep?.histogram.csv \
+  	--5-name "UniBPF: mirror" "l-" "brown" --5 $(DATA)/latency_ukebpfjit_64B_vpp_mirror_100kpps_rep?.histogram.csv \
+  	--8-name "Unikraft: mirror" "l:" "cyan" --8 $(DATA)/latency_uk_64B_vpp_mirror_100kpps_rep?.histogram.csv \
 
 #  	--4-name "Linux: NAT" "l--" "orange" --4 ./data/stub/acc_histogram_pcvm_vmux-dpdk-e810_normal_vhostoff_ioregionfdoff_xdp_10kpps_60B_*s.csv \
 #  	--7-name "UniBPF: NAT" "l:" "green" --7 ./data/stub/acc_histogram_pcvm_bridge_normal_vhoston_ioregionfdoff_xdp_10kpps_60B_*s.csv \
@@ -70,7 +70,8 @@ firewall.pdf:
   	-o $(OUT_DIR)/firewall.pdf \
   	--3-name "Linux" "l--" "magenta" --3 $(DATA)/firewall_linux_*.csv \
   	--5-name "Unikraft" "l-" "brown" --5 $(DATA)/firewall_uk_*.csv \
-  	--8-name "UniBPF" "l:" "cyan" --8 $(DATA)/firewall_ukebpfjit_*.csv \
+  	--8-name "UniBPF no JIT" "l-" "red" --8 $(DATA)/firewall_ukebpf_*.csv \
+  	--9-name "UniBPF" "l:" "cyan" --9 $(DATA)/firewall_ukebpfjit_*.csv \
 
 
 safety_time.pdf:

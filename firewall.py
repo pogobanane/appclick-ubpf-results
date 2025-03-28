@@ -39,6 +39,7 @@ LEGEND_MAP = {
     "linux": "Linux",
     "uk": "Unikraft",
     "ukebpfjit": "UniBPF",
+    "ukebpf": "UniBPF no JIT",
 }
 
 # Set global font size
@@ -227,6 +228,7 @@ def main():
         # linestyle=self._line,
         # linewidth=1,
         markers=True,
+        errorbar='ci',
         # markers=[ 'X' ],
         # markeredgecolor='black',
         # markersize=60,

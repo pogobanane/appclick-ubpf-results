@@ -69,7 +69,9 @@ class LatencyHistogram(object):
 
         self._latencies = []
         for latency, count in self._data:
-            self._latencies.extend([latency] * int(count))
+            if latency < 1e9:
+                # filter out latencies greater than 1000 seconds
+                self._latencies.extend([latency] * int(count))
 
         self._percentile25 = np.percentile(self._latencies, 25)
         self._percentile50 = np.percentile(self._latencies, 50)
@@ -124,7 +126,7 @@ class LoadLatencyPlot(object):
         self._line_color = line_color
 
     def plot(self):
-        hist, bin_edges = np.histogram(self._latency_histograms[0]._latencies, bins=400, density=True)
+        hist, bin_edges = np.histogram(self._latency_histograms[0]._latencies, bins=8000, density=True)
         cdf = np.cumsum(hist) * (bin_edges[1] - bin_edges[0]);
         cdf *= 100; # 1.0 -> 100%
 
