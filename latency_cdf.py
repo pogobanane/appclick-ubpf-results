@@ -149,7 +149,7 @@ class LoadLatencyPlot(object):
             label=f'{self._name}',
             color=self._line_color,
             linestyle=self._line,
-            # linewidth=1
+            linewidth=2.5
         )
 
 
@@ -269,7 +269,7 @@ def main():
             plots.append(plot)
 
     ax.set_xscale('log' if args.logarithmic else 'linear')
-    # plt.xlim(0, 1)
+    # plt.xlim(None, 10000)
 
     legend = None
 
