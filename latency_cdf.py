@@ -149,7 +149,7 @@ class LoadLatencyPlot(object):
             label=f'{self._name}',
             color=self._line_color,
             linestyle=self._line,
-            linewidth=2.5
+            linewidth=3
         )
 
 
