@@ -103,12 +103,22 @@ def setup_parser():
                             help=f'''Name of {color} plot''',
                             )
 
-    parser.add_argument(f'--uk-histogram',
+    parser.add_argument(f'--uk-mirror-histogram',
                         type=argparse.FileType('r'),
                         nargs='+',
                         help=f'''Paths to UK histogram CSVs''',
                         )
-    parser.add_argument(f'--linux-histogram',
+    parser.add_argument(f'--linux-mirror-histogram',
+                        type=argparse.FileType('r'),
+                        nargs='+',
+                        help=f'''Paths to UK histogram CSVs''',
+                        )
+    parser.add_argument(f'--uk-nat-histogram',
+                        type=argparse.FileType('r'),
+                        nargs='+',
+                        help=f'''Paths to UK histogram CSVs''',
+                        )
+    parser.add_argument(f'--linux-nat-histogram',
                         type=argparse.FileType('r'),
                         nargs='+',
                         help=f'''Paths to UK histogram CSVs''',
@@ -177,8 +187,10 @@ def main():
     # df_hue = map_hue(df_hue, hue_map)
     # df['is_passthrough'] = df.apply(lambda row: True if "vmux-pt" in row['interface'] or "vfio" in row['interface'] else False, axis=1)
 
-    linux_histogram = latency_cdf.LatencyHistogram(args.linux_histogram[0].name)
-    uk_histogram = latency_cdf.LatencyHistogram(args.uk_histogram[0].name)
+    linux_mirror_histogram = latency_cdf.LatencyHistogram(args.linux_mirror_histogram[0].name)
+    uk_mirror_histogram = latency_cdf.LatencyHistogram(args.uk_mirror_histogram[0].name)
+    linux_nat_histogram = latency_cdf.LatencyHistogram(args.linux_nat_histogram[0].name)
+    uk_nat_histogram = latency_cdf.LatencyHistogram(args.uk_nat_histogram[0].name)
 
     df = df[df['size'] == 64]
     df.loc[(df["vnf"] == "mirror") | (df["vnf"] == "nat"), "direction"] = "bi"
@@ -219,9 +231,9 @@ def main():
                     value = speedup()
 
                 case ("mirror", "latency"):
-                    value = linux_histogram._percentile50 / uk_histogram._percentile50
+                    value = linux_mirror_histogram._percentile50 / uk_mirror_histogram._percentile50
                 case ("nat", "latency"):
-                    value = 0
+                    value = linux_nat_histogram._percentile50 / uk_nat_histogram._percentile50
 
             # if direction = "tx":
             #     value = 1

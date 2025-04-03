@@ -44,8 +44,10 @@ relative_performance.pdf:
 		-o $(OUT_DIR)/relative_performance.pdf \
 		-W $(WIDTH) -H 2 \
 		--1-name stub --1 $(DATA)/throughput_*_vpp_*.csv \
-		--linux-histogram ./data/out7/latency_linux_64B_vpp_mirror_100kpps_rep2.histogram.csv \
-		--uk-histogram ./data/out7/latency_uk_64B_vpp_mirror_100kpps_rep2.histogram.csv \
+		--linux-mirror-histogram $(DATA)/latency_linux_64B_vpp_mirror_100kpps_rep?.histogram.csv \
+		--uk-mirror-histogram $(DATA)/latency_uk_64B_vpp_mirror_100kpps_rep?.histogram.csv \
+		--linux-nat-histogram $(DATA)/latency_linux_64B_vpp_nat_100kpps_rep?.histogram.csv \
+		--uk-nat-histogram $(DATA)/latency_uk_64B_vpp_nat_100kpps_rep?.histogram.csv \
 
 imagesize.pdf:
 	python3 imagesize.py \
