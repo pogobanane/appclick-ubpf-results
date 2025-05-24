@@ -313,12 +313,13 @@ def parse_data(df: pd.DataFrame) -> pd.DataFrame:
         # out['VNF configuration > 2'] = i['init ebpf done'] - i['jit ebpf']
         out['other'] = total - (i['init ebpf done'] - i['init ebpf vm']) - out['Print']
         # out['Init uBPF'] = out['VNF configuration'] - out['Read'] - out['Load'] - out['Validate'] - out['JIT'] # never called
+        out['total'] = total - out["Print"]
         return out
     ukebpfjit_supp_ = ukebpfjit_supp[ukebpfjit_supp['label'] == 'total']
     ukebpfjit = parse(ukebpfjit_raw, set_spec, calculate_ukebpfjit, supplementary_df=ukebpfjit_supp_)
-    ukebpfjit = pd.concat([ukebpfjit, ukebpfjit_supp])
+    # ukebpfjit = pd.concat([ukebpfjit, ukebpfjit_supp])
 
-    df = pd.concat([linux, uk, ukebpfjit])
+    df = pd.concat([linux, uk, uktrace, ukebpfjit])
     return df
 
 def main():
@@ -370,6 +371,7 @@ def main():
     # df.loc[(df["label"] == "total startup time"), "label"] = "total"
     df['msec'] = df['nsec'].apply(lambda nsec: nsec / 1_000_000.0)
     # df = df[df['system'].isin(["linux", "ukebpfjit", "uk"])]
+    df_full = df.copy()
     df = df[df['label'] == 'total']
 
     # columns = ['system', 'vnf', 'restart_s']
@@ -536,7 +538,25 @@ def main():
     plt.close()
 
 
+    avg_linux = df[df["system"] == system_map["linux"]]["msec"].mean()
+    avg_uk = df[df["system"] == system_map["uk"]]["msec"].mean()
+    avg_ukebpfjit = df[df["system"] == system_map["ukebpfjit"]]["msec"].mean()
+    print(f"Click on Unikraft takes {avg_uk / avg_linux:.1f}x as long as on Linux.")
+    print(f"Ukebpfjit takes {avg_ukebpfjit / avg_linux * 100 :.1f}% as long as Click on Linux.")
 
+    avg_uk_reboot = (
+        df_full[(df_full["system"] == "uk") & (df_full["label"] == "Qemu start")]["msec"].mean() +
+        df_full[(df_full["system"] == "uk") & (df_full["label"] == "Firmware")]["msec"].mean() +
+        df_full[(df_full["system"] == "uk") & (df_full["label"] == "Unikraft")]["msec"].mean()
+                     )
+    print(f"Click on Unikraft takes {avg_uk_reboot:.1f}ms to start the VM and Unikraft.")
+
+
+    avg_ukebpfjit_other = df_full[(df_full["system"] == "ukebpfjit") & (df_full["label"] == "other")]["msec"].mean()
+    print(f"Ukebpfjit spends around {avg_ukebpfjit_other / avg_ukebpfjit * 100:.1f}% of its reconfiguration time on network communication. ")
+    print(f"It spends the remaining {avg_ukebpfjit - avg_ukebpfjit_other:.1f}ms on actual reconfiguration")
+    # breakpoint()
+    # pass
 
 
 if __name__ == '__main__':

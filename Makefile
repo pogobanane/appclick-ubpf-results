@@ -57,7 +57,7 @@ imagesize.pdf:
 
 
 latency_cdf.pdf:
-	python3 latency_cdf.py -W $(WIDTH) -H 2.1 -l \
+	python3 latency_cdf.py -W $(WIDTH) -H 2.1 \
   	-o $(OUT_DIR)/latency_cdf.pdf \
   	--1-name "Linux: mirror" "l-" "green" --1 $(DATA)/latency_linux_64B_vpp_mirror_100kpps_rep?.histogram.csv \
   	--2-name "UniBPF: mirror" "l-" "blue" --2 $(DATA)/latency_ukebpfjit_64B_vpp_mirror_100kpps_rep?.histogram.csv \

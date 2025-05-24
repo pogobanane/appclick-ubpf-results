@@ -269,7 +269,7 @@ def main():
             plots.append(plot)
 
     ax.set_xscale('log' if args.logarithmic else 'linear')
-    # plt.xlim(None, 10000)
+    plt.xlim(0, 1500)
 
     legend = None
 

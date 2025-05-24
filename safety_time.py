@@ -217,6 +217,20 @@ def main():
                )
     ax1.set_title('(a) Safety overhead  ')
 
+
+    avg_compile = df[df["contributor"] == "Compile"]["restart_s"].mean()
+    avg_link = df[df["contributor"] == "Link"]["restart_s"].mean()
+    avg_verify = df[df["contributor"] == "Verify"]["restart_s"].mean()
+    avg_load = df[df["contributor"] == "Load"]["restart_s"].mean()
+    avg_validate = df[df["contributor"] == "Validate"]["restart_s"].mean()
+    avg_jit = df[df["contributor"] == "JIT"]["restart_s"].mean()
+    avg_control = df[df["contributor"] == "Control"]["restart_s"].mean()
+
+    oob_safety_pct = (avg_verify / (avg_compile + avg_link)) * 100
+    reconf_safety_pct = (avg_validate / (avg_load + avg_jit + avg_control)) * 100
+    print(f"Out of band tasks contain {oob_safety_pct:.1f}% and reconfiguration {reconf_safety_pct:.1f}% of safety related task time.")
+
+
     # Create sample data
     np.random.seed(42)
     data = np.random.normal(0, 1, 1000)

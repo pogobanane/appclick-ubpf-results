@@ -144,21 +144,24 @@ def main():
     log_scale = (False, True) if args.logarithmic else False
     # ax.set_yscale('log' if args.logarithmic else 'linear')
 
-    # dfs = []
-    # for color in COLORS:
-    #     if args.__dict__[color]:
-    #         arg_dfs = [ pd.read_csv(f.name, sep='\\s+') for f in args.__dict__[color] ]
-    #         arg_df = pd.concat(arg_dfs)
-    #         name = args.__dict__[f'{color}_name']
-    #         arg_df["hue"] = name
-    #         dfs += [ arg_df ]
-    #         # throughput = ThroughputDatapoint(
-    #         #     moongen_log_filepaths=[f.name for f in args.__dict__[color]],
-    #         #     name=args.__dict__[f'{color}_name'],
-    #         #     color=color,
-    #         # )
-    #         # dfs += color_dfs
-    # df = pd.concat(dfs)
+    dfs = []
+    for color in COLORS:
+        if args.__dict__[color]:
+            arg_dfs = [ pd.read_csv(f.name) for f in args.__dict__[color] ]
+            arg_df = pd.concat(arg_dfs)
+            name = args.__dict__[f'{color}_name']
+            arg_df["arglabel"] = name
+            dfs += [ arg_df ]
+            # throughput = ThroughputDatapoint(
+            #     moongen_log_filepaths=[f.name for f in args.__dict__[color]],
+            #     name=args.__dict__[f'{color}_name'],
+            #     color=color,
+            # )
+            # dfs += color_dfs
+    df = pd.concat(dfs)
+
+    # TODO we are not using the data yet
+
     # hue = ['repetitions', 'num_vms', 'interface', 'fastclick']
     # groups = df.groupby(hue)
     # summary = df.groupby(hue)['rxMppsCalc'].describe()
