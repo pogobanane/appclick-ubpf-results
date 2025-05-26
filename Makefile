@@ -1,5 +1,6 @@
 VERSION := v0.0.4-pre
 DATA := ./data/$(VERSION)
+DATA_OLD := ./data/v0.0.3-pre4
 OUT_DIR := ./out/$(VERSION)
 
 WIDTH := 5.0
@@ -21,7 +22,7 @@ reconfiguration_vnfs.pdf:
 	python3 reconfiguration_vnfs.py \
 		-o $(OUT_DIR)/reconfiguration_vnfs.pdf \
 		-W $(WIDTH) -H 2.5 \
-		--1 $(DATA)/reconfiguration_*_rep?.csv --1-name stub
+		--1 $(DATA_OLD)/reconfiguration_*_rep?.csv --1-name stub
 
 #		--1 $(DATA)/reconfiguration_ukebpfjit_*_rep?.csv --1-name stub
 
@@ -31,7 +32,7 @@ reconfiguration_stack.pdf:
 	python3 reconfiguration_stack.py \
 		-o $(OUT_DIR)/reconfiguration_stack.pdf \
 		-W $(WIDTH) -H 2.5 \
-		--1 $(DATA)/reconfiguration_*_rep?.csv --1-name stub
+		--1 $(DATA_OLD)/reconfiguration_*_rep?.csv --1-name stub
 
 throughput.pdf:
 	python3 throughput.py \
