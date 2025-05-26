@@ -7,7 +7,7 @@ WIDTH2 := 5.5
 DWIDTH := 11
 DWIDTH2 := 13
 
-PAPER_FIGURES := reconfiguration_vnfs.pdf reconfiguration_stack.pdf throughput.pdf imagesize.pdf relative_performance.pdf latency_cdf.pdf firewall.pdf safety_time.pdf
+PAPER_FIGURES := reconfiguration_vnfs.pdf reconfiguration_stack.pdf throughput.pdf imagesize.pdf relative_performance.pdf latency_cdf.pdf firewall.pdf safety_time.pdf mpk.pdf
 # PAPER_FIGURES := mediation.pdf microservices.pdf ycsb.pdf
 # PAPER_FIGURES := mediation.pdf iperf.pdf ycsb.pdf
 
@@ -79,10 +79,13 @@ firewall.pdf:
 mpk.pdf:
 	python3 mpk.py -W $(WIDTH) -H 2.1 \
   	-o $(OUT_DIR)/mpk.pdf \
-  	--3-name "Linux" "l--" "magenta" --3 $(DATA)/firewall_linux_*.csv \
-  	--5-name "Unikraft" "l-" "brown" --5 $(DATA)/firewall_uk_*.csv \
-  	--8-name "UniBPF no JIT" "l-" "red" --8 $(DATA)/firewall_ukebpf_*.csv \
-  	--9-name "UniBPF" "l:" "cyan" --9 $(DATA)/firewall_ukebpfjit_*.csv \
+		--1 flake.nix --1-name stub
+
+
+mpk-bars.pdf:
+	python3 mpk-bars.py -W $(WIDTH) -H 2.1 \
+  	-o $(OUT_DIR)/mpk-bars.pdf \
+		--1 flake.nix --1-name stub
 
 
 safety_time.pdf:

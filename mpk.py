@@ -182,35 +182,73 @@ def main():
     ax.set_axisbelow(True)
     if args.title:
         plt.title(args.title)
-    plt.xlabel('Firewall rules')
-    plt.ylabel('Throughput [Mpps]')
+    plt.xlabel('Packet size')
+    plt.ylabel('Throughput [GBit]')
     plt.grid()
 
     plots = []
 
-    # print(vars(args))
-    for color in COLORS:
-        if args.__dict__[color]:
-            if len(args.__dict__[f'{color}_name']) == 1:
-                name = args.__dict__[f'{color}_name'][0]
-                line = "-"
-                line_color = "blue"
-            elif len(args.__dict__[f'{color}_name']) == 3:
-                name = args.__dict__[f'{color}_name'][0]
-                line = args.__dict__[f'{color}_name'][1].strip("l") # allow prepending with l to avoid "-" being interpreted as a flag
-                line_color = args.__dict__[f'{color}_name'][2]
-            plot = FirewallPlot(
-                histogram_filepaths=[h.name for h in args.__dict__[color]],
-                name=name,
-                color=color,
-                line=line,
-                line_color=line_color,
-            )
-            # plot.plot()
-            plots.append(plot)
+    # # print(vars(args))
+    # for color in COLORS:
+    #     if args.__dict__[color]:
+    #         if len(args.__dict__[f'{color}_name']) == 1:
+    #             name = args.__dict__[f'{color}_name'][0]
+    #             line = "-"
+    #             line_color = "blue"
+    #         elif len(args.__dict__[f'{color}_name']) == 3:
+    #             name = args.__dict__[f'{color}_name'][0]
+    #             line = args.__dict__[f'{color}_name'][1].strip("l") # allow prepending with l to avoid "-" being interpreted as a flag
+    #             line_color = args.__dict__[f'{color}_name'][2]
+    #         plot = FirewallPlot(
+    #             histogram_filepaths=[h.name for h in args.__dict__[color]],
+    #             name=name,
+    #             color=color,
+    #             line=line,
+    #             line_color=line_color,
+    #         )
+    #         # plot.plot()
+    #         plots.append(plot)
 
-    dfs = [ plot._df for plot in plots ]
-    df = pd.concat(dfs)
+    # dfs = [ plot._df for plot in plots ]
+    # df = pd.concat(dfs)
+
+    columns = ['system', 'size', 'mpps', 'gbit']
+    systems = [ "MorphOS", "MorphOS MPK",
+               # "MorphOS MPK (perm)", "MorphOS MPK (copy)"
+               ]
+    sizes = [ 64, 1300, 1518 ]
+    rows = []
+    for system in systems:
+        for size in sizes:
+            value = 0
+            if size == 64:
+                match system:
+                    case "MorphOS":
+                        value = 2.4
+                    case "MorphOS MPK":
+                        value = 1.2
+                    case "MorphOS MPK (perm)":
+                        value = 1.2
+                    case "MorphOS MPK (copy)":
+                        value = 2.3
+            else:
+                match system:
+                    case "MorphOS":
+                        value = 10 * 1000 / 8 / (size + 7 + 1 + 12)
+                    case "MorphOS MPK":
+                        value = 10 * 1000 / 8 / (size + 7 + 1 + 12)
+                    case "MorphOS MPK (perm)":
+                        value = 10 * 1000 / 8 / (size + 7 + 1 + 12)
+                    case "MorphOS MPK (copy)":
+                        value = 9 * 1000 / 8 / (size + 7 + 1 + 12)
+
+            gbit = value * (size + 7 + 1 + 12) * 8 / 1000
+
+            rows += [[system, size, value, gbit]]
+
+    # rows += [["MorphOS MPK", 600, 0, 5]]
+    df = pd.DataFrame(rows, columns=columns)
+
 
     # flights = sns.load_dataset("flights")
     # sns.lineplot(data=flights, x="year", y="passengers", markers=)
@@ -219,8 +257,8 @@ def main():
         data=df,
         # x=bin_edges[1:],
         # y=cdf,
-        x = "fw_size",
-        y = "pps",
+        x = "size",
+        y = "gbit",
         hue = "system",
         style = "system",
         # label=f'{self._name}',
@@ -248,7 +286,7 @@ def main():
 
     rename_legend_labels(plt, LEGEND_MAP)
 
-    sns.move_legend(ax, "lower center", bbox_to_anchor=(0.5, 0.95), ncol=4, title=None, frameon=False)
+    sns.move_legend(ax, "lower center", bbox_to_anchor=(0.5, 0.95), ncol=2, title=None, frameon=False)
     # plot.add_legend(
     #         bbox_to_anchor=(0.55, 0.3),
     #         loc='upper left',
