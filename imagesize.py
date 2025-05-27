@@ -40,8 +40,8 @@ system_map = {
         'click-linuxvm': 'Linux click',
         }
 
-YLABEL = 'Image Size (MB)'
-XLABEL = 'System'
+XLABEL = 'Image Size (MB)'
+YLABEL = ''
 
 def map_hue(df_hue, hue_map):
     return df_hue.apply(lambda row: hue_map.get(str(row), row))
@@ -160,43 +160,35 @@ def main():
     # df['is_passthrough'] = df.apply(lambda row: True if "vmux-pt" in row['interface'] or "vfio" in row['interface'] else False, axis=1)
 
     columns = ['system', 'size']
-    systems = [ "Unikraft", "Alpine", "Ubuntu" ]
+    systems = [ "Unikraft", "MorphOS", "Alpine", "Ubuntu" ]
     rows = []
     for system in systems:
         value = 300000
         if system == "Alpine":
             # click + click config + nat ebpf program + signature + alpine image
-            value = 3940608 + 5803 + 2576 + 71 + 110675968
+            value = 3949632 + 5803 + 3712 + 72 + 110675968
         if system == "Ubuntu":
-            value = 3940608 + 5803 + 2576 + 71 + 629971968
-        if system == "Unikraft":
+            value = 3949632 + 5803 + 3712 + 72 + 639152640
+        if system == "MorphOS":
             # unikraft-click kernel + image with nat ebpf program, signature and click config
-            value = 5161368 + 10752
+            value = 5222840 + 10240
+        if system == "Unikraft":
+            value = 2999592 + 6144
         value /= 1024 * 1024 # MB
+        value = round(value, 2)
         rows += [[system, value]]
     df = pd.DataFrame(rows, columns=columns)
 
-    # df['system'] = df['system'].apply(lambda row: system_map.get(str(row), row))
-
-    # map colors to hues
-    # colors = sns.color_palette("pastel", len(df['hue'].unique())-1) + [ mcolors.to_rgb('sandybrown') ]
-    # palette = dict(zip(df['hue'].unique(), colors))
-
     # Plot using Seaborn
-    sns.barplot(
+    ax = sns.barplot(
                data=df,
-               x='system',
-               y='size',
+               y='system',
+               x='size',
                # hue="vnf",
                # palette=palette,
                edgecolor="dimgray",
                )
-
-    # sns.add_legend(
-    #         # bbox_to_anchor=(0.5, 0.77),
-    #         loc='right',
-    #         ncol=1, title=None, frameon=False,
-    #                 )
+    ax.bar_label(ax.containers[0], fontsize=10)
 
     # # Fix the legend hatches
     # for i, legend_patch in enumerate(grid._legend.get_patches()):
@@ -272,38 +264,12 @@ def main():
     #     color="navy",
     #     weight="bold",
     # )
-
+    xmargin = (ax.get_xlim()[1]-ax.get_xlim()[0])*0.1
+    ax.set_xlim(ax.get_xlim()[0], ax.get_xlim()[1]+xmargin) 
     plt.xlabel(XLABEL)
     plt.ylabel(YLABEL)
 
-    # plt.ylim(0, 1)
-    if not args.logarithmic:
-        plt.ylim(bottom=0)
-    # for container in ax.containers:
-    #     ax.bar_label(container, fmt='%.0f')
-
-    # # iterate through each container, hatch, and legend handle
-    # for container, hatch, handle in zip(ax.containers, hatches, ax.get_legend().legend_handles[::-1]):
-    #     # update the hatching in the legend handle
-    #     handle.set_hatch(hatch)
-    #     # iterate through each rectangle in the container
-    #     for rectangle in container:
-    #         # set the rectangle hatch
-    #         rectangle.set_hatch(hatch)
-
-    # # Loop over the bars
-    # for i,thisbar in enumerate(bar.patches):
-    #     # Set a different hatch for each bar
-    #     thisbar.set_hatch(hatches[i % len(hatches)])
-
-    # legend = plt.legend()
-    # legend.get_frame().set_facecolor('white')
-    # legend.get_frame().set_alpha(0.8)
-    # fig.tight_layout(rect = (0, 0, 0, 0.1))
-    # ax.set_position((0.1, 0.1, 0.5, 0.8))
-    # plt.tight_layout(pad=0.1)
-    # plt.subplots_adjust(right=0.78)
-    # fig.tight_layout(rect=(0, 0, 0.3, 1))
+    plt.subplots_adjust(left=0.15, bottom=0.18)
     plt.savefig(args.output.name)
     plt.close()
 

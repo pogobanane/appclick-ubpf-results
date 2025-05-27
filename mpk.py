@@ -42,6 +42,16 @@ LEGEND_MAP = {
     "ukebpf": "UniBPF no JIT",
 }
 
+system_map = {
+        'ebpf-click-unikraftvm': 'Uk click (eBPF)',
+        'click-unikraftvm': 'Uk click',
+        'click-linuxvm': 'Linux click',
+        'ukebpfjit': 'MorphOS',
+        'ukebpfjit_nompk': 'MorphOS - no MPK',
+        'linux': 'Linux',
+        'uk': 'Unikraft',
+        }
+
 # Set global font size
 # plt.rcParams['font.size'] = 10  # Sets the global font size to 14
 # plt.rcParams['axes.labelsize'] = 10  # Sets axis label size
@@ -172,6 +182,8 @@ def parse_args(parser):
 def chain(lst: list[list]) -> list:
     return [item for sublist in lst for item in sublist]
 
+def mpps_to_gbitps(mpps, size):
+    return mpps * (size + 20) * 8 / 1000 # 20: preamble + packet gap
 
 def main():
     parser = setup_parser()
@@ -188,30 +200,20 @@ def main():
 
     plots = []
 
-    # # print(vars(args))
-    # for color in COLORS:
-    #     if args.__dict__[color]:
-    #         if len(args.__dict__[f'{color}_name']) == 1:
-    #             name = args.__dict__[f'{color}_name'][0]
-    #             line = "-"
-    #             line_color = "blue"
-    #         elif len(args.__dict__[f'{color}_name']) == 3:
-    #             name = args.__dict__[f'{color}_name'][0]
-    #             line = args.__dict__[f'{color}_name'][1].strip("l") # allow prepending with l to avoid "-" being interpreted as a flag
-    #             line_color = args.__dict__[f'{color}_name'][2]
-    #         plot = FirewallPlot(
-    #             histogram_filepaths=[h.name for h in args.__dict__[color]],
-    #             name=name,
-    #             color=color,
-    #             line=line,
-    #             line_color=line_color,
-    #         )
-    #         # plot.plot()
-    #         plots.append(plot)
+    dfs = []
+    for color in COLORS:
+        if args.__dict__[color]:
+            arg_dfs = [ pd.read_csv(f.name) for f in args.__dict__[color] ]
+            arg_df = pd.concat(arg_dfs)
+            name = args.__dict__[f'{color}_name']
+            dfs += [ arg_df ]
+    df = pd.concat(dfs)
 
-    # dfs = [ plot._df for plot in plots ]
-    # df = pd.concat(dfs)
-
+    df['pps'] = df['pps'].apply(lambda pps: pps / 1_000_000) # now mpps
+    df['size'] = df['size'].astype(int)
+    df['system'] = df['system'].apply(lambda row: system_map.get(str(row), row))
+    df['gbit'] = mpps_to_gbitps(df['pps'], df['size'])
+    """
     columns = ['system', 'size', 'mpps', 'gbit']
     systems = [ "MorphOS", "MorphOS MPK",
                # "MorphOS MPK (perm)", "MorphOS MPK (copy)"
@@ -248,6 +250,7 @@ def main():
 
     # rows += [["MorphOS MPK", 600, 0, 5]]
     df = pd.DataFrame(rows, columns=columns)
+    """
 
 
     # flights = sns.load_dataset("flights")

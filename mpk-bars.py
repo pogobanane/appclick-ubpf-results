@@ -142,7 +142,20 @@ def main():
     log_scale = (False, True) if args.logarithmic else False
     # ax.set_yscale('log' if args.logarithmic else 'linear')
 
+    dfs = []
+    for color in COLORS:
+        if args.__dict__[color]:
+            arg_dfs = [ pd.read_csv(f.name) for f in args.__dict__[color] ]
+            arg_df = pd.concat(arg_dfs)
+            name = args.__dict__[f'{color}_name']
+            dfs += [ arg_df ]
+    df = pd.concat(dfs)
 
+    df['pps'] = df['pps'].apply(lambda pps: pps / 1_000_000) # now mpps
+    df['size'] = df['size'].astype(int)
+    df['system'] = df['system'].apply(lambda row: system_map.get(str(row), row))
+    df['vnf'] = df['vnf'].apply(lambda row: vnf_map.get(str(row), row))
+    """
     columns = ['system', 'size', 'mpps', 'gbit']
     systems = [ "MorphOS", "MorphOS MPK",
                # "MorphOS MPK (perm)", "MorphOS MPK (copy)"
@@ -179,6 +192,7 @@ def main():
 
     # rows += [["MorphOS MPK", 600, 0, 5]]
     df = pd.DataFrame(rows, columns=columns)
+    """
 
 
     # groups data, inserts new bars with 0 values between groups

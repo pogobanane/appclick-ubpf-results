@@ -80,7 +80,8 @@ firewall.pdf:
 mpk.pdf:
 	python3 mpk.py -W $(WIDTH) -H 2.1 \
   	-o $(OUT_DIR)/mpk.pdf \
-		--1 flake.nix --1-name stub
+		--1-name "MorphOS" --1 $(DATA)/throughput_ukebpfjit_vpp_rx_filter_*.csv \
+		--2-name "MorphOS - no MPK" --2 $(DATA)/throughput_ukebpfjit_nompk_vpp_rx_filter_*.csv
 
 
 mpk-bars.pdf:
