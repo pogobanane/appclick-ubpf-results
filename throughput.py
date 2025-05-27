@@ -40,10 +40,21 @@ system_map = {
         'ebpf-click-unikraftvm': 'Uk click (eBPF)',
         'click-unikraftvm': 'Uk click',
         'click-linuxvm': 'Linux click',
-        'ukebpfjit': 'UniBPF',
+        'ukebpfjit': 'MorphOS',
         'linux': 'Linux',
         'uk': 'Unikraft',
         }
+
+vnf_map = {
+    'firewall-10000': 'Firewall-10k',
+    'firewall-1000': 'Firewall-1k',
+    'firewall-2': 'Firewall-2',
+    'filter': 'Firewall',
+    'empty': 'Empty',
+    'ids': 'IDS',
+    'nat': 'NAT',
+    'mirror': 'Mirror'
+}
 
 YLABEL = 'Throughput [Mpps]'
 XLABEL = 'Packet size [B]'
@@ -212,6 +223,7 @@ def main():
     # df_ = pd.DataFrame(rows, columns=columns)
 
     df['system'] = df['system'].apply(lambda row: system_map.get(str(row), row))
+    df['vnf'] = df['vnf'].apply(lambda row: vnf_map.get(str(row), row))
     df['grouped_system'] = df.apply(lambda row: f"{row['vnf']} {row['system']}", axis=1)
 
     # groups data, inserts new bars with 0 values between groups
@@ -268,8 +280,20 @@ def main():
             col_wrap=2,
             sharey = True,
             sharex = False,
-            # gridspec_kws={"width_ratios": [11, 1]},
+            # gridspec_kws={"width_ratios": [11, 1]}, # doesnt work.
     )
+    # To supports width_ratios we'd need to rewrite everything to work on ax instead of grid:
+    # fig, axes = plt.subplots(1, 2,
+    #     gridspec_kw={'width_ratios': [11, 1]},
+    #     sharey=True,
+    #     figsize=(12, 4)
+    # )
+    # # Plot on each axis manually
+    # directions = df['direction'].unique()
+    # for ax, direction in zip(axes, directions):
+    #     data = df[df['direction'] == direction]
+    #     # Your plotting code here
+    #     ax.set_title(f'Direction: {direction}')
 
     def mpps_to_gbitps(mpps, size):
         return mpps * (size + 20) * 8 / 1000 # 20: preamble + packet gap

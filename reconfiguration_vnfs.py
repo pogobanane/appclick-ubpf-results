@@ -9,6 +9,8 @@ from re import search, findall, MULTILINE
 from os.path import basename, getsize, isfile
 from typing import List, Any
 from plotting import HATCHES as hatches
+from plotting import COLORS as colors
+from plotting import mybarplot
 from tqdm import tqdm
 import scipy.stats as scipyst
 from functools import reduce
@@ -43,13 +45,18 @@ system_map = {
         # 'click-unikraftvm': 'Unikraft click',
         # 'click-linuxvm': 'Linux click',
         'linux': 'Linux/Click',
-        'ukebpfjit': 'UniBPF',
+        'ukebpfjit': 'MorphOS',
         'uk': 'Unikraft/Click',
         }
 
 hue_map = {
-    'firewall-10000': 'firewall-10k',
-    'firewall-1000': 'firewall-1k',
+    'firewall-10000': 'Firewall-10k',
+    'firewall-1000': 'Firewall-1k',
+    'firewall-2': 'Firewall-2',
+    'empty': 'Empty',
+    'ids': 'IDS',
+    'nat': 'NAT',
+    'mirror': 'Mirror'
 }
 
 YLABEL = 'Restart time [ms]'
@@ -406,6 +413,8 @@ def main():
             dfs += [ clean ]
     df = pd.concat(dfs)
 
+    df = df[df['vnf'] != 'filter']
+
     log("Plotting data")
 
     # Plot using Seaborn
@@ -420,6 +429,8 @@ def main():
                edgecolor="dimgray",
                )
 
+    mybarplot.add_hatches(data=df, x='system', y='msec', hue='vnf', ax=ax, hatch_by='vnf', hatches=hatches)
+    mybarplot.add_colors(data=df, x='system', y='msec', hue='vnf', ax=ax, color_by='vnf', colors=colors)
     # sns.add_legend(
     #         # bbox_to_anchor=(0.5, 0.77),
     #         loc='right',
@@ -475,8 +486,15 @@ def main():
     #             # log_scale=log_scale,
     #             ax=ax,
     #             )
+    # Fix the legend hatches
+    for i, legend_patch in enumerate(ax.get_legend().get_patches()):
+        hatch = hatches[i % len(hatches)]
+        color = colors[i % len(colors)]
+        legend_patch.set_hatch(f"{hatch}{hatch}")
+        legend_patch.set_facecolor(color)
     sns.move_legend(
         ax, "upper right",
+        title="VNF",
         # bbox_to_anchor=(.5, 1), ncol=3, title=None, frameon=False,
     )
     #

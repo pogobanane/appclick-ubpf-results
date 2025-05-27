@@ -61,9 +61,9 @@ latency_cdf.pdf:
 	python3 latency_cdf.py -W $(WIDTH) -H 2.1 \
   	-o $(OUT_DIR)/latency_cdf.pdf \
   	--1-name "Linux: mirror" "l-" "green" --1 $(DATA)/latency_linux_64B_vpp_mirror_100kpps_rep?.histogram.csv \
-  	--2-name "UniBPF: mirror" "l-" "blue" --2 $(DATA)/latency_ukebpfjit_64B_vpp_mirror_100kpps_rep?.histogram.csv \
+  	--2-name "MorphOS: mirror" "l-" "blue" --2 $(DATA)/latency_ukebpfjit_64B_vpp_mirror_100kpps_rep?.histogram.csv \
   	--4-name "Linux: NAT" "l:" "orange" --4 $(DATA)/latency_linux_64B_vpp_nat_100kpps_rep?.histogram.csv \
-  	--5-name "UniBPF: NAT" "l-" "red" --5 $(DATA)/latency_ukebpfjit_64B_vpp_nat_100kpps_rep?.histogram.csv \
+  	--5-name "MorphOS: NAT" "l-" "red" --5 $(DATA)/latency_ukebpfjit_64B_vpp_nat_100kpps_rep?.histogram.csv \
   	--6-name "Unikraft: mirror" "l:" "cyan" --6 $(DATA)/latency_uk_64B_vpp_mirror_100kpps_rep?.histogram.csv \
   	--7-name "Unikraft: NAT" "l:" "purple" --7 $(DATA)/latency_uk_64B_vpp_nat_100kpps_rep?.histogram.csv \
 
@@ -71,10 +71,10 @@ latency_cdf.pdf:
 firewall.pdf:
 	python3 firewall.py -W $(WIDTH) -H 2.1 -l \
   	-o $(OUT_DIR)/firewall.pdf \
-  	--3-name "Linux" "l--" "magenta" --3 $(DATA)/firewall_linux_*.csv \
-  	--5-name "Unikraft" "l-" "brown" --5 $(DATA)/firewall_uk_*.csv \
-  	--8-name "UniBPF no JIT" "l-" "red" --8 $(DATA)/firewall_ukebpf_*.csv \
-  	--9-name "UniBPF" "l:" "cyan" --9 $(DATA)/firewall_ukebpfjit_*.csv \
+  	--3-name "Linux" "l--" "magenta" --3 $(DATA_OLD)/firewall_linux_*.csv \
+  	--5-name "Unikraft" "l-" "brown" --5 $(DATA_OLD)/firewall_uk_*.csv \
+  	--8-name "MorphOS no JIT" "l-" "red" --8 $(DATA_OLD)/firewall_ukebpf_*.csv \
+  	--9-name "MorphOS" "l:" "cyan" --9 $(DATA_OLD)/firewall_ukebpfjit_*.csv \
 
 
 mpk.pdf:

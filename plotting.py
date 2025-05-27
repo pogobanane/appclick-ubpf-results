@@ -4,10 +4,14 @@ from pandas import DataFrame
 import pandas as pd
 import matplotlib.legend as mlegend
 from typing import List, Dict, Any
+import seaborn as sns
+import matplotlib.colors as mcolors
 
 # most of this file expects to work with seaborn plots
 
 HATCHES = ['O', '\\\\', '*', 'o', 'xx', '.O', '//', '..']
+
+COLORS = sns.color_palette("pastel", 5) + [ mcolors.to_rgb('sandybrown') ]
 
 class mybarplot():
     def __init__(self, data: DataFrame, x: str, y: str, hue: str = None):

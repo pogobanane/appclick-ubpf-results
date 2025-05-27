@@ -38,8 +38,8 @@ LINES = {
 LEGEND_MAP = {
     "linux": "Linux",
     "uk": "Unikraft",
-    "ukebpfjit": "UniBPF",
-    "ukebpf": "UniBPF no JIT",
+    "ukebpfjit": "MorphOS",
+    "ukebpf": "MorphOS no JIT",
 }
 
 # Set global font size

@@ -45,6 +45,17 @@ system_map = {
 
 grid_title_map = {
     'direction = latency': 'Latency',
+    'direction = rx': 'Receive',
+    'direction = tx': 'Transmit',
+    'direction = bi': 'Bi-directional',
+}
+
+vnf_map = {
+    'filter': '  Firewall',
+    'empty': 'Empty  ',
+    'ids': '  IDS',
+    'nat': 'NAT',
+    'mirror': 'Mirror'
 }
 
 YLABEL = 'Speedup'
@@ -258,6 +269,7 @@ def main():
     df = pd.DataFrame(rows, columns=columns)
 
     # df['system'] = df['system'].apply(lambda row: system_map.get(str(row), row))
+    df['vnf'] = df['vnf'].apply(lambda row: vnf_map.get(str(row), row))
 
     # map colors to hues
     # colors = sns.color_palette("pastel", len(df['system'].unique())-1) + [ mcolors.to_rgb('sandybrown') ]
