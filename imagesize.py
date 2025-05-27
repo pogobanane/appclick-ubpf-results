@@ -188,7 +188,7 @@ def main():
                # palette=palette,
                edgecolor="dimgray",
                )
-    ax.bar_label(ax.containers[0], fontsize=10)
+    ax.bar_label(ax.containers[0], fontsize=10, fmt='%s MB', padding=3)
 
     # # Fix the legend hatches
     # for i, legend_patch in enumerate(grid._legend.get_patches()):
@@ -264,12 +264,12 @@ def main():
     #     color="navy",
     #     weight="bold",
     # )
-    xmargin = (ax.get_xlim()[1]-ax.get_xlim()[0])*0.1
+    xmargin = (ax.get_xlim()[1]-ax.get_xlim()[0])*0.22
     ax.set_xlim(ax.get_xlim()[0], ax.get_xlim()[1]+xmargin) 
     plt.xlabel(XLABEL)
     plt.ylabel(YLABEL)
 
-    plt.subplots_adjust(left=0.15, bottom=0.18)
+    plt.subplots_adjust(left=0.15, bottom=0.35)
     plt.savefig(args.output.name)
     plt.close()
 
