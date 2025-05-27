@@ -210,7 +210,10 @@ def main():
             match (system, contributor):
                 # cargo run --bin bench-helper --features print-output
                 case ("click-linuxvm", "click init"):
-                    value = 108
+                    # value = 108 # NAT
+                    # get it from reconfiguration_vnf.py:
+                    # df_full[(df_full['system'] == 'linux') & (df_full['vnf'] == 'empty') & (df_full['label'] == 'click init')]['msec'].mean()
+                    value = 1.3180328 # IDS vnf
                 case ("click-linuxvm", "other"):
                     value = 17
                 case ("click-linuxvm", "first packet"):
