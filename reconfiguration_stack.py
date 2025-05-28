@@ -44,7 +44,7 @@ system_map = {
         'click-unikraftvm': 'Unikraft/Click',
         'click-linuxvm': 'Linux/Click',
         'ebpf-unikraftvm': 'UniBPF',
-        'ebpf-linuxvm': 'Linux/eBPF',
+        'ebpf-linuxvm': 'XDP',
         }
 
 YLABEL = 'Reconfiguration time [ms]'
