@@ -269,7 +269,8 @@ def main():
     plt.xlabel(XLABEL)
     plt.ylabel(YLABEL)
 
-    plt.subplots_adjust(left=0.15, bottom=0.35)
+    #plt.subplots_adjust(left=0.15, bottom=0.35)
+    fig.tight_layout(pad=0.0)
     plt.savefig(args.output.name)
     plt.close()
 

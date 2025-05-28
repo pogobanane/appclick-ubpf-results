@@ -52,7 +52,7 @@ relative_performance.pdf:
 
 imagesize.pdf:
 	python3 imagesize.py \
-		-W $(WIDTH) -H 1.2 \
+		-W $(WIDTH) -H 1.5 \
 		-o $(OUT_DIR)/imagesize.pdf \
 		--1 flake.nix --1-name stub
 
