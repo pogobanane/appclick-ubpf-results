@@ -40,7 +40,7 @@ system_map = {
         'ebpf-click-unikraftvm': 'Uk click (eBPF)',
         'click-unikraftvm': 'Uk click',
         'click-linuxvm': 'Linux click',
-        'ukebpfjit': 'MorphOS',
+        'ukebpfjit_nompk': 'MorphOS',
         'linux': 'Linux',
         'uk': 'Unikraft',
         }
@@ -196,13 +196,6 @@ def main():
     # df = pd.concat([df, df_fake])
 
     df['size'] = df['size'].astype(int)
-
-    # patch in tmp tx data
-    tx_nompk = df[(df['system'] == 'ukebpfjit_nompk') & (df['direction'] == 'tx')]
-    tx_nompk['system'] = "ukebpfjit" # use old system names
-    df = df[(df['system'] != 'ukebpfjit_nompk')]
-    df = pd.concat([tx_nompk, df])
-    breakpoint()
 
     # columns = ['system', 'vnf', 'direction', 'pps']
     # systems = [ "ebpf-click-unikraftvm", "click-unikraftvm", "click-linuxvm" ]
