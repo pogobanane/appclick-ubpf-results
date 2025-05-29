@@ -197,6 +197,13 @@ def main():
 
     df['size'] = df['size'].astype(int)
 
+    # patch in tmp tx data
+    tx_nompk = df[(df['system'] == 'ukebpfjit_nompk') & (df['direction'] == 'tx')]
+    tx_nompk['system'] = "ukebpfjit" # use old system names
+    df = df[(df['system'] != 'ukebpfjit_nompk')]
+    df = pd.concat([tx_nompk, df])
+    breakpoint()
+
     # columns = ['system', 'vnf', 'direction', 'pps']
     # systems = [ "ebpf-click-unikraftvm", "click-unikraftvm", "click-linuxvm" ]
     # vnfs = [ "none", "nat", "filter", "dpi", "tcp" ]
