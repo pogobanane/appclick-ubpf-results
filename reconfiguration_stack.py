@@ -43,7 +43,7 @@ system_map = {
         'ebpf-click-unikraftvm': 'UniBPF',
         'click-unikraftvm': 'Unikraft/Click',
         'click-linuxvm': 'Linux/Click',
-        'ebpf-unikraftvm': 'UniBPF',
+        'ebpf-unikraftvm': 'MorphOS',
         'ebpf-linuxvm': 'XDP',
         }
 
