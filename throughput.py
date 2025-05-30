@@ -40,7 +40,7 @@ system_map = {
         'ebpf-click-unikraftvm': 'Uk click (eBPF)',
         'click-unikraftvm': 'Uk click',
         'click-linuxvm': 'Linux click',
-        'ukebpfjit': 'MorphOS',
+        'ukebpfjit_nompk': 'MorphOS',
         'linux': 'Linux',
         'uk': 'Unikraft',
         }

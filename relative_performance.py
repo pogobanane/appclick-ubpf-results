@@ -210,63 +210,77 @@ def main():
     # b = a[a['system'] == 'uk'] / a[a['system'] == 'linux']
 
 
-    columns = ['vnf', 'direction', 'pps']
-    vnfs = [ "empty", "filter", "ids", "mirror", "nat", "latency" ]
-    rows = []
-    for direction in ["rx", "tx", "bi", "latency" ]:
-        for vnf in vnfs:
-            df_ = df[(df['vnf'] == vnf) & (df['direction'] == direction)]
-            value = None
-            def speedup():
-                old = df_[df_['system'] == 'linux']['pps'].mean()
-                new = df_[df_['system'] == 'uk']['pps'].mean()
-                return new / old
-            match (vnf, direction):
-                case ("empty", "rx"):
-                    value = speedup()
-                case ("filter", "rx"):
-                    value = speedup()
-                case ("ids", "rx"):
-                    value = speedup()
+    def calc_speedup(df, system_baseline, system_new):
+        columns = ['vnf', 'direction', 'pps']
+        vnfs = [ "empty", "filter", "ids", "mirror", "nat", "latency" ]
+        rows = []
+        for direction in ["rx", "tx", "bi", "latency" ]:
+            for vnf in vnfs:
+                df_ = df[(df['vnf'] == vnf) & (df['direction'] == direction)]
+                value = None
+                def speedup():
+                    old = df_[df_['system'] == system_baseline]['pps'].mean()
+                    new = df_[df_['system'] == system_new]['pps'].mean()
+                    return new / old
+                match (vnf, direction):
+                    case ("empty", "rx"):
+                        value = speedup()
+                    case ("filter", "rx"):
+                        value = speedup()
+                    case ("ids", "rx"):
+                        value = speedup()
 
-                case ("empty", "tx"):
-                    value = speedup()
-                case ("filter", "tx"):
-                    value = speedup()
-                case ("ids", "tx"):
-                    value = speedup()
+                    case ("empty", "tx"):
+                        value = speedup()
+                    case ("filter", "tx"):
+                        value = speedup()
+                    case ("ids", "tx"):
+                        value = speedup()
 
-                case ("mirror", "bi"):
-                    value = speedup()
-                case ("nat", "bi"):
-                    value = speedup()
+                    case ("mirror", "bi"):
+                        value = speedup()
+                    case ("nat", "bi"):
+                        value = speedup()
 
-                case ("mirror", "latency"):
-                    value = linux_mirror_histogram._percentile50 / uk_mirror_histogram._percentile50
-                case ("nat", "latency"):
-                    value = linux_nat_histogram._percentile50 / uk_nat_histogram._percentile50
+                    case ("mirror", "latency"):
+                        value = linux_mirror_histogram._percentile50 / uk_mirror_histogram._percentile50
+                    case ("nat", "latency"):
+                        value = linux_nat_histogram._percentile50 / uk_nat_histogram._percentile50
 
-            # if direction = "tx":
-            #     value = 1
-            # # if system == "click-unikraftvm":
-            # #     value = 11
-            # # if system == "click-linuxvm":
-            # #     value = 9
-            # if vnf == "none" and direction == "rx":
-            #     value = 3
-            # if vnf == "filter" and direction == "rx":
-            #     value = 2.5
-            # if vnf == "dpi" and direction == "rx":
-            #     value = 2
-            # if vnf == "nat" and direction == "rx":
-            #     value = 2
-            # if vnf == "latency" and direction == "rx":
-            #     value = 1.5
+                # if direction = "tx":
+                #     value = 1
+                # # if system == "click-unikraftvm":
+                # #     value = 11
+                # # if system == "click-linuxvm":
+                # #     value = 9
+                # if vnf == "none" and direction == "rx":
+                #     value = 3
+                # if vnf == "filter" and direction == "rx":
+                #     value = 2.5
+                # if vnf == "dpi" and direction == "rx":
+                #     value = 2
+                # if vnf == "nat" and direction == "rx":
+                #     value = 2
+                # if vnf == "latency" and direction == "rx":
+                #     value = 1.5
 
 
-            if value is not None:
-                rows += [[vnf, direction, value]]
-    df = pd.DataFrame(rows, columns=columns)
+                if value is not None:
+                    rows += [[vnf, direction, value]]
+        ret = pd.DataFrame(rows, columns=columns)
+        return ret
+
+    foo = calc_speedup(df, "uk", "ukebpfjit_nompk")
+    print("Speedup of MorphOS over Unikraft (in times, not pps)")
+    print(foo.to_string())
+
+    foo = calc_speedup(df, "linux", "ukebpfjit_nompk")
+    print("Speedup of MorphOS over Linux (in times, not pps)")
+    print(foo.to_string())
+
+    df = calc_speedup(df, "linux", "uk")
+    print("Speedup of Unikraft over Linux (in times, not pps)")
+    print(df.to_string())
 
     # df['system'] = df['system'].apply(lambda row: system_map.get(str(row), row))
     df['vnf'] = df['vnf'].apply(lambda row: vnf_map.get(str(row), row))

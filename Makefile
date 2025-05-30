@@ -38,13 +38,13 @@ throughput.pdf:
 	python3 throughput.py \
 		-W $(DWIDTH) -H 3.5 \
 		-o $(OUT_DIR)/throughput.pdf \
-		--1-name stub --1 $(DATA)/throughput_*_vpp_*.csv
+		--1-name stub --1 ./data/v0.0.4-pre2/throughput_*_vpp_*.csv
 
 relative_performance.pdf:
 	python3 relative_performance.py \
 		-o $(OUT_DIR)/relative_performance.pdf \
 		-W $(WIDTH) -H 2 \
-		--1-name stub --1 $(DATA)/throughput_*_vpp_*.csv \
+		--1-name stub --1 ./data/v0.0.4-pre2/throughput_*_vpp_*.csv \
 		--linux-mirror-histogram $(DATA)/latency_linux_64B_vpp_mirror_100kpps_rep?.histogram.csv \
 		--uk-mirror-histogram $(DATA)/latency_uk_64B_vpp_mirror_100kpps_rep?.histogram.csv \
 		--linux-nat-histogram $(DATA)/latency_linux_64B_vpp_nat_100kpps_rep?.histogram.csv \
