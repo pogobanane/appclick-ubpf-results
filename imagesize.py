@@ -268,6 +268,16 @@ def main():
     ax.set_xlim(ax.get_xlim()[0], ax.get_xlim()[1]+xmargin) 
     plt.xlabel(XLABEL)
     plt.ylabel(YLABEL)
+    ax.annotate(
+        "← Lower is better", # or ↓ ← ↑ →
+        xycoords="axes points",
+        # xy=(0, 0),
+        xy=(0, 0),
+        xytext=(-45, -27),
+        # fontsize=FONT_SIZE,
+        color="navy",
+        weight="bold",
+    )
 
     #plt.subplots_adjust(left=0.15, bottom=0.35)
     fig.tight_layout(pad=0.0)

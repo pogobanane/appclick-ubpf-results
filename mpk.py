@@ -50,6 +50,7 @@ system_map = {
         'ukebpfjit_nompk': 'MorphOS - no MPK',
         'linux': 'Linux',
         'uk': 'Unikraft',
+        'Max IO bandwidth': 'Max IO bandwidth'
         }
 
 # Set global font size
@@ -195,7 +196,7 @@ def main():
     if args.title:
         plt.title(args.title)
     plt.xlabel('Packet size')
-    plt.ylabel('Throughput [GBit]')
+    plt.ylabel('Throughput [Mpps]')
     plt.grid()
 
     plots = []
@@ -208,6 +209,9 @@ def main():
             name = args.__dict__[f'{color}_name']
             dfs += [ arg_df ]
     df = pd.concat(dfs)
+    for s in df['size'].unique():
+        mpps = ((10* 1024**3 ) / ((s+20) * 8))
+        df.loc[len(df)] = [len(df), 3, 1, "rx", "vpp", s, 'filter', "Max IO bandwidth", 0, mpps ]
 
     df['pps'] = df['pps'].apply(lambda pps: pps / 1_000_000) # now mpps
     df['size'] = df['size'].astype(int)
@@ -261,7 +265,7 @@ def main():
         # x=bin_edges[1:],
         # y=cdf,
         x = "size",
-        y = "gbit",
+        y = "pps",
         hue = "system",
         style = "system",
         # label=f'{self._name}',
@@ -278,7 +282,7 @@ def main():
 
     ax.set_xscale('log' if args.logarithmic else 'linear')
     # plt.xlim(0, 1)
-    plt.ylim(bottom=0)
+    plt.ylim(bottom=0, top=2.5)
 
     legend = None
 
@@ -326,8 +330,8 @@ def main():
         "↑ Higher is better", # or ↓ ← ↑ →
         xycoords="axes points",
         # xy=(0, 0),
-        xy=(0, 0),
-        xytext=(-45, -27),
+        xy=(10, 0),
+        xytext=(-35, -27),
         # fontsize=FONT_SIZE,
         color="navy",
         weight="bold",
@@ -336,6 +340,7 @@ def main():
     # legend.get_frame().set_facecolor('white')
     # legend.get_frame().set_alpha(0.8)
     fig.tight_layout(pad=0.0)
+    plt.subplots_adjust(left=0.1)
     plt.savefig(args.output.name)
     plt.close()
 
