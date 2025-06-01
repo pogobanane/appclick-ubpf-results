@@ -365,7 +365,7 @@ def main():
     # plt.xlabel(XLABEL)
     # plt.ylabel(YLABEL)
 
-    plt.ylim(0, 4.5)
+    plt.ylim(0, 5.5)
     if not args.logarithmic:
         plt.ylim(bottom=0)
     # for container in ax.containers:
