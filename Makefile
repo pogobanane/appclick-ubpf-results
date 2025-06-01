@@ -31,7 +31,7 @@ reconfiguration_vnfs.pdf:
 reconfiguration_stack.pdf:
 	python3 reconfiguration_stack.py \
 		-o $(OUT_DIR)/reconfiguration_stack.pdf \
-		-W $(WIDTH) -H 2.5 \
+		-W $(WIDTH) -H 2.2 \
 		--1 $(DATA_OLD)/reconfiguration_*_rep?.csv --1-name stub
 
 throughput.pdf:

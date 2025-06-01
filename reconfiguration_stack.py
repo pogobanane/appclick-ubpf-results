@@ -8,13 +8,16 @@ import pandas as pd
 from re import search, findall, MULTILINE
 from os.path import basename, getsize
 from typing import List, Any
-from plotting import HATCHES as hatches
+from plotting import HATCHES as _hatches
 
 
 # resource on how to do stackplots:
 # https://stackoverflow.com/questions/59038979/stacked-bar-chart-in-seaborn
 
-
+hatches = _hatches.copy()
+hatches[0] = _hatches[6]
+hatches[6] = _hatches[2]
+hatches[2] = _hatches[0]
 
 COLORS = [ str(i) for i in range(20) ]
 # COLORS = mcolors.CSS4_COLORS.keys()
@@ -47,7 +50,7 @@ system_map = {
         'ebpf-linuxvm': 'XDP',
         }
 
-YLABEL = 'Reconfiguration time [ms]'
+YLABEL = 'Reconfiguration time [ms]  '
 XLABEL = 'System'
 
 def map_hue(df_hue, hue_map):
@@ -87,7 +90,7 @@ def setup_parser():
                         )
     parser.add_argument('-s', '--slides',
                         action='store_true',
-                        help='Use other setting to plot for presentation slides',
+                        help='Use Other setting to plot for presentation slides',
                         )
     for color in COLORS:
         parser.add_argument(f'--{color}',
@@ -183,7 +186,7 @@ def main():
         "print config done": 520667278,
         "initialize elements": 524018298,
         "initialize elements done": 527915291,
-        "first packet": 538017416,
+        "First packet": 538017416,
         "total": 671417165,
         "strace qemu start": 1769300316851874,
         "strace qemu kvm entry": 1769300382133824,
@@ -196,27 +199,27 @@ def main():
     print_system = click_unikraftvm["print config done"] - click_unikraftvm["print config"]
     all_unikraft = []
 
-    columns = ['system', 'contributor', 'restart_s']
+    columns = ['system', 'Contributor', 'restart_s']
     systems = [ "click-unikraftvm", "click-linuxvm", "ebpf-linuxvm", "ebpf-unikraftvm" ]
-    contributors = [ "Qemu start", "Firmware", "Unikraft", "click init", "VNF configuration", "first packet", "other" ]
+    Contributors = [ "Qemu start", "Firmware", "Unikraft", "Click init", "VNF configuration", "First packet", "Other" ]
     rows = []
     for system in systems:
-        for contributor in contributors:
+        for Contributor in Contributors:
             value = 1
             if system == "click-unikraftvm":
                 value = 3
             if system == "click-linuxvm":
                 value = 2
-            match (system, contributor):
+            match (system, Contributor):
                 # cargo run --bin bench-helper --features print-output
-                case ("click-linuxvm", "click init"):
+                case ("click-linuxvm", "Click init"):
                     # value = 108 # NAT
                     # get it from reconfiguration_vnf.py:
-                    # df_full[(df_full['system'] == 'linux') & (df_full['vnf'] == 'empty') & (df_full['label'] == 'click init')]['msec'].mean()
+                    # df_full[(df_full['system'] == 'linux') & (df_full['vnf'] == 'empty') & (df_full['label'] == 'Click init')]['msec'].mean()
                     value = 1.3180328 # IDS vnf
-                case ("click-linuxvm", "other"):
+                case ("click-linuxvm", "Other"):
                     value = 17
-                case ("click-linuxvm", "first packet"):
+                case ("click-linuxvm", "First packet"):
                     value = 0.4
 
                 # cargo run --bin bench-helper --features print-output
@@ -230,22 +233,22 @@ def main():
                 case ("click-unikraftvm", "Unikraft"):
                     value = click_unikraftvm["strace 254"] - click_unikraftvm["strace 255"]
                     all_unikraft += [ value ]
-                case ("click-unikraftvm", "click init"):
+                case ("click-unikraftvm", "Click init"):
                     value = click_unikraftvm["initialize elements"] - click_unikraftvm["click main()"] - print_system
                     all_unikraft += [ value ]
                 case ("click-unikraftvm", "VNF configuration"):
                     value = click_unikraftvm["initialize elements done"] - click_unikraftvm["initialize elements"]
                     all_unikraft += [ value ]
-                case ("click-unikraftvm", "first packet"):
-                    value = click_unikraftvm["first packet"] - click_unikraftvm["initialize elements done"]
+                case ("click-unikraftvm", "First packet"):
+                    value = click_unikraftvm["First packet"] - click_unikraftvm["initialize elements done"]
                     all_unikraft += [ value ]
-                case ("click-unikraftvm", "other"):
+                case ("click-unikraftvm", "Other"):
                     value = click_unikraftvm["total"] - sum(all_unikraft) - print_system
 
                 # QEMU_OUT="/tmp/foo2" cargo bench --bench live_reconfigure
                 case ("ebpf-unikraftvm", "VNF configuration"):
                     value = click_reconfigure["init ebpf done"] - click_reconfigure["init ebpf vm"]
-                case ("ebpf-unikraftvm", "other"):
+                case ("ebpf-unikraftvm", "Other"):
                     value = click_reconfigure["total"] - (click_reconfigure["init ebpf done"] - click_reconfigure["init ebpf vm"])
 
                 # sudo /bin/sh -c 'time ip l set eno1 xdpgeneric obj ./nix/builds/xdp/lib/reflector.o sec xdp'
@@ -256,7 +259,7 @@ def main():
                 case (_, _):
                     value = 0
 
-            rows += [[system, contributor, value]]
+            rows += [[system, Contributor, value]]
     df = pd.DataFrame(rows, columns=columns)
 
     df['system'] = df['system'].apply(lambda row: system_map.get(str(row), row))
@@ -270,7 +273,7 @@ def main():
                data=df,
                x='system',
                weights='restart_s',
-               hue="contributor",
+               hue="Contributor",
                multiple="stack",
                # palette=palette,
                palette="deep",
@@ -335,8 +338,21 @@ def main():
     #             )
     sns.move_legend(
         ax, "upper right",
+        ncol=2,
         # bbox_to_anchor=(.5, 1), ncol=3, title=None, frameon=False,
     )
+
+    color_hatch_map = dict()
+    # Fix the legend hatches
+    for i, legend_patch in enumerate(ax.get_legend().get_patches()):
+        hatch = hatches[i % len(hatches)]
+        legend_patch.set_hatch(f"{hatch}{hatch}")
+        color_hatch_map[legend_patch.get_facecolor()] = hatch
+        print(f"legend {hatch}")
+
+    for bar in ax.patches:
+        hatch = color_hatch_map[bar.get_facecolor()]
+        bar.set_hatch(hatch)
     #
     # sns.move_legend(
     #     grid, "lower center",
@@ -348,12 +364,12 @@ def main():
     # grid.set_xlabels(XLABEL)
     # grid.set_ylabels(YLABEL)
     #
-    # grid.facet_axis(0, 0).annotate(
-    #     "↑ Higher is better", # or ↓ ← ↑ →
+    # ax.annotate(
+    #     "↓ Lower is better", # or ↓ ← ↑ →
     #     xycoords="axes points",
     #     # xy=(0, 0),
     #     xy=(0, 0),
-    #     xytext=(-37, -28),
+    #     xytext=(-7, -8),
     #     # fontsize=FONT_SIZE,
     #     color="navy",
     #     weight="bold",
@@ -387,9 +403,8 @@ def main():
     # legend.get_frame().set_alpha(0.8)
     # fig.tight_layout(rect = (0, 0, 0, 0.1))
     # ax.set_position((0.1, 0.1, 0.5, 0.8))
-    # plt.tight_layout(pad=0.1)
+    plt.tight_layout(pad=0.1)
     # plt.subplots_adjust(right=0.78)
-    # fig.tight_layout(rect=(0, 0, 0.3, 1))
     plt.savefig(args.output.name)
     plt.close()
 

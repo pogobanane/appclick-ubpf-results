@@ -186,6 +186,7 @@ def main():
     # df['is_passthrough'] = df.apply(lambda row: True if "vmux-pt" in row['interface'] or "vfio" in row['interface'] else False, axis=1)
 
     df = df[df['size'].isin([64, 256, 1024, 1508])]
+    df = df[df['system'] != 'ukebpfjit']
 
     df['pps'] = df['pps'].apply(lambda pps: pps / 1_000_000) # now mpps
 
@@ -502,16 +503,16 @@ def main():
     get_twin(grid, 0, 1).set_ylabel("Throughput [Gbit/s]")
     get_twin(grid, 1, 0).set_ylabel("Throughput [Gbit/s]")
     #
-    # grid.facet_axis(0, 0).annotate(
-    #     "↑ Higher is better", # or ↓ ← ↑ →
-    #     xycoords="axes points",
-    #     # xy=(0, 0),
-    #     xy=(0, 0),
-    #     xytext=(-37, -28),
-    #     # fontsize=FONT_SIZE,
-    #     color="navy",
-    #     weight="bold",
-    # )
+    grid.facet_axis(1, 0).annotate(
+        "↑ Higher is better", # or ↓ ← ↑ →
+        xycoords="axes points",
+        # xy=(0, 0),
+        xy=(0, 0),
+        xytext=(-3, -28),
+        # fontsize=FONT_SIZE,
+        color="navy",
+        weight="bold",
+    )
 
     # plt.xlabel(XLABEL)
     # plt.ylabel(YLABEL)

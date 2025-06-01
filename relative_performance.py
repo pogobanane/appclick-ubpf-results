@@ -288,6 +288,7 @@ def main():
     # map colors to hues
     # colors = sns.color_palette("pastel", len(df['system'].unique())-1) + [ mcolors.to_rgb('sandybrown') ]
     # palette = dict(zip(df['system'].unique(), colors))
+    colors = sns.color_palette("pastel", 5) + [ mcolors.to_rgb('sandybrown') ]
 
     # Plot using Seaborn
     grid = sns.FacetGrid(df,
@@ -304,6 +305,52 @@ def main():
                # palette=palette,
                edgecolor="dimgray",
                )
+
+    # breakpoint()
+    # color_map = { "Empty": COLORS[0] }
+    # plotting.mybarplot.add_colors(data=df, x='vnf', y='pps', hue='vnf', ax=grid.axes[0][0], colors=color_map, color_by='vnf')
+
+    def barplot_add_hatches(plot_in_grid, nr_hues, offset=0):
+        hatches_used = -1
+        bars_hatched = 0
+        for bar in plot_in_grid.patches:
+            if nr_hues <= 1:
+                hatches_used += 1
+            else: # with multiple hues, we draw bars with the same hatch in batches
+                if bars_hatched % nr_hues == 0:
+                    hatches_used += 1
+            # if bars_hatched % 7 == 0:
+            #     hatches_used += 1
+            bars_hatched += 1
+            if bar.get_bbox().x0 == 0 and bar.get_bbox().x1 == 0 and bar.get_bbox().y0 == 0 and bar.get_bbox().y1 == 0:
+                # skip bars that are not rendered
+                continue
+            hatch = hatches[(offset + hatches_used) % len(hatches)]
+            print(bar, hatches_used, hatch)
+            bar.set_hatch(hatch)
+            if bars_hatched >= 11:
+                break
+
+    def set_color_hatch(patch, color, hatch):
+        patch.set_facecolor(color)
+        patch.set_hatch(hatch)
+
+    try:
+        set_color_hatch(grid.axes[0][0].patches[0], colors[0], hatches[0])
+        set_color_hatch(grid.axes[0][0].patches[1], colors[2], hatches[2])
+        set_color_hatch(grid.axes[0][0].patches[2], colors[3], hatches[3])
+
+        set_color_hatch(grid.axes[0][1].patches[0], colors[0], hatches[0])
+        set_color_hatch(grid.axes[0][1].patches[1], colors[2], hatches[2])
+        set_color_hatch(grid.axes[0][1].patches[2], colors[3], hatches[3])
+
+        set_color_hatch(grid.axes[0][2].patches[0], colors[4], hatches[4])
+        set_color_hatch(grid.axes[0][2].patches[1], colors[5], hatches[5])
+
+        set_color_hatch(grid.axes[0][3].patches[0], colors[4], hatches[4])
+        set_color_hatch(grid.axes[0][3].patches[1], colors[5], hatches[5])
+    except Exception:
+        print("Could not color/hatch due to error")
 
     # Add horizontal line at y=1 to each subplot
     def add_hline(**kwargs):

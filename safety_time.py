@@ -8,12 +8,16 @@ import pandas as pd
 from re import search, findall, MULTILINE
 from os.path import basename, getsize
 from typing import List, Any
-from plotting import HATCHES as hatches
+from plotting import HATCHES as _hatches
 
 
 # resource on how to do stackplots:
 # https://stackoverflow.com/questions/59038979/stacked-bar-chart-in-seaborn
 
+hatches = _hatches.copy()
+hatches[0] = _hatches[6]
+hatches[6] = _hatches[2]
+hatches[2] = _hatches[0]
 
 
 COLORS = [ str(i) for i in range(20) ]
@@ -199,6 +203,8 @@ def main():
 
     df['system'] = df['system'].apply(lambda row: system_map.get(str(row), row))
 
+    df = df[df['contributor'] != 'Load'] # not visible anyways. Remove so that it won't be visible in Legend
+
     # map colors to hues
     # colors = sns.color_palette("pastel", len(df['hue'].unique())-1) + [ mcolors.to_rgb('sandybrown') ]
     # palette = dict(zip(df['hue'].unique(), colors))
@@ -265,7 +271,7 @@ def main():
 
     # Create line plot
     sns.lineplot(df, x="f_r", y="t_a", hue=HUE_LABEL, ax=ax2)
-    ax2.set_title('(b) Overhead amortization')
+    ax2.set_title('(b) Overhead amortization  ')
     ax2.set_xscale('log')
 
     # set ticks
@@ -282,37 +288,6 @@ def main():
     #         ncol=1, title=None, frameon=False,
     #                 )
 
-    # # Fix the legend hatches
-    # for i, legend_patch in enumerate(grid._legend.get_patches()):
-    #     hatch = hatches[i % len(hatches)]
-    #     legend_patch.set_hatch(f"{hatch}{hatch}")
-
-    # # add hatches to bars
-    # for (i, j, k), data in grid.facet_data():
-    #     print(i, j, k)
-    #     def barplot_add_hatches(plot_in_grid, nr_hues, offset=0):
-    #         hatches_used = -1
-    #         bars_hatched = 0
-    #         for bar in plot_in_grid.patches:
-    #             if nr_hues <= 1:
-    #                 hatches_used += 1
-    #             else: # with multiple hues, we draw bars with the same hatch in batches
-    #                 if bars_hatched % nr_hues == 0:
-    #                     hatches_used += 1
-    #             # if bars_hatched % 7 == 0:
-    #             #     hatches_used += 1
-    #             bars_hatched += 1
-    #             if bar.get_bbox().x0 == 0 and bar.get_bbox().x1 == 0 and bar.get_bbox().y0 == 0 and bar.get_bbox().y1 == 0:
-    #                 # skip bars that are not rendered
-    #                 continue
-    #             hatch = hatches[(offset + hatches_used) % len(hatches)]
-    #             print(bar, hatches_used, hatch)
-    #             bar.set_hatch(hatch)
-    #
-    #     if (i, j, k) == (0, 0, 0):
-    #         barplot_add_hatches(grid.facet_axis(i, j), 7)
-    #     elif (i, j, k) == (0, 1, 0):
-    #         barplot_add_hatches(grid.facet_axis(i, j), 1, offset=(7 if not args.slides else 4))
 
     # def grid_set_titles(grid, titles):
     #     for ax, title in zip(grid.axes.flat, titles):
@@ -331,13 +306,15 @@ def main():
     #             # log_scale=log_scale,
     #             ax=ax,
     #             )
+
+    # remove red "Load" from legend
     sns.move_legend(
         ax1, "upper right",
-        bbox_to_anchor=(1.42, -0.35), ncol=2, title=None, frameon=True,
+        bbox_to_anchor=(1.17, -0.43), ncol=2, title=None, frameon=True,
     )
     sns.move_legend(
         ax2, "upper left",
-        bbox_to_anchor=(0.2, -0.35), ncol=1, frameon=True,
+        bbox_to_anchor=(0.1, -0.43), ncol=1, frameon=True,
     )
     # grid.add_legend(
     #     # bbox_to_anchor=(0.5, 0.77),
@@ -357,16 +334,62 @@ def main():
     # grid.set_xlabels(XLABEL)
     # grid.set_ylabels(YLABEL)
     #
-    # grid.facet_axis(0, 0).annotate(
-    #     "↑ Higher is better", # or ↓ ← ↑ →
-    #     xycoords="axes points",
-    #     # xy=(0, 0),
-    #     xy=(0, 0),
-    #     xytext=(-37, -28),
-    #     # fontsize=FONT_SIZE,
-    #     color="navy",
-    #     weight="bold",
-    # )
+    ax1.annotate(
+        "↓ Lower is better", # or ↓ ← ↑ →
+        xycoords="axes points",
+        # xy=(0, 0),
+        xy=(0, 0),
+        xytext=(-45, -30),
+        # fontsize=FONT_SIZE,
+        color="navy",
+        weight="bold",
+    )
+
+    color_hatch_map = dict()
+    # Fix the legend hatches
+    for i, legend_patch in enumerate(ax1.get_legend().get_patches()):
+        hatch = hatches[i % len(hatches)]
+        legend_patch.set_hatch(f"{hatch}{hatch}")
+        color_hatch_map[legend_patch.get_facecolor()] = hatch
+        print(f"legend {hatch}")
+
+    def barplot_add_hatches(plot_in_grid, nr_hues, offset=0):
+        hatches_used = -1
+        bars_hatched = 0
+        for bar in plot_in_grid.patches:
+            if nr_hues <= 1:
+                hatches_used += 1
+            else: # with multiple hues, we draw bars with the same hatch in batches
+                if bars_hatched % nr_hues == 0:
+                    hatches_used += 1
+            # if bars_hatched % 7 == 0:
+            #     hatches_used += 1
+            bars_hatched += 1
+            if bar.get_bbox().x0 == 0 and bar.get_bbox().x1 == 0 and bar.get_bbox().y0 == 0 and bar.get_bbox().y1 == 0:
+                # skip bars that are not rendered
+                continue
+            hatch = hatches[(offset + hatches_used) % len(hatches)]
+            print(bar, hatches_used, hatch)
+            bar.set_hatch(hatch)
+            if bars_hatched >= 11:
+                break
+
+    # barplot_add_hatches(ax1, 7)
+    # patches = 7
+    # hues = 2
+    # hatched = 0
+    # for bar in ax1.patches:
+    #     patchNr = (patches * hues) - hatched - 1
+    #     hatchNr = patchNr % patches
+    #     hatch = hatches[hatchNr % len(hatches)]
+    #     bar.set_hatch(hatch)
+    #     hatched += 1
+    #     breakpoint()
+    #     print(f"{patchNr}, {hatchNr}: {hatch}")
+
+    for bar in ax1.patches:
+        hatch = color_hatch_map[bar.get_facecolor()]
+        bar.set_hatch(hatch)
 
     ax1.set_xlabel(X1LABEL)
     ax2.set_xlabel(X2LABEL)
@@ -397,9 +420,10 @@ def main():
     # legend.get_frame().set_facecolor('white')
     # legend.get_frame().set_alpha(0.8)
     # fig.tight_layout(rect = (0, 0, 0, 0.1))
-    # ax.set_position((0.1, 0.1, 0.5, 0.8))
-    # plt.tight_layout(pad=0.1)
-    plt.subplots_adjust(bottom=0.42)
+    plt.tight_layout(pad=0.1)
+    plt.subplots_adjust(
+        # top=0.9,
+        bottom=0.48)
     # fig.tight_layout(rect=(0, 0, 0.3, 1))
     plt.savefig(args.output.name)
     plt.close()

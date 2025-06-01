@@ -190,6 +190,20 @@ def main():
                )
     ax.bar_label(ax.containers[0], fontsize=10, fmt='%s MB', padding=3)
 
+    colors = sns.color_palette("pastel", 5) + [ mcolors.to_rgb('sandybrown') ]
+
+    def set_color_hatch(patch, color, hatch):
+        patch.set_facecolor(color)
+        patch.set_hatch(hatch)
+
+    try:
+        set_color_hatch(ax.patches[0], colors[4], hatches[4])
+        set_color_hatch(ax.patches[1], colors[3], hatches[3])
+        set_color_hatch(ax.patches[2], colors[2], hatches[2])
+        set_color_hatch(ax.patches[3], colors[1], hatches[1])
+    except Exception:
+        print("Could not color/hatch due to error")
+
     # # Fix the legend hatches
     # for i, legend_patch in enumerate(grid._legend.get_patches()):
     #     hatch = hatches[i % len(hatches)]
@@ -280,7 +294,7 @@ def main():
     )
 
     #plt.subplots_adjust(left=0.15, bottom=0.35)
-    fig.tight_layout(pad=0.0)
+    fig.tight_layout(pad=0.5)
     plt.savefig(args.output.name)
     plt.close()
 
