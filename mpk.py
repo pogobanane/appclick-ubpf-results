@@ -46,11 +46,11 @@ system_map = {
         'ebpf-click-unikraftvm': 'Uk click (eBPF)',
         'click-unikraftvm': 'Uk click',
         'click-linuxvm': 'Linux click',
-        'ukebpfjit': 'MorphOS',
-        'ukebpfjit_nompk': 'MorphOS - no MPK',
+        'ukebpfjit': 'MorphOS + MPK',
+        'ukebpfjit_nompk': 'MorphOS',
         'linux': 'Linux',
         'uk': 'Unikraft',
-        'Max IO bandwidth': 'Max IO bandwidth'
+        'Max IO bandwidth': 'Link speed (10G)'
         }
 
 # Set global font size
@@ -217,7 +217,7 @@ def main():
     df['size'] = df['size'].astype(int)
     df['system'] = df['system'].apply(lambda row: system_map.get(str(row), row))
     df['gbit'] = mpps_to_gbitps(df['pps'], df['size'])
-    for s in [64, 256]:
+    for s in [64, 128, 256, 512]:
         nompk = df[(df['system'] == 'MorphOS - no MPK') & (df['size'] == s)]['pps'].mean()
         mpk = df[(df['system'] == 'MorphOS') & (df['size'] == s)]['pps'].mean()
         print(f'At {s}B, Mpps for no MPK: {nompk:.3f}, with MPK: {mpk:.3f}, overhead : {((nompk-mpk)/nompk)*100:.3f}%')
@@ -284,9 +284,12 @@ def main():
         # markeredgewidth=1,
     )
 
-    ax.set_xscale('log' if args.logarithmic else 'linear')
+    if not args.logarithmic:
+        plt.xticks([0, 256, 512, 748, 1024, 1280, 1518])
+        plt.ylim(bottom=0, top=2.5)
+    else:
+        ax.set_xscale('log' if args.logarithmic else 'linear')
     # plt.xlim(0, 1)
-    plt.ylim(bottom=0, top=2.5)
 
     legend = None
 
@@ -297,7 +300,7 @@ def main():
 
     rename_legend_labels(plt, LEGEND_MAP)
 
-    sns.move_legend(ax, "lower center", bbox_to_anchor=(0.5, 0.95), ncol=2, title=None, frameon=False)
+    sns.move_legend(ax, "lower center", bbox_to_anchor=(0.5, 0.95), ncol=3, title=None, frameon=False)
     # plot.add_legend(
     #         bbox_to_anchor=(0.55, 0.3),
     #         loc='upper left',

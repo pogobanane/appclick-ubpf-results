@@ -80,8 +80,8 @@ firewall.pdf:
 mpk.pdf:
 	python3 mpk.py -W $(WIDTH) -H 2.1 \
   	-o $(OUT_DIR)/mpk.pdf \
-		--1-name "MorphOS" --1 $(DATA)/throughput_ukebpfjit_vpp_rx_filter_*.csv \
-		--2-name "MorphOS - no MPK" --2 $(DATA)/throughput_ukebpfjit_nompk_vpp_rx_filter_*.csv #\
+		--2-name "MorphOS + MPK" --2 ./data/v0.0.4-pre7/throughput_ukebpfjit_vpp_rx_filter_*.csv \
+		--1-name "MorphOS" --1 ./data/v0.0.4-pre7/throughput_ukebpfjit_nompk_vpp_rx_filter_*.csv #\
 		#--3-name "Max IO bandwidth" --3 flake.nix
 
 mpk-bars.pdf:
