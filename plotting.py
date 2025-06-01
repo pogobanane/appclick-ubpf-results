@@ -181,6 +181,8 @@ def grid_set_titles(facet_grid, titles):
 
 def map_grid_titles(facet_grid, map):
     for ax in facet_grid.axes.flat:
+        if ax.figure is None:
+            continue # skip remove()ed grid tiles
         new_title = map.get(ax.get_title(), ax.get_title())
         # for some reason, we change the default font size if we don't specify it
         fontsize = ax.title.get_fontsize()

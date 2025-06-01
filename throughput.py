@@ -47,10 +47,9 @@ system_map = {
         }
 
 grid_title_map = {
-    'direction = latency': 'Latency',
-    'direction = rx': 'Receive (Empty, Firewall, IDS)',
-    'direction = tx': 'Transmit (Empty, Firewall, IDS)',
-    'direction = bi': 'Bi-directional (Mirror, NAT)',
+    'gridRow = 0 | gridCol = 0': 'Receive (Empty, Firewall, IDS)',
+    'gridRow = 1 | gridCol = 0': 'Transmit (Empty, Firewall, IDS)',
+    'gridRow = 0 | gridCol = 1': 'Bi-directional (Mirror, NAT)',
 }
 
 vnf_map = {
@@ -208,6 +207,9 @@ def main():
     # df_fake['direction'] = "bi"
     # df = pd.concat([df, df_fake])
 
+    df['gridCol'] = df['direction'].apply(lambda dir: 1 if dir == "bi" else 0)
+    df['gridRow'] = df['direction'].apply(lambda dir: 1 if dir == "tx" else 0)
+
     df['size'] = df['size'].astype(int)
 
     # columns = ['system', 'vnf', 'direction', 'pps']
@@ -306,11 +308,12 @@ def main():
 
     # Plot using Seaborn
     grid = sns.FacetGrid(df,
-            col='direction',
-            col_wrap=2,
+            col='gridCol',
+            row='gridRow',
+            # col_wrap=2,
             sharey = True,
             sharex = False,
-            # gridspec_kws={"width_ratios": [11, 1]}, # doesnt work.
+            gridspec_kws={"width_ratios": [12, 7]},
     )
     # To supports width_ratios we'd need to rewrite everything to work on ax instead of grid:
     # fig, axes = plt.subplots(1, 2,
@@ -399,6 +402,11 @@ def main():
                edgecolor="dimgray",
                )
 
+    # remove empty plots (e.g., grid.axes[1][1])
+    for ax in grid.axes.flat:
+        if not ax.has_data():
+            ax.remove()
+
     def foo(plot_in_grid):
         plot_in_grid.twinx()
         pass
@@ -432,7 +440,7 @@ def main():
 
 
     grid.add_legend(
-            bbox_to_anchor=(0.55, 0.3),
+            bbox_to_anchor=(0.63, 0.3),
             loc='upper left',
             ncol=3, title=None, frameon=False,
                     )
@@ -452,7 +460,7 @@ def main():
     legend_add_line(grid, "Throughput [Gbit/s]", color="dimgray")
 
     grid.add_legend(
-            bbox_to_anchor=(0.55, 0.3),
+            bbox_to_anchor=(0.63, 0.3),
             loc='lower left',
             ncol=2, title=None, frameon=False,
                     )
@@ -492,7 +500,7 @@ def main():
     def get_twin(grid, i, j, twin_nr=1):
         return grid.facet_axis(i, j)._twinned_axes.get_siblings(grid.facet_axis(i, j))[twin_nr]
     get_twin(grid, 0, 1).set_ylabel("Throughput [Gbit/s]")
-    get_twin(grid, 0, 2).set_ylabel("Throughput [Gbit/s]")
+    get_twin(grid, 1, 0).set_ylabel("Throughput [Gbit/s]")
     #
     # grid.facet_axis(0, 0).annotate(
     #     "↑ Higher is better", # or ↓ ← ↑ →
