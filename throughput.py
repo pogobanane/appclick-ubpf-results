@@ -41,9 +41,17 @@ system_map = {
         'click-unikraftvm': 'Uk click',
         'click-linuxvm': 'Linux click',
         'ukebpfjit_nompk': 'MorphOS',
+        'ukebpfjit': 'MorphOS!!!',
         'linux': 'Linux',
         'uk': 'Unikraft',
         }
+
+grid_title_map = {
+    'direction = latency': 'Latency',
+    'direction = rx': 'Receive (Empty, Firewall, IDS)',
+    'direction = tx': 'Transmit (Empty, Firewall, IDS)',
+    'direction = bi': 'Bi-directional (Mirror, NAT)',
+}
 
 vnf_map = {
     'firewall-10000': 'Firewall-10k',
@@ -157,6 +165,9 @@ def main():
     for color in COLORS:
         if args.__dict__[color]:
             arg_dfs = [ pd.read_csv(f.name) for f in args.__dict__[color] ]
+            # for f in args.__dict__[color]:
+            #     if "throughput_linux_vpp_rx_mirror_1024B" in f.name:
+            #         breakpoint()
             arg_df = pd.concat(arg_dfs)
             name = args.__dict__[f'{color}_name']
             # arg_df["hue"] = name
@@ -174,6 +185,8 @@ def main():
     # df_hue = df.apply(lambda row: '_'.join(str(row[col]) for col in ['repetitions', 'interface', 'fastclick', 'rate']), axis=1)
     # df_hue = map_hue(df_hue, hue_map)
     # df['is_passthrough'] = df.apply(lambda row: True if "vmux-pt" in row['interface'] or "vfio" in row['interface'] else False, axis=1)
+
+    df = df[df['size'].isin([64, 256, 1024, 1508])]
 
     df['pps'] = df['pps'].apply(lambda pps: pps / 1_000_000) # now mpps
 
@@ -237,7 +250,10 @@ def main():
 
                     # add spacer of previous group before adding this group
                     if spacer is not None:
-                        dfs += [ spacer ]
+                        if "NaN" in spacer.to_string():
+                            breakpoint()
+                        if len(spacer) != 0:
+                            dfs += [ spacer ]
 
                     # add this group
                     for hue in df[hue_name].unique():
@@ -247,16 +263,30 @@ def main():
                         if len(group_member) > 0:
                             group_sample = group_member.loc[0].copy()
 
-                        dfs += [ group_member ]
+                        # if "NaN" in group_member.to_string():
+                        #     breakpoint()
+                        # if len(group_member) == 0:
+                        #     breakpoint()
+                        if len(group_member) != 0:
+                            dfs += [ group_member ]
 
                     # create spacer for this group
                     if group_sample is not None:
                         spacer = group_sample
                         spacer[new_hue] = f"{hue_group} spacer"
                         spacer[y_name] = 0
+        # breakpoint()
+        # df__ = None
+        # for d in dfs:
+        #     t = pd.concat([df__, d])
+        #     if "NaN" in t.to_string():
+        #         breakpoint()
+        #     df__ = t
+        # return df__
         return pd.concat(dfs, ignore_index=True)
 
     df = group_data(df, 'direction', 'size', 'pps', 'system', 'vnf', new_hue="grouped_system")
+    df = df[~np.isnan(df['pps'])]
 
     # map colors to hues
     colors = sns.color_palette("pastel", len(df['system'].unique())-1) + [ mcolors.to_rgb('sandybrown') ]
@@ -327,7 +357,7 @@ def main():
             x_coord = bar.get_bbox().x0 + bar.get_bbox().width / 2
             x_category_value = mybarplot.x_category_value(bar, ax1)
             y_val = mybarplot.y_value(bar)
-            packet_size = int(x_category_value)
+            packet_size = int(float(x_category_value))
             gbitps = mpps_to_gbitps(y_val, packet_size)
 
             if y_val != 0:
@@ -434,6 +464,7 @@ def main():
     # grid_set_titles(grid, ["Emulation and Mediation", "Passthrough"])
     #
     grid.figure.set_size_inches(args.width, args.height)
+    map_grid_titles(grid, grid_title_map)
     # grid.set_titles("foobar")
     # plt.subplots_adjust(left=0.06)
     # bar = sns.barplot(x='num_vms', y='rxMppsCalc', hue="hue", data=pd.concat(dfs),
