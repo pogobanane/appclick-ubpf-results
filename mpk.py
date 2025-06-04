@@ -196,7 +196,7 @@ def main():
     if args.title:
         plt.title(args.title)
     plt.xlabel('Packet size')
-    plt.ylabel('Throughput [Mpps]')
+    plt.ylabel('Throughput [Mpps]      ')
     plt.grid()
 
     plots = []
@@ -300,7 +300,10 @@ def main():
 
     rename_legend_labels(plt, LEGEND_MAP)
 
-    sns.move_legend(ax, "lower center", bbox_to_anchor=(0.5, 0.95), ncol=3, title=None, frameon=False)
+    sns.move_legend(ax, "lower left",
+                    # bbox_to_anchor=(0.5, 0.95),
+                    bbox_to_anchor=(-0.011, -0.1),
+                    ncol=1, title=None, frameon=False)
     # plot.add_legend(
     #         bbox_to_anchor=(0.55, 0.3),
     #         loc='upper left',
@@ -338,7 +341,7 @@ def main():
         xycoords="axes points",
         # xy=(0, 0),
         xy=(10, 0),
-        xytext=(-35, -27),
+        xytext=(-25, -27),
         # fontsize=FONT_SIZE,
         color="navy",
         weight="bold",
@@ -346,7 +349,7 @@ def main():
 
     # legend.get_frame().set_facecolor('white')
     # legend.get_frame().set_alpha(0.8)
-    fig.tight_layout(pad=0.0)
+    fig.tight_layout(pad=0.1)
     plt.subplots_adjust(left=0.1)
     plt.savefig(args.output.name)
     plt.close()

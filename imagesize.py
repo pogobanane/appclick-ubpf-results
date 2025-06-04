@@ -294,7 +294,7 @@ def main():
     )
 
     #plt.subplots_adjust(left=0.15, bottom=0.35)
-    fig.tight_layout(pad=0.5)
+    fig.tight_layout(pad=0.1)
     plt.savefig(args.output.name)
     plt.close()
 

@@ -514,6 +514,12 @@ def main():
         weight="bold",
     )
 
+    x_lim_left, x_lim_right = grid.facet_axis(0, 1).get_xlim()
+    offered_load = 1.3
+    grid.facet_axis(0, 1).plot([x_lim_left, x_lim_right], [offered_load, offered_load], 'k-', lw=1)
+    grid.facet_axis(0, 1).set_xlim(x_lim_left, x_lim_right)
+    grid.facet_axis(0, 1).annotate(f"Max. offered load ({offered_load}Mpps)", xy=(0,0),  xytext=(x_lim_left + 0.1, offered_load + 0.1), fontsize=10)
+
     # plt.xlabel(XLABEL)
     # plt.ylabel(YLABEL)
 

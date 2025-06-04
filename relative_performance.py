@@ -354,7 +354,7 @@ def main():
 
     # Add horizontal line at y=1 to each subplot
     def add_hline(**kwargs):
-        plt.axhline(y=1, color='darkgray', linestyle='--', linewidth=1)
+        plt.axhline(y=1, color='black', linestyle='--', linewidth=1)
 
     grid.map(add_hline)
 
