@@ -71,10 +71,10 @@ latency_cdf.pdf:
 firewall.pdf:
 	python3 firewall.py -W 4 -H 1.7 -l \
   	-o $(OUT_DIR)/firewall.pdf \
-  	--3-name "Linux" "l--" "magenta" --3 $(DATA_OLD)/firewall_linux_*.csv \
-  	--5-name "Unikraft" "l-" "brown" --5 $(DATA_OLD)/firewall_uk_*.csv \
-  	--8-name "MorphOS no JIT" "l-" "red" --8 $(DATA_OLD)/firewall_ukebpf_*.csv \
-  	--9-name "MorphOS" "l:" "cyan" --9 $(DATA_OLD)/firewall_ukebpfjit_*.csv \
+  	--3-name "Linux" "l--" "magenta" --3 ./data/v0.0.4-pre7/firewall_linux_*.csv \
+  	--5-name "Unikraft" "l-" "brown" --5 ./data/v0.0.4-pre7/firewall_uk_*.csv \
+  	--8-name "MorphOS no JIT" "l-" "red" --8 ./data/v0.0.4-pre7/firewall_ukebpf_*.csv \
+  	--9-name "MorphOS" "l:" "cyan" --9 ./data/v0.0.4-pre7/firewall_ukebpfjit_*.csv \
 
 
 mpk.pdf:
