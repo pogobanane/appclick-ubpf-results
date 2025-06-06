@@ -218,9 +218,11 @@ def main():
     df['system'] = df['system'].apply(lambda row: system_map.get(str(row), row))
     df['gbit'] = mpps_to_gbitps(df['pps'], df['size'])
     for s in [64, 128, 256, 512]:
-        nompk = df[(df['system'] == 'MorphOS - no MPK') & (df['size'] == s)]['pps'].mean()
-        mpk = df[(df['system'] == 'MorphOS') & (df['size'] == s)]['pps'].mean()
-        print(f'At {s}B, Mpps for no MPK: {nompk:.3f}, with MPK: {mpk:.3f}, overhead : {((nompk-mpk)/nompk)*100:.3f}%')
+        nompk = df[(df['system'] == 'MorphOS') & (df['size'] == s)]['pps'].mean()
+        mpk = df[(df['system'] == 'MorphOS + MPK') & (df['size'] == s)]['pps'].mean()
+        overhead = (nompk-mpk)/nompk
+        ns = 1.0 / (nompk) * overhead * 1_000.0
+        print(f'At {s}B, Mpps for no MPK: {nompk:.3f}, with MPK: {mpk:.3f}, overhead : {overhead*100:.3f}% ({ns:.1f}ns per packet)')
     """
     columns = ['system', 'size', 'mpps', 'gbit']
     systems = [ "MorphOS", "MorphOS MPK",

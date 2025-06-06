@@ -241,6 +241,7 @@ def main():
     df['system'] = df['system'].apply(lambda row: system_map.get(str(row), row))
     df['vnf'] = df['vnf'].apply(lambda row: vnf_map.get(str(row), row))
     df['grouped_system'] = df.apply(lambda row: f"{row['vnf']} {row['system']}", axis=1)
+    df_clean = df.copy()
 
     # groups data, inserts new bars with 0 values between groups
     def group_data(df, grid_column_name, x_name, y_name, hue_name, hue_group_name, new_hue="grouped_hue"):
@@ -555,6 +556,22 @@ def main():
     plt.savefig(args.output.name)
     plt.close()
 
+    df = df_clean
+    linux_rx_empty = df[(df["vnf"] == "Empty") & (df["system"] == "Linux") & (df["size"] == 64) & (df["direction"] == "rx")]["pps"].mean()
+    morphos_rx_empty = df[(df["vnf"] == "Empty") & (df["system"] == "MorphOS") & (df["size"] == 64) & (df["direction"] == "rx")]["pps"].mean()
+    linux_tx_ids = df[(df["vnf"] == "IDS") & (df["system"] == "Linux") & (df["size"] == 64) & (df["direction"] == "tx")]["pps"].mean()
+    morphos_tx_ids = df[(df["vnf"] == "IDS") & (df["system"] == "MorphOS") & (df["size"] == 64) & (df["direction"] == "tx")]["pps"].mean()
+    unikraft_bi_nat = df[(df["vnf"] == "NAT") & (df["system"] == "Unikraft") & (df["size"] == 64) & (df["direction"] == "bi")]["pps"].mean()
+    morphos_bi_nat = df[(df["vnf"] == "NAT") & (df["system"] == "MorphOS") & (df["size"] == 64) & (df["direction"] == "bi")]["pps"].mean()
+    unikraft_rx_ids = df[(df["vnf"] == "IDS") & (df["system"] == "Unikraft") & (df["size"] == 64) & (df["direction"] == "rx")]["pps"].mean()
+    morphos_rx_ids = df[(df["vnf"] == "IDS") & (df["system"] == "MorphOS") & (df["size"] == 64) & (df["direction"] == "rx")]["pps"].mean()
+
+    breakpoint()
+
+    print(f"Rx empty: Linux is {morphos_rx_empty/linux_rx_empty:.1f}x slower than MorphOS (biggest improvement)")
+    print(f"Tx ids: Linux is {morphos_tx_ids/linux_tx_ids:.1f}x slower than MorphOS (smallest improvement)")
+    print(f"MorphOS use of eBPF incurs at most {(unikraft_bi_nat-morphos_bi_nat)/unikraft_bi_nat*100:.1f}% overhead (NAT) over unikraft. ")
+    print(f"MorphOS use of eBPF improves performance by {(morphos_rx_ids-unikraft_rx_ids)/unikraft_rx_ids*100:.1f}% (IDS) over unikraft. ")
 
 
 

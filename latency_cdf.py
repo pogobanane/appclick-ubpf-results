@@ -113,6 +113,8 @@ class LoadLatencyPlot(object):
     _plot75 = None
     _plot99 = None
 
+    _50th = None
+
     def __init__(self, histogram_filepaths, name, color, line, line_color):
         self._latency_histograms = []
         for filepath in histogram_filepaths:
@@ -142,6 +144,8 @@ class LoadLatencyPlot(object):
         y50 = np.array(_y50)[order]
         y75 = np.array(_y75)[order]
         y99 = np.array(_y99)[order]
+
+        self._50th = np.mean(y50)
 
         self._plot50 = sns.lineplot(
             x=bin_edges[1:],
@@ -275,7 +279,7 @@ def main():
 
     if args.compress:
         # empty  name1 name2 ...
-        # 25pctl x     x     ...
+# 25pctl x     x     ...
         # 50pctl x     x     ...
         # 75pctl x     x     ...
         # 99pctl x     x     ...
@@ -315,6 +319,17 @@ def main():
     fig.tight_layout(pad=0.0)
     plt.savefig(args.output.name)
     plt.close()
+
+    data = dict()
+    for plot in plots:
+        print(f"{plot._name} 50th percentile: {plot._50th}ns")
+        data[plot._name] = plot._50th
+
+    print("")
+    old = np.mean([data["Linux: mirror"], data["Linux: NAT"]])
+    new = np.mean([data["MorphOS: mirror"], data["MorphOS: NAT"], data["Unikraft: mirror"], data["Unikraft: NAT"]])
+    print(f"Unikraft and MorphOS reduce median latencies by {(old-new)/old*100:.1f}%")
+
 
 
 if __name__ == '__main__':
