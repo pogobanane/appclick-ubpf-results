@@ -185,7 +185,10 @@ def main():
     # df_hue = map_hue(df_hue, hue_map)
     # df['is_passthrough'] = df.apply(lambda row: True if "vmux-pt" in row['interface'] or "vfio" in row['interface'] else False, axis=1)
 
-    df = df[df['size'].isin([64, 256, 1024, 1508])]
+    if not args.slides:
+        df = df[df['size'].isin([64, 256, 1024, 1508])]
+    else:
+        df = df[df['size'].isin([64, 1508])]
     df = df[df['system'] != 'ukebpfjit']
 
     df['pps'] = df['pps'].apply(lambda pps: pps / 1_000_000) # now mpps
@@ -517,9 +520,10 @@ def main():
 
     x_lim_left, x_lim_right = grid.facet_axis(0, 1).get_xlim()
     offered_load = 1.3
-    grid.facet_axis(0, 1).plot([x_lim_left, x_lim_right], [offered_load, offered_load], 'k-', lw=1)
-    grid.facet_axis(0, 1).set_xlim(x_lim_left, x_lim_right)
-    grid.facet_axis(0, 1).annotate(f"Max. offered load ({offered_load}Mpps)", xy=(0,0),  xytext=(x_lim_left + 0.1, offered_load + 0.1), fontsize=10)
+    if not args.slides:
+        grid.facet_axis(0, 1).plot([x_lim_left, x_lim_right], [offered_load, offered_load], 'k-', lw=1)
+        grid.facet_axis(0, 1).set_xlim(x_lim_left, x_lim_right)
+        grid.facet_axis(0, 1).annotate(f"Max. offered load ({offered_load}Mpps)", xy=(0,0),  xytext=(x_lim_left + 0.1, offered_load + 0.1), fontsize=10)
 
     # plt.xlabel(XLABEL)
     # plt.ylabel(YLABEL)
@@ -565,8 +569,6 @@ def main():
     morphos_bi_nat = df[(df["vnf"] == "NAT") & (df["system"] == "MorphOS") & (df["size"] == 64) & (df["direction"] == "bi")]["pps"].mean()
     unikraft_rx_ids = df[(df["vnf"] == "IDS") & (df["system"] == "Unikraft") & (df["size"] == 64) & (df["direction"] == "rx")]["pps"].mean()
     morphos_rx_ids = df[(df["vnf"] == "IDS") & (df["system"] == "MorphOS") & (df["size"] == 64) & (df["direction"] == "rx")]["pps"].mean()
-
-    breakpoint()
 
     print(f"Rx empty: Linux is {morphos_rx_empty/linux_rx_empty:.1f}x slower than MorphOS (biggest improvement)")
     print(f"Tx ids: Linux is {morphos_tx_ids/linux_tx_ids:.1f}x slower than MorphOS (smallest improvement)")

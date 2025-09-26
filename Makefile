@@ -40,6 +40,13 @@ throughput.pdf:
 		-o $(OUT_DIR)/throughput.pdf \
 		--1-name stub --1 ./data/v0.0.4-pre7/throughput_*_vpp_*.csv
 
+throughput_slides.pdf:
+	python3 throughput.py \
+		-W $(DWIDTH) -H 3 \
+		-o $(OUT_DIR)/throughput_slides.pdf \
+		--slides \
+		--1-name stub --1 ./data/v0.0.4-pre7/throughput_*_vpp_*.csv
+
 relative_performance.pdf:
 	python3 relative_performance.py \
 		-o $(OUT_DIR)/relative_performance.pdf \
