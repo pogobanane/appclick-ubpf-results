@@ -137,47 +137,9 @@ def main():
     log_scale = (False, True) if args.logarithmic else False
     # ax.set_yscale('log' if args.logarithmic else 'linear')
 
-    # dfs = []
-    # for color in COLORS:
-    #     if args.__dict__[color]:
-    #         arg_dfs = [ pd.read_csv(f.name, sep='\\s+') for f in args.__dict__[color] ]
-    #         arg_df = pd.concat(arg_dfs)
-    #         name = args.__dict__[f'{color}_name']
-    #         arg_df["hue"] = name
-    #         dfs += [ arg_df ]
-    #         # throughput = ThroughputDatapoint(
-    #         #     moongen_log_filepaths=[f.name for f in args.__dict__[color]],
-    #         #     name=args.__dict__[f'{color}_name'],
-    #         #     color=color,
-    #         # )
-    #         # dfs += color_dfs
-    # df = pd.concat(dfs)
-    # hue = ['repetitions', 'num_vms', 'interface', 'fastclick']
-    # groups = df.groupby(hue)
-    # summary = df.groupby(hue)['rxMppsCalc'].describe()
-    # df_hue = df.apply(lambda row: '_'.join(str(row[col]) for col in ['repetitions', 'interface', 'fastclick', 'rate']), axis=1)
-    # df_hue = map_hue(df_hue, hue_map)
-    # df['is_passthrough'] = df.apply(lambda row: True if "vmux-pt" in row['interface'] or "vfio" in row['interface'] else False, axis=1)
-
-    columns = ['system', 'size']
-    systems = [ "Unikraft", "MorphOS", "Alpine", "Ubuntu" ]
-    rows = []
-    for system in systems:
-        value = 300000
-        if system == "Alpine":
-            # click + click config + nat ebpf program + signature + alpine image
-            value = 3949632 + 5803 + 3712 + 72 + 110675968
-        if system == "Ubuntu":
-            value = 3949632 + 5803 + 3712 + 72 + 639152640
-        if system == "MorphOS":
-            # unikraft-click kernel + image with nat ebpf program, signature and click config
-            value = 5222840 + 10240
-        if system == "Unikraft":
-            value = 2999592 + 6144
-        value /= 1024 * 1024 # MB
-        value = round(value, 2)
-        rows += [[system, value]]
     df = pd.DataFrame(rows, columns=columns)
+    df = pd.read_csv(args.__dict__["1"][0].name)
+    df = df.assign(size=round(df['size'] / (1024 * 1024), 2))
 
     # Plot using Seaborn
     ax = sns.barplot(

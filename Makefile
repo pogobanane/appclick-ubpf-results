@@ -61,7 +61,7 @@ imagesize.pdf:
 	python3 imagesize.py \
 		-W $(WIDTH) -H 1.4 \
 		-o $(OUT_DIR)/imagesize.pdf \
-		--1 flake.nix --1-name stub
+		--1 $(DATA)7/imagesizes.csv --1-name stub
 
 
 latency_cdf.pdf:
