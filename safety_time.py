@@ -6,9 +6,12 @@ import argparse
 import seaborn as sns
 import pandas as pd
 from re import search, findall, MULTILINE
-from os.path import basename, getsize
+from os.path import basename, getsize, isfile
 from typing import List, Any
 from plotting import HATCHES as _hatches
+from tqdm import tqdm
+
+from reconfiguration_vnfs import parse_data, log
 
 
 # resource on how to do stackplots:
@@ -88,6 +91,10 @@ def setup_parser():
                         action='store_true',
                         help='Plot logarithmic latency axis',
                         )
+    parser.add_argument('-c', '--cached',
+                        action='store_true',
+                        help='Use cached version of parsed data',
+                        )
     parser.add_argument('-s', '--slides',
                         action='store_true',
                         help='Use other setting to plot for presentation slides',
@@ -135,6 +142,42 @@ def barplot_with_hatches(*args, **kwargs):
 def main():
     parser = setup_parser()
     args = parse_args(parser)
+
+    if args.cached and isfile("/tmp/reconfiguration_vnf.pkl"):
+        log("Using cached data")
+        df = pd.read_pickle("/tmp/reconfiguration_vnf.pkl")
+    else:
+        dfs = []
+        for color in COLORS:
+            if args.__dict__[color]:
+                log(f"Reading files for --name-{color}")
+                arg_dfs = [ pd.read_csv(f.name) for f in tqdm(args.__dict__[color]) ]
+                arg_df = pd.concat(arg_dfs)
+                name = args.__dict__[f'{color}_name']
+                arg_df["arglabel"] = name
+                dfs += [ arg_df ]
+                # throughput = ThroughputDatapoint(
+                #     moongen_log_filepaths=[f.name for f in args.__dict__[color]],
+                #     name=args.__dict__[f'{color}_name'],
+                #     color=color,
+                # )
+                # dfs += color_dfs
+        df = pd.concat(dfs, ignore_index=True)
+        # hue = ['repetitions', 'num_vms', 'interface', 'fastclick']
+        # groups = df.groupby(hue)
+        # summary = df.groupby(hue)['rxMppsCalc'].describe()
+        # df_hue = df.apply(lambda row: '_'.join(str(row[col]) for col in ['repetitions', 'interface', 'fastclick', 'rate']), axis=1)
+        # df_hue = map_hue(df_hue, hue_map)
+        # df['is_passthrough'] = df.apply(lambda row: True if "vmux-pt" in row['interface'] or "vfio" in row['interface'] else False, axis=1)
+
+        df = parse_data(df)
+        df.to_pickle("/tmp/reconfiguration_vnf.pkl")
+
+    df_full = df.copy()
+    df['msec'] = df['nsec'].apply(lambda nsec: nsec / 1_000_000.0)
+    breakpoint()
+    nat_mean_msecs = df[(df["system"]=="ukebpfjit")&(df["vnf"]=="nat")].groupby("label")["msec"].mean()
+
 
     # fig = plt.figure(figsize=(args.width, args.height))
     # Create a figure with two subplots side by side, sharing y axis
@@ -191,13 +234,13 @@ def main():
             if system == systems[1]:
                 match contributor:
                     case "Load":
-                        value = 0.02
+                        value = nat_mean_msecs["Load"]
                     case "Validate":
-                        value = 0.16
+                        value = nat_mean_msecs["Validate"]
                     case "JIT":
-                        value = 0.26
+                        value = nat_mean_msecs["JIT"]
                     case "Control":
-                        value = 3.0
+                        value = nat_mean_msecs["other"] # other is mainly latency of the network request that triggers the reconfiguration, which classify as "Control"
             rows += [[system, contributor, value]]
     df = pd.DataFrame(rows, columns=columns)
 
