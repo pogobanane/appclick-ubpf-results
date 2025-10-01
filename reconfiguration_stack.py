@@ -9,6 +9,10 @@ from re import search, findall, MULTILINE
 from os.path import basename, getsize
 from typing import List, Any
 from plotting import HATCHES as _hatches
+from tqdm import tqdm
+from functools import reduce
+import scipy.stats as scipyst
+import operator
 
 
 # resource on how to do stackplots:
@@ -56,7 +60,8 @@ XLABEL = 'System'
 def map_hue(df_hue, hue_map):
     return df_hue.apply(lambda row: hue_map.get(str(row), row))
 
-
+def log(s: str):
+    print(s, flush=True)
 
 def setup_parser():
     parser = argparse.ArgumentParser(
@@ -87,6 +92,10 @@ def setup_parser():
     parser.add_argument('-l', '--logarithmic',
                         action='store_true',
                         help='Plot logarithmic latency axis',
+                        )
+    parser.add_argument('-c', '--cached',
+                        action='store_true',
+                        help='Use cached version of parsed data',
                         )
     parser.add_argument('-s', '--slides',
                         action='store_true',
@@ -131,6 +140,189 @@ def barplot_with_hatches(*args, **kwargs):
         bar.set_hatch(hatch)
         hatches_used += 1
 
+def parse_data(df: pd.DataFrame) -> pd.DataFrame:
+    # print("\n".join(df.to_string().splitlines()[:20]))
+    def parse(df, set_spec, set_calculator, supplementary_df=None):
+        rows = []
+        ignore_labels = [ "nsec", "label", "Unnamed: 0" ]
+
+        def get_supplementary_data(supplementary_df_, repeating_row_):
+            if supplementary_df_ is None:
+                return None
+
+            # choose supplementary data for this set
+            columns = [ column for column in supplementary_df_.columns if column not in ignore_labels ]
+            column_equalities = [ supplementary_df_[column] == repeating_row_[column] for column in columns ]
+            supplementary_data = supplementary_df_[reduce(operator.and_, column_equalities)]
+            return supplementary_data
+
+        ignore_columns = None
+        repeating_row = None
+        set_supplement = None
+        this_set = set_spec.copy()
+        set_nr = 0
+        for (i, row) in tqdm(df.iterrows(), total=df.shape[0]):
+            # ensure that test inputs of a set are the same
+            if repeating_row is None:
+                ignore_columns = np.array([ key in ignore_labels for key in row.keys() ])
+                repeating_row = row
+                set_supplement = get_supplementary_data(supplementary_df, repeating_row)
+            elif all(value is not None for value in this_set.values()):
+                # arrived at next set
+                set_nr += 1
+                this_set = set_spec.copy()
+                if not all((repeating_row == row) | ignore_columns):
+                    # new row is not the same
+                    set_supplement = get_supplementary_data(supplementary_df, repeating_row)
+                repeating_row = row
+            elif not np.all((repeating_row.values == row.values) | ignore_columns):
+                raise Exception(f"Different parameters within one set (expected {repeating_row} but got {row})")
+
+            # fill values for this set
+            if row['label'] in this_set.keys():
+                # if it is already filled, we messed up our set
+                if this_set[row['label']] is not None:
+                    missing = [ key for key, value in this_set.items() if value is None ]
+                    raise Exception(f"Duplicate label {row['label']} in one set. Missing keys for current set: {missing}")
+                this_set[row['label']] = row['nsec']
+            if all(value is not None for value in this_set.values()):
+                # set done, calculate this_set and append to output
+                data = set_calculator(set_nr, this_set, set_supplement)
+                for key, value in data.items():
+                    new_row = repeating_row.copy()
+                    new_row['label'] = key
+                    new_row['nsec'] = value
+                    rows += [ new_row ]
+
+        ret = pd.DataFrame(rows)
+        del ret['Unnamed: 0']
+        return ret
+
+
+    log("Parsing linux")
+    linux_raw = df[df['system'] == 'linux']
+    set_spec = {
+        'main': None,
+        'init done': None,
+        'first packet': None,
+        'total startup time': None,
+    }
+    def calculate_linux(set_nr, i, supp): # takes a set_spec filled with values
+        out = dict()
+        out['Click init'] = i['init done'] - i['main']
+        out['First packet'] = i['first packet'] - i['init done']
+        out['Other'] = i['total startup time'] - out['Click init'] + out['First packet']
+        out['total'] = i['total startup time']
+        return out
+    linux = parse(linux_raw, set_spec, calculate_linux)
+
+    log("Parsing uktrace")
+    uktrace_raw = df[df['system'] == 'uktrace']
+    set_spec = {
+        # we collect the same metrics as with uk, but they are inaccurate here because of expensive tracing
+        # 'click main()': None,
+        # 'print config': None,
+        # 'print config done': None,
+        # 'initialize elements': None,
+        # 'initialize elements done': None,
+        # 'first packet': None,
+        # 'total startup time': None,
+        'qemu start': None,
+        'qemu kvm entry': None,
+        'qemu kvm port 255': None,
+        'qemu kvm port 254': None,
+        'qemu kvm port 253': None,
+    }
+    def calculate_uktrace(set_nr, i, supp): # takes a set_spec filled with values
+        out = dict()
+        out['Qemu start'] = i['qemu kvm entry'] - i['qemu start']
+        out['Firmware'] = i['qemu kvm port 255'] - i['qemu kvm entry']
+        out['Unikraft'] = i['qemu kvm port 254'] - i['qemu kvm port 255']
+        return out
+    uktrace = parse(uktrace_raw, set_spec, calculate_uktrace)
+    uktrace['system'] = 'uk' # we've processed the data to make it uk data
+
+    log("Parsing uk")
+    uk_raw = df[df['system'] == 'uk']
+    set_spec = {
+        'click main()': None,
+        'print config': None,
+        'print config done': None,
+        'initialize elements': None,
+        'initialize elements done': None,
+        'first packet': None,
+        'total startup time': None,
+    }
+    def calculate_uk(set_nr, i, supp):
+        def get_supp(label):
+            values = supp[supp['label'] == label]
+            j = set_nr % values.shape[0]
+            return values['nsec'].array[j]
+        qemu_start = get_supp('Qemu start')
+        firmware = get_supp('Firmware')
+        unikraft = get_supp('Unikraft')
+        out = dict()
+        print_config = i['print config done'] - i['print config']
+        out['Click init'] = i['initialize elements'] - i['click main()'] - print_config
+        out['VNF configuration'] = i['initialize elements done'] - i['initialize elements']
+        out['First packet'] = i['first packet'] - i['initialize elements done']
+        # everything we have no detailed trace for is other
+        out['Other'] = i['total startup time'] - out['Click init'] - out['VNF configuration'] - out['First packet'] - qemu_start - firmware - unikraft - print_config
+        out['total'] = i['total startup time'] - print_config
+        return out
+    uk = parse(uk_raw, set_spec, calculate_uk, supplementary_df=uktrace)
+
+    log("Parsing ukebpfjit_supp")
+    ukebpfjit_supp_raw = df[df['system'] == 'ukebpfjit']
+    set_spec = {
+        'total': None,
+    }
+    def calculate_ukebpfjit_supp(set_nr, i, supp):
+        out = dict()
+        out['total'] = i['total']
+        return out
+    ukebpfjit_supp = parse(ukebpfjit_supp_raw, set_spec, calculate_ukebpfjit_supp)
+
+    log("Parsing ukebpfjit")
+    ukebpfjit_raw = df[(df['system'] == 'ukebpfjit') & (df['label'] != 'total')]
+    set_spec = {
+        'init ebpf vm': None,
+        'read program': None,
+        'lock': None,
+        'load elf': None,
+        'signature': None,
+        'jit': None,
+        'print': None,
+        'init ebpf done': None,
+    }
+    def calculate_ukebpfjit(set_nr, i, supp):
+        if set_nr == 0:
+            # first set is from boot which spends another ~5ms on init_ubpf_vm()
+            return dict()
+        j = set_nr % supp.shape[0]
+        total = supp['nsec'].array[j]
+        out = dict()
+
+        # out['Read'] = i['read program']
+        # out['Lock'] = i['lock']
+        out['Load'] = i['read program'] + i['lock'] + i['load elf']
+        out['Validate'] = i['signature']
+        out['JIT'] = i['jit']
+        out['Print'] = i['print']
+        out['VNF configuration'] = i['init ebpf done'] - i['init ebpf vm']
+        # out['VNF configuration'] = i['init ebpf done'] - i['init ebpf vm']
+        # out['VNF configuration > 1'] = i['jit ebpf'] - i['init ebpf vm']
+        # out['VNF configuration > 2'] = i['init ebpf done'] - i['jit ebpf']
+        out['Other'] = total - (i['init ebpf done'] - i['init ebpf vm']) - out['Print']
+        # out['Init uBPF'] = out['VNF configuration'] - out['Read'] - out['Load'] - out['Validate'] - out['JIT'] # never called
+        out['total'] = total - out["Print"]
+        return out
+    ukebpfjit_supp_ = ukebpfjit_supp[ukebpfjit_supp['label'] == 'total']
+    ukebpfjit = parse(ukebpfjit_raw, set_spec, calculate_ukebpfjit, supplementary_df=ukebpfjit_supp_)
+    # ukebpfjit = pd.concat([ukebpfjit, ukebpfjit_supp])
+
+    df = pd.concat([linux, uk, uktrace, ukebpfjit])
+    return df
 
 def main():
     parser = setup_parser()
@@ -147,133 +339,61 @@ def main():
     log_scale = (False, True) if args.logarithmic else False
     # ax.set_yscale('log' if args.logarithmic else 'linear')
 
-    dfs = []
-    for color in COLORS:
-        if args.__dict__[color]:
-            arg_dfs = [ pd.read_csv(f.name) for f in args.__dict__[color] ]
-            arg_df = pd.concat(arg_dfs)
-            name = args.__dict__[f'{color}_name']
-            arg_df["arglabel"] = name
-            dfs += [ arg_df ]
-            # throughput = ThroughputDatapoint(
-            #     moongen_log_filepaths=[f.name for f in args.__dict__[color]],
-            #     name=args.__dict__[f'{color}_name'],
-            #     color=color,
-            # )
-            # dfs += color_dfs
-    df = pd.concat(dfs)
+    if args.cached and isfile("/tmp/reconfiguration_stack.pkl"):
+        log("Using cached data")
+        data = pd.read_pickle("/tmp/reconfiguration_stack.pkl")
+    else:
+        dfs = []
+        for color in COLORS:
+            if args.__dict__[color]:
+                log(f"Reading files for --name-{color}")
+                arg_dfs = [ pd.read_csv(f.name) for f in tqdm(args.__dict__[color]) ]
+                arg_df = pd.concat(arg_dfs)
+                name = args.__dict__[f'{color}_name']
+                arg_df["arglabel"] = name
+                dfs += [ arg_df ]
+                # throughput = ThroughputDatapoint(
+                #     moongen_log_filepaths=[f.name for f in args.__dict__[color]],
+                #     name=args.__dict__[f'{color}_name'],
+                #     color=color,
+                # )
+                # dfs += color_dfs
+        df = pd.concat(dfs, ignore_index=True)
+        # hue = ['repetitions', 'num_vms', 'interface', 'fastclick']
+        # groups = df.groupby(hue)
+        # summary = df.groupby(hue)['rxMppsCalc'].describe()
+        # df_hue = df.apply(lambda row: '_'.join(str(row[col]) for col in ['repetitions', 'interface', 'fastclick', 'rate']), axis=1)
+        # df_hue = map_hue(df_hue, hue_map)
+        # df['is_passthrough'] = df.apply(lambda row: True if "vmux-pt" in row['interface'] or "vfio" in row['interface'] else False, axis=1)
 
-    # TODO we are not using the data yet
-
-    # hue = ['repetitions', 'num_vms', 'interface', 'fastclick']
-    # groups = df.groupby(hue)
-    # summary = df.groupby(hue)['rxMppsCalc'].describe()
-    # df_hue = df.apply(lambda row: '_'.join(str(row[col]) for col in ['repetitions', 'interface', 'fastclick', 'rate']), axis=1)
-    # df_hue = map_hue(df_hue, hue_map)
-    # df['is_passthrough'] = df.apply(lambda row: True if "vmux-pt" in row['interface'] or "vfio" in row['interface'] else False, axis=1)
-
-    click_reconfigure = {
-        "init ebpf vm": 419128582,
-        "jit ebpf": 422390128,
-        "init ebpf done": 425529314,
-        "total": 9816700,
-    }
-    click_reconfigure = { k: v / 1000000 for k, v in click_reconfigure.items() }
-
-    click_unikraftvm = {
-        "click main()": 107225458,
-        "print config": 108642850,
-        "print config done": 520667278,
-        "initialize elements": 524018298,
-        "initialize elements done": 527915291,
-        "First packet": 538017416,
-        "total": 671417165,
-        "strace qemu start": 1769300316851874,
-        "strace qemu kvm entry": 1769300382133824,
-        "strace 255": 1769300428826889, # firmware done, unikraft start
-        "strace 254": 1769300547534819, # same as click main()
-        "strace 253": 1769300981529181, # same as elements done
-        "strace total": 689807614,
-    }
-    click_unikraftvm = { k: v / 1000000 for k, v in click_unikraftvm.items() }
-    print_system = click_unikraftvm["print config done"] - click_unikraftvm["print config"]
-    all_unikraft = []
-
+        data = parse_data(df)
+        data.to_pickle("/tmp/reconfiguration_stack.pkl")
+    log("Preparing plotting data")    # map colors to hues
+    # colors = sns.color_palette("pastel", len(df['hue'].unique())-1) + [ mcolors.to_rgb('sandybrown') ]
+    # palette = dict(zip(df['hue'].unique(), colors))
     columns = ['system', 'Contributor', 'restart_s']
     systems = [ "click-unikraftvm", "click-linuxvm", "ebpf-linuxvm", "ebpf-unikraftvm" ]
     Contributors = [ "Qemu start", "Firmware", "Unikraft", "Click init", "VNF configuration", "First packet", "Other" ]
-    rows = []
-    for system in systems:
-        for Contributor in Contributors:
-            value = 1
-            if system == "click-unikraftvm":
-                value = 3
-            if system == "click-linuxvm":
-                value = 2
-            match (system, Contributor):
-                # cargo run --bin bench-helper --features print-output
-                case ("click-linuxvm", "Click init"):
-                    # value = 108 # NAT
-                    # get it from reconfiguration_vnf.py:
-                    # df_full[(df_full['system'] == 'linux') & (df_full['vnf'] == 'empty') & (df_full['label'] == 'Click init')]['msec'].mean()
-                    value = 1.3180328 # IDS vnf
-                case ("click-linuxvm", "Other"):
-                    value = 17
-                case ("click-linuxvm", "First packet"):
-                    value = 0.4
-
-                # cargo run --bin bench-helper --features print-output
-                # just qemu-startup
-                case ("click-unikraftvm", "Qemu start"):
-                    value = click_unikraftvm["strace qemu kvm entry"] - click_unikraftvm["strace qemu start"]
-                    all_unikraft += [ value ]
-                case ("click-unikraftvm", "Firmware"):
-                    value = click_unikraftvm["strace 255"] - click_unikraftvm["strace qemu kvm entry"]
-                    all_unikraft += [ value ]
-                case ("click-unikraftvm", "Unikraft"):
-                    value = click_unikraftvm["strace 254"] - click_unikraftvm["strace 255"]
-                    all_unikraft += [ value ]
-                case ("click-unikraftvm", "Click init"):
-                    value = click_unikraftvm["initialize elements"] - click_unikraftvm["click main()"] - print_system
-                    all_unikraft += [ value ]
-                case ("click-unikraftvm", "VNF configuration"):
-                    value = click_unikraftvm["initialize elements done"] - click_unikraftvm["initialize elements"]
-                    all_unikraft += [ value ]
-                case ("click-unikraftvm", "First packet"):
-                    value = click_unikraftvm["First packet"] - click_unikraftvm["initialize elements done"]
-                    all_unikraft += [ value ]
-                case ("click-unikraftvm", "Other"):
-                    value = click_unikraftvm["total"] - sum(all_unikraft) - print_system
-
-                # QEMU_OUT="/tmp/foo2" cargo bench --bench live_reconfigure
-                case ("ebpf-unikraftvm", "VNF configuration"):
-                    value = click_reconfigure["init ebpf done"] - click_reconfigure["init ebpf vm"]
-                case ("ebpf-unikraftvm", "Other"):
-                    value = click_reconfigure["total"] - (click_reconfigure["init ebpf done"] - click_reconfigure["init ebpf vm"])
-
-                # sudo /bin/sh -c 'time ip l set eno1 xdpgeneric obj ./nix/builds/xdp/lib/reflector.o sec xdp'
-                case ("ebpf-linuxvm", "VNF configuration"):
-                    value = 26
-
-
-                case (_, _):
-                    value = 0
-
-            rows += [[system, Contributor, value]]
-    df = pd.DataFrame(rows, columns=columns)
+    data = data[data['label'].isin(Contributors)]
+    data['Contributor'] = data['label']
+    data['restart_s'] = data['nsec']
+    data = data.assign(system = data['system'].map({'linux': 'click-linuxvm', 'uk':'click-unikraftvm', 'ukebpfjit': 'ebpf-unikraftvm'}))
+    data = data[['system', 'Contributor', 'restart_s']]
+    df = data.groupby(['system', 'Contributor'])['restart_s'].mean().reset_index()
+    df['restart_s'] = df['restart_s']/1000000
+    # sudo /bin/sh -c 'time ip l set eno1 xdpgeneric obj ./nix/builds/xdp/lib/reflector.o sec xdp'
+    xdp_df = pd.DataFrame([['ebpf-linuxvm', 'VNF configuration', 26]], columns=['system', 'Contributor', 'restart_s'])
+    df = pd.concat([df, xdp_df])
 
     df['system'] = df['system'].apply(lambda row: system_map.get(str(row), row))
-
-    # map colors to hues
-    # colors = sns.color_palette("pastel", len(df['hue'].unique())-1) + [ mcolors.to_rgb('sandybrown') ]
-    # palette = dict(zip(df['hue'].unique(), colors))
-
+    df['system'] = pd.Categorical(df['system'], ['Unikraft/Click', 'Linux/Click', 'XDP', 'MorphOS'])
     # Plot using Seaborn
     sns.histplot(
                data=df,
                x='system',
                weights='restart_s',
                hue="Contributor",
+               hue_order = ['Qemu start', 'Firmware', 'Unikraft', 'Click init', 'VNF configuration', 'First packet', 'Other'],
                multiple="stack",
                # palette=palette,
                palette="deep",
