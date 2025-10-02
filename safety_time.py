@@ -112,6 +112,11 @@ def setup_parser():
                             default=color,
                             help=f'''Name of {color} plot''',
                             )
+    parser.add_argument(f'--bpfbuild',
+                        type=argparse.FileType('r'),
+                        nargs='+',
+                        help=f'''Paths to UK bpfbuild CSVs''',
+                        )
 
     return parser
 
@@ -178,8 +183,7 @@ def main():
     nat_mean_msecs = df[(df["system"]=="ukebpfjit")&(df["vnf"]=="nat")].groupby("label")["msec"].mean().reset_index()
     nat_mean_msecs=nat_mean_msecs.assign(system='\nReconfiguration')
     nat_mean_msecs = nat_mean_msecs.rename(columns={'system': 'system', 'label': 'contributor', 'msec': 'restart_s'})
-    data_dir=dirname(args.__dict__['1'][0].name)
-    oob_df = pd.read_csv(join(data_dir,'bpfbuild.csv'))
+    oob_df = pd.read_csv(args.bpfbuild[0].name)
     oob_df=oob_df.assign(system='Out-of-band\n')
 
     # fig = plt.figure(figsize=(args.width, args.height))

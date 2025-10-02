@@ -101,6 +101,7 @@ safety_time.pdf:
 	python3 safety_time.py \
 		-o $(OUT_DIR)/safety_time.pdf \
 		-W $(WIDTH) -H 2.5 \
+		--bpfbuild $(DATA_OLD)/bpfbuild.csv \
 		--1 $(DATA_OLD)/reconfiguration_*_rep?.csv --1-name stub
 
 
