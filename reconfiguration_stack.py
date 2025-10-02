@@ -54,7 +54,7 @@ system_map = {
         'ebpf-linuxvm': 'XDP',
         }
 
-YLABEL = 'Reconfiguration [ms]'
+YLABEL = 'Reconfiguration [ms]     '
 XLABEL = 'System'
 
 def map_hue(df_hue, hue_map):

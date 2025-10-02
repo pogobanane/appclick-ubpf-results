@@ -6,7 +6,7 @@ import argparse
 import seaborn as sns
 import pandas as pd
 from re import search, findall, MULTILINE
-from os.path import basename, getsize, isfile
+from os.path import basename, getsize, isfile, join, dirname
 from typing import List, Any
 from plotting import HATCHES as _hatches
 from tqdm import tqdm
@@ -175,9 +175,12 @@ def main():
 
     df_full = df.copy()
     df['msec'] = df['nsec'].apply(lambda nsec: nsec / 1_000_000.0)
-    breakpoint()
-    nat_mean_msecs = df[(df["system"]=="ukebpfjit")&(df["vnf"]=="nat")].groupby("label")["msec"].mean()
-
+    nat_mean_msecs = df[(df["system"]=="ukebpfjit")&(df["vnf"]=="nat")].groupby("label")["msec"].mean().reset_index()
+    nat_mean_msecs=nat_mean_msecs.assign(system='\nReconfiguration')
+    nat_mean_msecs = nat_mean_msecs.rename(columns={'system': 'system', 'label': 'contributor', 'msec': 'restart_s'})
+    data_dir=dirname(args.__dict__['1'][0].name)
+    oob_df = pd.read_csv(join(data_dir,'bpfbuild.csv'))
+    oob_df=oob_df.assign(system='Out-of-band\n')
 
     # fig = plt.figure(figsize=(args.width, args.height))
     # Create a figure with two subplots side by side, sharing y axis
@@ -193,58 +196,14 @@ def main():
     log_scale = (False, True) if args.logarithmic else False
     # ax.set_yscale('log' if args.logarithmic else 'linear')
 
-    # dfs = []
-    # for color in COLORS:
-    #     if args.__dict__[color]:
-    #         arg_dfs = [ pd.read_csv(f.name, sep='\\s+') for f in args.__dict__[color] ]
-    #         arg_df = pd.concat(arg_dfs)
-    #         name = args.__dict__[f'{color}_name']
-    #         arg_df["hue"] = name
-    #         dfs += [ arg_df ]
-    #         # throughput = ThroughputDatapoint(
-    #         #     moongen_log_filepaths=[f.name for f in args.__dict__[color]],
-    #         #     name=args.__dict__[f'{color}_name'],
-    #         #     color=color,
-    #         # )
-    #         # dfs += color_dfs
-    # df = pd.concat(dfs)
-    # hue = ['repetitions', 'num_vms', 'interface', 'fastclick']
-    # groups = df.groupby(hue)
-    # summary = df.groupby(hue)['rxMppsCalc'].describe()
-    # df_hue = df.apply(lambda row: '_'.join(str(row[col]) for col in ['repetitions', 'interface', 'fastclick', 'rate']), axis=1)
-    # df_hue = map_hue(df_hue, hue_map)
-    # df['is_passthrough'] = df.apply(lambda row: True if "vmux-pt" in row['interface'] or "vfio" in row['interface'] else False, axis=1)
-
     columns = ['system', 'contributor', 'restart_s']
     systems = [ "Out-of-band\n", "\nReconfiguration" ]
     contributors = [ "Compile", "Link", "Verify", "Load", "Validate", "JIT", "Control" ]
-    rows = []
-    for system in systems:
-        for contributor in contributors:
-            value = 0
-            if system == systems[0]:
-                match contributor:
-                    case "Compile":
-                        value = 230
-                    case "Link":
-                        # sudo bpftrace -e 'tracepoint:syscalls:sys_enter_execve /str(args->filename) == "/home/okelmann/.cargo/bin/bpf-linker"/ { @start = nsecs; @p = pid; print("asd\n"); } tracepoint:syscalls:sys_enter_exit* / pid == @p / { printf("Execution time: %d ms\n", (nsecs - @start) / 1000000); }'
-                        value = 20
-                    case "Verify":
-                        value = 85.603
-            if system == systems[1]:
-                match contributor:
-                    case "Load":
-                        value = nat_mean_msecs["Load"]
-                    case "Validate":
-                        value = nat_mean_msecs["Validate"]
-                    case "JIT":
-                        value = nat_mean_msecs["JIT"]
-                    case "Control":
-                        value = nat_mean_msecs["other"] # other is mainly latency of the network request that triggers the reconfiguration, which classify as "Control"
-            rows += [[system, contributor, value]]
-    df = pd.DataFrame(rows, columns=columns)
+    
+    df = pd.concat([nat_mean_msecs[nat_mean_msecs['contributor'].isin(contributors)], oob_df])
 
     df['system'] = df['system'].apply(lambda row: system_map.get(str(row), row))
+    df['system'] = pd.Categorical(df['system'], systems)
 
     df = df[df['contributor'] != 'Load'] # not visible anyways. Remove so that it won't be visible in Legend
 
@@ -259,6 +218,7 @@ def main():
                x='system',
                weights='restart_s',
                hue="contributor",
+               hue_order = ['Compile', 'Link', 'Verify', 'Validate', 'JIT', 'Control'],
                multiple="stack",
                # palette=palette,
                edgecolor="dimgray",
