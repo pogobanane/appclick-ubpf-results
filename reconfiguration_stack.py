@@ -334,7 +334,8 @@ def main():
     # ax.set_axisbelow(True)
     if args.title:
         plt.title(args.title)
-    plt.grid()
+    if not args.slides:
+        plt.grid()
     # plt.xlim(0, 0.83)
     log_scale = (False, True) if args.logarithmic else False
     # ax.set_yscale('log' if args.logarithmic else 'linear')
@@ -456,11 +457,18 @@ def main():
     #             # log_scale=log_scale,
     #             ax=ax,
     #             )
-    sns.move_legend(
-        ax, "upper right",
-        ncol=2,
-        # bbox_to_anchor=(.5, 1), ncol=3, title=None, frameon=False,
-    )
+    if (args.slides):
+        sns.move_legend(
+            ax, "lower center",
+            # ncol=2,
+            bbox_to_anchor=(.5, 1), ncol=2, title=None, frameon=False,
+        )
+    else:
+        sns.move_legend(
+            ax, "upper right",
+            ncol=2,
+            # bbox_to_anchor=(.5, 1), ncol=3, title=None, frameon=False,
+        )
 
     color_hatch_map = dict()
     # Fix the legend hatches
@@ -484,16 +492,17 @@ def main():
     # grid.set_xlabels(XLABEL)
     # grid.set_ylabels(YLABEL)
     #
-    # ax.annotate(
-    #     "↓ Lower is better", # or ↓ ← ↑ →
-    #     xycoords="axes points",
-    #     # xy=(0, 0),
-    #     xy=(0, 0),
-    #     xytext=(-7, -8),
-    #     # fontsize=FONT_SIZE,
-    #     color="navy",
-    #     weight="bold",
-    # )
+    if (args.slides):
+        ax.annotate(
+            "↓ Lower is better", # or ↓ ← ↑ →
+            xycoords="axes points",
+            # xy=(0, 0),
+            xy=(0, 0),
+            xytext=(-4, -28),
+            # fontsize=FONT_SIZE,
+            color="navy",
+            weight="bold",
+        )
 
     plt.xlabel(XLABEL)
     plt.ylabel(YLABEL)

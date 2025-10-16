@@ -34,6 +34,12 @@ reconfiguration_stack.pdf:
 		-W $(WIDTH) -H 1.8 \
 		--1 $(DATA_OLD)/reconfiguration_*_rep?.csv --1-name stub
 
+reconfiguration_stack_slides.pdf:
+	python3 reconfiguration_stack.py -s \
+		-o $(OUT_DIR)/reconfiguration_stack.pdf \
+		-W 4.5 -H 2.5 \
+		--1 $(DATA_OLD)/reconfiguration_*_rep?.csv --1-name stub
+
 throughput.pdf:
 	python3 throughput.py \
 		-W $(DWIDTH) -H 3 \
