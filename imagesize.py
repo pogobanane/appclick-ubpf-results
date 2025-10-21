@@ -137,7 +137,7 @@ def main():
     log_scale = (False, True) if args.logarithmic else False
     # ax.set_yscale('log' if args.logarithmic else 'linear')
 
-    df = pd.DataFrame(rows, columns=columns)
+    df = pd.DataFrame()
     df = pd.read_csv(args.__dict__["1"][0].name)
     df = df.assign(size=round(df['size'] / (1024 * 1024), 2))
 

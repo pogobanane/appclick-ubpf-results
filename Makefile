@@ -1,6 +1,5 @@
-VERSION := v0.0.4-pre
+VERSION := v0.0.5
 DATA := ./data/$(VERSION)
-DATA_OLD := ./data/v0.0.3-pre4
 OUT_DIR := ./out/$(VERSION)
 
 WIDTH := 5.0
@@ -22,7 +21,7 @@ reconfiguration_vnfs.pdf:
 	python3 reconfiguration_vnfs.py \
 		-o $(OUT_DIR)/reconfiguration_vnfs.pdf \
 		-W $(WIDTH) -H 2.2 \
-		--1 $(DATA_OLD)/reconfiguration_*_rep?.csv --1-name stub
+		--1 $(DATA)/reconfiguration_*_rep?.csv --1-name stub
 
 #		--1 $(DATA)/reconfiguration_ukebpfjit_*_rep?.csv --1-name stub
 
@@ -32,13 +31,13 @@ reconfiguration_stack.pdf:
 	python3 reconfiguration_stack.py \
 		-o $(OUT_DIR)/reconfiguration_stack.pdf \
 		-W $(WIDTH) -H 1.8 \
-		--1 $(DATA_OLD)/reconfiguration_*_rep?.csv --1-name stub
+		--1 $(DATA)/reconfiguration_*_rep?.csv --1-name stub
 
 reconfiguration_stack_slides.pdf:
 	python3 reconfiguration_stack.py -s \
 		-o $(OUT_DIR)/reconfiguration_stack.pdf \
 		-W 4.5 -H 2.5 \
-		--1 $(DATA_OLD)/reconfiguration_*_rep?.csv --1-name stub
+		--1 $(DATA)/reconfiguration_*_rep?.csv --1-name stub
 
 throughput.pdf:
 	python3 throughput.py \
@@ -67,7 +66,7 @@ imagesize.pdf:
 	python3 imagesize.py \
 		-W $(WIDTH) -H 1.4 \
 		-o $(OUT_DIR)/imagesize.pdf \
-		--1 $(DATA)7/imagesizes.csv --1-name stub
+		--1 $(DATA)/misc_imagesize_rep0.log --1-name stub
 
 
 latency_cdf.pdf:
@@ -107,7 +106,7 @@ safety_time.pdf:
 	python3 safety_time.py \
 		-o $(OUT_DIR)/safety_time.pdf \
 		-W $(WIDTH) -H 2.5 \
-		--bpfbuild $(DATA_OLD)/bpfbuild.csv \
-		--1 $(DATA_OLD)/reconfiguration_*_rep?.csv --1-name stub
+		--bpfbuild $(DATA)/bpfbuild.csv \
+		--1 $(DATA)/reconfiguration_*_rep?.csv --1-name stub
 
 
