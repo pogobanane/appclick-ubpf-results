@@ -119,6 +119,7 @@ class LoadLatencyPlot(object):
         self._latency_histograms = []
         for filepath in histogram_filepaths:
             if getsize(filepath) > 0:
+                print(filepath)
                 self._latency_histograms.append(LatencyHistogram(filepath))
         if len(self._latency_histograms) == 0:
             print(f"WARN: list of latency histograms empty for {histogram_filepaths}")
