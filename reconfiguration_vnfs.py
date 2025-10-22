@@ -522,7 +522,7 @@ def main():
     plt.xlabel(XLABEL)
     plt.ylabel(YLABEL)
 
-    plt.ylim(0, 350)
+    # plt.ylim(0, 350)
     if not args.logarithmic:
         plt.ylim(bottom=0)
     else:

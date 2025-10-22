@@ -183,6 +183,7 @@ def parse_data(df: pd.DataFrame) -> pd.DataFrame:
                 # if it is already filled, we messed up our set
                 if this_set[row['label']] is not None:
                     missing = [ key for key, value in this_set.items() if value is None ]
+                    print(f"Duplicate label '{row['label']}' at {i}:\n{df.loc[i-5:i+5].to_string()}")
                     raise Exception(f"Duplicate label {row['label']} in one set. Missing keys for current set: {missing}")
                 this_set[row['label']] = row['nsec']
             if all(value is not None for value in this_set.values()):
@@ -507,7 +508,7 @@ def main():
     plt.xlabel(XLABEL)
     plt.ylabel(YLABEL)
 
-    # plt.ylim(0, 1)
+    # plt.ylim(0, 250)
     if not args.logarithmic:
         plt.ylim(bottom=0)
     # for container in ax.containers:
