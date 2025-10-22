@@ -1,0 +1,2710 @@
+c[?7l[2J[0mSeaBIOS (version rel-1.16.2-0-gea1b7a073390-prebuilt.qemu.org)
+
+
+iPXE (http://ipxe.org) 00:03.0 CA00 PCI2.10 PnP PMM+BEFD0EF0+BEF30EF0 CA00
+Press Ctrl-B to configure iPXE (PCI 00:03.0)...                                                                               
+
+
+
+
+iPXE (http://ipxe.org) 00:04.0 CB00 PCI2.10 PnP PMM BEFD0EF0 BEF30EF0 CB00
+Press Ctrl-B to configure iPXE (PCI 00:04.0)...                                                                               
+
+
+Booting from ROM..Powered by
+o.   .o       _ _               __ _
+Oo   Oo  ___ (_) | __ __  __ _ ' _) :_
+oO   oO ' _ `| | |/ /  _)' _` | |_|  _)
+oOo oOO| | | | |   (| | | (_) |  _) :_
+ OoOoO ._, ._:_:_,\_._,  .__,_:_, \___)
+                         Telesto 0.16.3
+Startup trace (nsec): click main(): 108489115
+Startup trace (nsec): print config: 110122835
+Received config (length 835):
+define($MAC0 52:54:00:12:34:56);
+define($MAC1 52:54:00:12:34:57);
+/* End unikraft-provided MAC preamble */
+
+// === Control network ===
+elementclass ControlReceiver { $deviceid |
+    FromDevice($deviceid)
+     -> c0 :: Classifier(12/0806 20/0001,
+                         12/0800,
+                         -);
+
+    // Answer ARP requests
+    c0[0] -> ARPResponder(173.44.0.2 $MAC1)
+          -> ToDevice($deviceid);
+
+    // Handle IP packets
+    c0[1] -> StripEtherVLANHeader
+     -> CheckIPHeader
+     -> IPFilter(allow dst port 4444, deny all)
+     -> IPReassembler
+     -> SetUDPChecksum
+     -> CheckUDPHeader
+     -> Control;
+
+    c0[2] -> Discard;
+}
+
+ControlReceiver(1);
+
+// === Data network ===
+FromDevice(0) -> Print('Received packet') -> BPFRewriter(ID 1, FILE firewall-1000, SIGNATURE firewall-1000.sig, JIT true) -> Discard;
+
+Startup trace (nsec): print config done: 173615636
+Startup trace (nsec): initialize elements: 177147776
+Startup trace (nsec): init ebpf vm: 180701786
+Startup trace (nsec): init ebpf done: 185731591
+Startup trace (nsec): read program: 9275
+Startup trace (nsec): lock: 41393
+Startup trace (nsec): load elf: 11131
+Startup trace (nsec): signature: 888892
+Startup trace (nsec): jit: 794618
+Startup trace (nsec): print: 18478432
+Startup trace (nsec): initialize elements done: 207741129
+[router_thread:310] Starting driver...
+
+
+Received packet:  180 | 33330000 0016767e 90d49854 86dd6000 00000074 0001fe80
+Received packet:  120 | 33330000 0016feb1 222420a5 86dd6000 00000038 00010000
+Received packet:  180 | 33330000 0016767e 90d49854 86dd6000 00000074 0001fe80
+Received packet:  100 | 01005e00 00fb767e 90d49854 08004500 004ccf69 0000ff11
+Received packet:  132 | 33330000 00fb767e 90d49854 86dd600e 84e60044 11fffe80
+Received packet:   96 | 3333ff24 20a5feb1 222420a5 86dd6000 00000020 3aff0000
+Startup trace (nsec): init ebpf vm: 243918581
+Startup trace (nsec): init ebpf done: 247679204
+Startup trace (nsec): read program: 9636
+Startup trace (nsec): lock: 69
+Startup trace (nsec): load elf: 13190
+Startup trace (nsec): signature: 166378
+Startup trace (nsec): jit: 295533
+Startup trace (nsec): print: 18400345
+Startup trace (nsec): init ebpf vm: 269127650
+Startup trace (nsec): init ebpf done: 272789904
+Startup trace (nsec): read program: 8745
+Startup trace (nsec): lock: 67
+Startup trace (nsec): load elf: 11516
+Startup trace (nsec): signature: 161624
+Startup trace (nsec): jit: 211375
+Startup trace (nsec): print: 18443639
+Startup trace (nsec): init ebpf vm: 294279800
+Startup trace (nsec): init ebpf done: 297917788
+Startup trace (nsec): read program: 8608
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10936
+Startup trace (nsec): signature: 154454
+Startup trace (nsec): jit: 182284
+Startup trace (nsec): print: 18430850
+Startup trace (nsec): init ebpf vm: 319393428
+Startup trace (nsec): init ebpf done: 323022240
+Startup trace (nsec): read program: 8590
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 11130
+Startup trace (nsec): signature: 153492
+Startup trace (nsec): jit: 180934
+Startup trace (nsec): print: 18406067
+Startup trace (nsec): init ebpf vm: 344491418
+Startup trace (nsec): init ebpf done: 348124337
+Startup trace (nsec): read program: 8585
+Startup trace (nsec): lock: 70
+Startup trace (nsec): load elf: 11146
+Startup trace (nsec): signature: 152171
+Startup trace (nsec): jit: 180342
+Startup trace (nsec): print: 18374267
+Startup trace (nsec): init ebpf vm: 369538681
+Startup trace (nsec): init ebpf done: 373155035
+Startup trace (nsec): read program: 8397
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 11203
+Startup trace (nsec): signature: 150310
+Startup trace (nsec): jit: 180378
+Startup trace (nsec): print: 18482388
+Startup trace (nsec): init ebpf vm: 394688058
+Startup trace (nsec): init ebpf done: 398309133
+Startup trace (nsec): read program: 8423
+Startup trace (nsec): lock: 70
+Startup trace (nsec): load elf: 10670
+Startup trace (nsec): signature: 151921
+Startup trace (nsec): jit: 180200
+Startup trace (nsec): print: 18407967
+Startup trace (nsec): init ebpf vm: 419763173
+Startup trace (nsec): init ebpf done: 423384840
+Startup trace (nsec): read program: 8461
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10890
+Startup trace (nsec): signature: 150140
+Startup trace (nsec): jit: 180131
+Startup trace (nsec): print: 18376539
+Startup trace (nsec): init ebpf vm: 444812546
+Startup trace (nsec): init ebpf done: 448424470
+Startup trace (nsec): read program: 8424
+Startup trace (nsec): lock: 48
+Startup trace (nsec): load elf: 10638
+Startup trace (nsec): signature: 151015
+Startup trace (nsec): jit: 179951
+Startup trace (nsec): print: 18394725
+Startup trace (nsec): init ebpf vm: 469861410
+Startup trace (nsec): init ebpf done: 473549084
+Startup trace (nsec): read program: 8511
+Startup trace (nsec): lock: 68
+Startup trace (nsec): load elf: 10656
+Startup trace (nsec): signature: 148934
+Startup trace (nsec): jit: 188798
+Startup trace (nsec): print: 18407284
+Startup trace (nsec): init ebpf vm: 495003291
+Startup trace (nsec): init ebpf done: 498628420
+Startup trace (nsec): read program: 8223
+Startup trace (nsec): lock: 51
+Startup trace (nsec): load elf: 10565
+Startup trace (nsec): signature: 148221
+Startup trace (nsec): jit: 185177
+Startup trace (nsec): print: 18428742
+Startup trace (nsec): init ebpf vm: 520104426
+Startup trace (nsec): init ebpf done: 523726292
+Startup trace (nsec): read program: 8537
+Startup trace (nsec): lock: 67
+Startup trace (nsec): load elf: 10590
+Startup trace (nsec): signature: 153993
+Startup trace (nsec): jit: 179516
+Startup trace (nsec): print: 18333968
+Startup trace (nsec): init ebpf vm: 545105208
+Startup trace (nsec): init ebpf done: 548731056
+Startup trace (nsec): read program: 8510
+Startup trace (nsec): lock: 53
+Startup trace (nsec): load elf: 10600
+Startup trace (nsec): signature: 152465
+Startup trace (nsec): jit: 179984
+Startup trace (nsec): print: 18400369
+Startup trace (nsec): init ebpf vm: 570179519
+Startup trace (nsec): init ebpf done: 573808641
+Startup trace (nsec): read program: 8525
+Startup trace (nsec): lock: 48
+Startup trace (nsec): load elf: 10534
+Startup trace (nsec): signature: 148004
+Startup trace (nsec): jit: 179577
+Startup trace (nsec): print: 18406603
+Startup trace (nsec): init ebpf vm: 595259158
+Startup trace (nsec): init ebpf done: 598884151
+Startup trace (nsec): read program: 8364
+Startup trace (nsec): lock: 51
+Startup trace (nsec): load elf: 10609
+Startup trace (nsec): signature: 147702
+Startup trace (nsec): jit: 180140
+Startup trace (nsec): print: 18433917
+Startup trace (nsec): init ebpf vm: 620365032
+Startup trace (nsec): init ebpf done: 623985481
+Startup trace (nsec): read program: 8286
+Startup trace (nsec): lock: 47
+Startup trace (nsec): load elf: 10536
+Startup trace (nsec): signature: 148575
+Startup trace (nsec): jit: 179798
+Startup trace (nsec): print: 18332854
+Startup trace (nsec): init ebpf vm: 645359383
+Startup trace (nsec): init ebpf done: 648975424
+Startup trace (nsec): read program: 8206
+Startup trace (nsec): lock: 51
+Startup trace (nsec): load elf: 10415
+Startup trace (nsec): signature: 147437
+Startup trace (nsec): jit: 180495
+Startup trace (nsec): print: 18416460
+Startup trace (nsec): init ebpf vm: 670451506
+Startup trace (nsec): init ebpf done: 674071836
+Startup trace (nsec): read program: 8423
+Startup trace (nsec): lock: 50
+Startup trace (nsec): load elf: 10643
+Startup trace (nsec): signature: 148615
+Startup trace (nsec): jit: 179695
+Startup trace (nsec): print: 18395305
+Startup trace (nsec): init ebpf vm: 695513652
+Startup trace (nsec): init ebpf done: 699136896
+Startup trace (nsec): read program: 8220
+Startup trace (nsec): lock: 52
+Startup trace (nsec): load elf: 10500
+Startup trace (nsec): signature: 148227
+Startup trace (nsec): jit: 180074
+Startup trace (nsec): print: 18435758
+Startup trace (nsec): init ebpf vm: 720621535
+Startup trace (nsec): init ebpf done: 724243265
+Startup trace (nsec): read program: 8510
+Startup trace (nsec): lock: 51
+Startup trace (nsec): load elf: 10755
+Startup trace (nsec): signature: 148509
+Startup trace (nsec): jit: 179794
+Startup trace (nsec): print: 18401010
+Startup trace (nsec): init ebpf vm: 745694739
+Startup trace (nsec): init ebpf done: 749313610
+Startup trace (nsec): read program: 8334
+Startup trace (nsec): lock: 48
+Startup trace (nsec): load elf: 10772
+Startup trace (nsec): signature: 148012
+Startup trace (nsec): jit: 180255
+Startup trace (nsec): print: 18410198
+Startup trace (nsec): init ebpf vm: 770771241
+Startup trace (nsec): init ebpf done: 774395224
+Startup trace (nsec): read program: 8422
+Startup trace (nsec): lock: 50
+Startup trace (nsec): load elf: 10585
+Startup trace (nsec): signature: 148429
+Startup trace (nsec): jit: 179939
+Startup trace (nsec): print: 18484373
+Startup trace (nsec): init ebpf vm: 795929281
+Startup trace (nsec): init ebpf done: 799555987
+Startup trace (nsec): read program: 8674
+Startup trace (nsec): lock: 71
+Startup trace (nsec): load elf: 10634
+Startup trace (nsec): signature: 148602
+Startup trace (nsec): jit: 186207
+Startup trace (nsec): print: 18387668
+Startup trace (nsec): init ebpf vm: 820989447
+Startup trace (nsec): init ebpf done: 824619155
+Startup trace (nsec): read program: 8407
+Startup trace (nsec): lock: 50
+Startup trace (nsec): load elf: 10549
+Startup trace (nsec): signature: 147556
+Startup trace (nsec): jit: 184133
+Startup trace (nsec): print: 18396851
+Startup trace (nsec): init ebpf vm: 846061057
+Startup trace (nsec): init ebpf done: 849680515
+Startup trace (nsec): read program: 8231
+Startup trace (nsec): lock: 50
+Startup trace (nsec): load elf: 10560
+Startup trace (nsec): signature: 153031
+Startup trace (nsec): jit: 179355
+Startup trace (nsec): print: 18410410
+Startup trace (nsec): init ebpf vm: 871136769
+Startup trace (nsec): init ebpf done: 874760550
+Startup trace (nsec): read program: 8306
+Startup trace (nsec): lock: 65
+Startup trace (nsec): load elf: 10545
+Startup trace (nsec): signature: 152525
+Startup trace (nsec): jit: 180223
+Startup trace (nsec): print: 18423765
+Startup trace (nsec): init ebpf vm: 896231891
+Startup trace (nsec): init ebpf done: 899857484
+Startup trace (nsec): read program: 8316
+Startup trace (nsec): lock: 51
+Startup trace (nsec): load elf: 10413
+Startup trace (nsec): signature: 146948
+Startup trace (nsec): jit: 179166
+Startup trace (nsec): print: 18403248
+Startup trace (nsec): init ebpf vm: 921309501
+Startup trace (nsec): init ebpf done: 924936662
+Startup trace (nsec): read program: 8486
+Startup trace (nsec): lock: 67
+Startup trace (nsec): load elf: 10382
+Startup trace (nsec): signature: 147576
+Startup trace (nsec): jit: 179067
+Startup trace (nsec): print: 18412057
+Startup trace (nsec): init ebpf vm: 946396106
+Startup trace (nsec): init ebpf done: 950014442
+Startup trace (nsec): read program: 8479
+Startup trace (nsec): lock: 69
+Startup trace (nsec): load elf: 10422
+Startup trace (nsec): signature: 146880
+Startup trace (nsec): jit: 179464
+Startup trace (nsec): print: 18424019
+Startup trace (nsec): init ebpf vm: 971484030
+Startup trace (nsec): init ebpf done: 975099110
+Startup trace (nsec): read program: 8435
+Startup trace (nsec): lock: 50
+Startup trace (nsec): load elf: 10306
+Startup trace (nsec): signature: 146421
+Startup trace (nsec): jit: 179502
+Startup trace (nsec): print: 18478469
+Startup trace (nsec): init ebpf vm: 996628444
+Startup trace (nsec): init ebpf done: 1000246294
+Startup trace (nsec): read program: 8373
+Startup trace (nsec): lock: 51
+Startup trace (nsec): load elf: 10405
+Startup trace (nsec): signature: 146595
+Startup trace (nsec): jit: 179591
+Startup trace (nsec): print: 18459218
+Startup trace (nsec): init ebpf vm: 1021772199
+Startup trace (nsec): init ebpf done: 1025440652
+Startup trace (nsec): read program: 8572
+Startup trace (nsec): lock: 48
+Startup trace (nsec): load elf: 10464
+Startup trace (nsec): signature: 146625
+Startup trace (nsec): jit: 187137
+Startup trace (nsec): print: 18424137
+Startup trace (nsec): init ebpf vm: 1046940743
+Startup trace (nsec): init ebpf done: 1050588202
+Startup trace (nsec): read program: 8513
+Startup trace (nsec): lock: 47
+Startup trace (nsec): load elf: 10562
+Startup trace (nsec): signature: 146624
+Startup trace (nsec): jit: 184837
+Startup trace (nsec): print: 18385301
+Startup trace (nsec): init ebpf vm: 1072022369
+Startup trace (nsec): init ebpf done: 1075674354
+Startup trace (nsec): read program: 8077
+Startup trace (nsec): lock: 51
+Startup trace (nsec): load elf: 10532
+Startup trace (nsec): signature: 150952
+Startup trace (nsec): jit: 179602
+Startup trace (nsec): print: 18408205
+Startup trace (nsec): init ebpf vm: 1097123889
+Startup trace (nsec): init ebpf done: 1100779141
+Startup trace (nsec): read program: 8442
+Startup trace (nsec): lock: 50
+Startup trace (nsec): load elf: 10448
+Startup trace (nsec): signature: 146128
+Startup trace (nsec): jit: 179686
+Startup trace (nsec): print: 18385993
+Startup trace (nsec): init ebpf vm: 1122202660
+Startup trace (nsec): init ebpf done: 1125847951
+Startup trace (nsec): read program: 8334
+Startup trace (nsec): lock: 67
+Startup trace (nsec): load elf: 10492
+Startup trace (nsec): signature: 146270
+Startup trace (nsec): jit: 179577
+Startup trace (nsec): print: 18412392
+Startup trace (nsec): init ebpf vm: 1147309351
+Startup trace (nsec): init ebpf done: 1150958322
+Startup trace (nsec): read program: 8357
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10510
+Startup trace (nsec): signature: 145568
+Startup trace (nsec): jit: 179695
+Startup trace (nsec): print: 18429433
+Startup trace (nsec): init ebpf vm: 1172441497
+Startup trace (nsec): init ebpf done: 1176082979
+Startup trace (nsec): read program: 8335
+Startup trace (nsec): lock: 50
+Startup trace (nsec): load elf: 10365
+Startup trace (nsec): signature: 146315
+Startup trace (nsec): jit: 179678
+Startup trace (nsec): print: 18450772
+Startup trace (nsec): init ebpf vm: 1197577772
+Startup trace (nsec): init ebpf done: 1201219561
+Startup trace (nsec): read program: 8338
+Startup trace (nsec): lock: 50
+Startup trace (nsec): load elf: 10532
+Startup trace (nsec): signature: 146264
+Startup trace (nsec): jit: 179465
+Startup trace (nsec): print: 18438663
+Startup trace (nsec): init ebpf vm: 1222705253
+Startup trace (nsec): init ebpf done: 1226356691
+Startup trace (nsec): read program: 8258
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10458
+Startup trace (nsec): signature: 145990
+Startup trace (nsec): jit: 179857
+Startup trace (nsec): print: 18411836
+Startup trace (nsec): init ebpf vm: 1247811951
+Startup trace (nsec): init ebpf done: 1251464112
+Startup trace (nsec): read program: 8109
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10374
+Startup trace (nsec): signature: 145683
+Startup trace (nsec): jit: 186535
+Startup trace (nsec): print: 18461259
+Startup trace (nsec): init ebpf vm: 1272974779
+Startup trace (nsec): init ebpf done: 1276629900
+Startup trace (nsec): read program: 8258
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10430
+Startup trace (nsec): signature: 150745
+Startup trace (nsec): jit: 179474
+Startup trace (nsec): print: 18391650
+Startup trace (nsec): init ebpf vm: 1298075250
+Startup trace (nsec): init ebpf done: 1301730490
+Startup trace (nsec): read program: 8210
+Startup trace (nsec): lock: 47
+Startup trace (nsec): load elf: 10392
+Startup trace (nsec): signature: 152721
+Startup trace (nsec): jit: 179251
+Startup trace (nsec): print: 18460127
+Startup trace (nsec): init ebpf vm: 1323240087
+Startup trace (nsec): init ebpf done: 1326893281
+Startup trace (nsec): read program: 8339
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10408
+Startup trace (nsec): signature: 147099
+Startup trace (nsec): jit: 179513
+Startup trace (nsec): print: 18457643
+Startup trace (nsec): init ebpf vm: 1348404113
+Startup trace (nsec): init ebpf done: 1352059821
+Startup trace (nsec): read program: 8506
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10477
+Startup trace (nsec): signature: 145448
+Startup trace (nsec): jit: 182653
+Startup trace (nsec): print: 18449115
+Startup trace (nsec): init ebpf vm: 1373556684
+Startup trace (nsec): init ebpf done: 1377211424
+Startup trace (nsec): read program: 8501
+Startup trace (nsec): lock: 48
+Startup trace (nsec): load elf: 10334
+Startup trace (nsec): signature: 146083
+Startup trace (nsec): jit: 181283
+Startup trace (nsec): print: 18453412
+Startup trace (nsec): init ebpf vm: 1398709336
+Startup trace (nsec): init ebpf done: 1402356300
+Startup trace (nsec): read program: 8365
+Startup trace (nsec): lock: 46
+Startup trace (nsec): load elf: 10429
+Startup trace (nsec): signature: 145410
+Startup trace (nsec): jit: 180400
+Startup trace (nsec): print: 18430158
+Startup trace (nsec): init ebpf vm: 1423833262
+Startup trace (nsec): init ebpf done: 1427485376
+Startup trace (nsec): read program: 8515
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10410
+Startup trace (nsec): signature: 146182
+Startup trace (nsec): jit: 187398
+Startup trace (nsec): print: 18429881
+Startup trace (nsec): init ebpf vm: 1448962914
+Startup trace (nsec): init ebpf done: 1452613284
+Startup trace (nsec): read program: 8362
+Startup trace (nsec): lock: 51
+Startup trace (nsec): load elf: 10338
+Startup trace (nsec): signature: 150367
+Startup trace (nsec): jit: 179902
+Startup trace (nsec): print: 18442938
+Startup trace (nsec): init ebpf vm: 1474104480
+Startup trace (nsec): init ebpf done: 1477755384
+Startup trace (nsec): read program: 8393
+Startup trace (nsec): lock: 50
+Startup trace (nsec): load elf: 10481
+Startup trace (nsec): signature: 146499
+Startup trace (nsec): jit: 180100
+Startup trace (nsec): print: 18444239
+Startup trace (nsec): init ebpf vm: 1499259007
+Startup trace (nsec): init ebpf done: 1502907056
+Startup trace (nsec): read program: 8170
+Startup trace (nsec): lock: 47
+Startup trace (nsec): load elf: 10491
+Startup trace (nsec): signature: 145791
+Startup trace (nsec): jit: 180161
+Startup trace (nsec): print: 18423952
+Startup trace (nsec): init ebpf vm: 1524374200
+Startup trace (nsec): init ebpf done: 1528021669
+Startup trace (nsec): read program: 8354
+Startup trace (nsec): lock: 48
+Startup trace (nsec): load elf: 10513
+Startup trace (nsec): signature: 146848
+Startup trace (nsec): jit: 179910
+Startup trace (nsec): print: 18420872
+Startup trace (nsec): init ebpf vm: 1549490550
+Startup trace (nsec): init ebpf done: 1553140400
+Startup trace (nsec): read program: 8337
+Startup trace (nsec): lock: 51
+Startup trace (nsec): load elf: 10470
+Startup trace (nsec): signature: 147520
+Startup trace (nsec): jit: 180290
+Startup trace (nsec): print: 18435009
+Startup trace (nsec): init ebpf vm: 1574622668
+Startup trace (nsec): init ebpf done: 1578274793
+Startup trace (nsec): read program: 8309
+Startup trace (nsec): lock: 50
+Startup trace (nsec): load elf: 10456
+Startup trace (nsec): signature: 147845
+Startup trace (nsec): jit: 179820
+Startup trace (nsec): print: 18433393
+Startup trace (nsec): init ebpf vm: 1599761598
+Startup trace (nsec): init ebpf done: 1603415852
+Startup trace (nsec): read program: 8325
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10580
+Startup trace (nsec): signature: 147498
+Startup trace (nsec): jit: 186906
+Startup trace (nsec): print: 18444151
+Startup trace (nsec): init ebpf vm: 1624910451
+Startup trace (nsec): init ebpf done: 1628571783
+Startup trace (nsec): read program: 8466
+Startup trace (nsec): lock: 51
+Startup trace (nsec): load elf: 10667
+Startup trace (nsec): signature: 153348
+Startup trace (nsec): jit: 179336
+Startup trace (nsec): print: 18429179
+Startup trace (nsec): init ebpf vm: 1650047505
+Startup trace (nsec): init ebpf done: 1653708047
+Startup trace (nsec): read program: 8397
+Startup trace (nsec): lock: 50
+Startup trace (nsec): load elf: 10643
+Startup trace (nsec): signature: 153568
+Startup trace (nsec): jit: 180052
+Startup trace (nsec): print: 18429393
+Startup trace (nsec): init ebpf vm: 1675182710
+Startup trace (nsec): init ebpf done: 1678832863
+Startup trace (nsec): read program: 8267
+Startup trace (nsec): lock: 68
+Startup trace (nsec): load elf: 10518
+Startup trace (nsec): signature: 148291
+Startup trace (nsec): jit: 179621
+Startup trace (nsec): print: 18478853
+Startup trace (nsec): init ebpf vm: 1700362019
+Startup trace (nsec): init ebpf done: 1704013653
+Startup trace (nsec): read program: 8435
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10674
+Startup trace (nsec): signature: 147427
+Startup trace (nsec): jit: 179040
+Startup trace (nsec): print: 18424401
+Startup trace (nsec): init ebpf vm: 1725483550
+Startup trace (nsec): init ebpf done: 1729128543
+Startup trace (nsec): read program: 8291
+Startup trace (nsec): lock: 50
+Startup trace (nsec): load elf: 10489
+Startup trace (nsec): signature: 147645
+Startup trace (nsec): jit: 179236
+Startup trace (nsec): print: 18426359
+Startup trace (nsec): init ebpf vm: 1750601067
+Startup trace (nsec): init ebpf done: 1754266041
+Startup trace (nsec): read program: 8529
+Startup trace (nsec): lock: 69
+Startup trace (nsec): load elf: 10434
+Startup trace (nsec): signature: 146772
+Startup trace (nsec): jit: 179230
+Startup trace (nsec): print: 18450844
+Startup trace (nsec): init ebpf vm: 1775763204
+Startup trace (nsec): init ebpf done: 1779418080
+Startup trace (nsec): read program: 8381
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10370
+Startup trace (nsec): signature: 146932
+Startup trace (nsec): jit: 186655
+Startup trace (nsec): print: 18444103
+Startup trace (nsec): init ebpf vm: 1800908401
+Startup trace (nsec): init ebpf done: 1804556004
+Startup trace (nsec): read program: 8446
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10883
+Startup trace (nsec): signature: 151791
+Startup trace (nsec): jit: 179188
+Startup trace (nsec): print: 18454304
+Startup trace (nsec): init ebpf vm: 1826053228
+Startup trace (nsec): init ebpf done: 1829703291
+Startup trace (nsec): read program: 8390
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 14081
+Startup trace (nsec): signature: 147633
+Startup trace (nsec): jit: 179154
+Startup trace (nsec): print: 18425061
+Startup trace (nsec): init ebpf vm: 1851175412
+Startup trace (nsec): init ebpf done: 1854817379
+Startup trace (nsec): read program: 8312
+Startup trace (nsec): lock: 50
+Startup trace (nsec): load elf: 10627
+Startup trace (nsec): signature: 146762
+Startup trace (nsec): jit: 179600
+Startup trace (nsec): print: 18447591
+Startup trace (nsec): init ebpf vm: 1876311437
+Startup trace (nsec): init ebpf done: 1879959357
+Startup trace (nsec): read program: 8280
+Startup trace (nsec): lock: 53
+Startup trace (nsec): load elf: 10362
+Startup trace (nsec): signature: 146385
+Startup trace (nsec): jit: 179498
+Startup trace (nsec): print: 18475976
+Startup trace (nsec): init ebpf vm: 1901479631
+Startup trace (nsec): init ebpf done: 1905124089
+Startup trace (nsec): read program: 8328
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10400
+Startup trace (nsec): signature: 145906
+Startup trace (nsec): jit: 179099
+Startup trace (nsec): print: 18428574
+Startup trace (nsec): init ebpf vm: 1926597764
+Startup trace (nsec): init ebpf done: 1930251423
+Startup trace (nsec): read program: 8483
+Startup trace (nsec): lock: 48
+Startup trace (nsec): load elf: 10417
+Startup trace (nsec): signature: 145971
+Startup trace (nsec): jit: 179432
+Startup trace (nsec): print: 18454352
+Startup trace (nsec): init ebpf vm: 1951750588
+Startup trace (nsec): init ebpf done: 1955403967
+Startup trace (nsec): read program: 8467
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10422
+Startup trace (nsec): signature: 145725
+Startup trace (nsec): jit: 186452
+Startup trace (nsec): print: 18420000
+Startup trace (nsec): init ebpf vm: 1976871034
+Startup trace (nsec): init ebpf done: 1980530297
+Startup trace (nsec): read program: 8441
+Startup trace (nsec): lock: 52
+Startup trace (nsec): load elf: 10490
+Startup trace (nsec): signature: 153606
+Startup trace (nsec): jit: 183708
+Startup trace (nsec): print: 18452302
+Startup trace (nsec): init ebpf vm: 2002036101
+Startup trace (nsec): init ebpf done: 2005711744
+Startup trace (nsec): read program: 8527
+Startup trace (nsec): lock: 26
+Startup trace (nsec): load elf: 14299
+Startup trace (nsec): signature: 146313
+Startup trace (nsec): jit: 200365
+Startup trace (nsec): print: 18414982
+Startup trace (nsec): init ebpf vm: 2027171411
+Startup trace (nsec): init ebpf done: 2030817048
+Startup trace (nsec): read program: 8394
+Startup trace (nsec): lock: 50
+Startup trace (nsec): load elf: 10498
+Startup trace (nsec): signature: 145804
+Startup trace (nsec): jit: 179386
+Startup trace (nsec): print: 18440776
+Startup trace (nsec): init ebpf vm: 2052304548
+Startup trace (nsec): init ebpf done: 2055950579
+Startup trace (nsec): read program: 8539
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10522
+Startup trace (nsec): signature: 145648
+Startup trace (nsec): jit: 179388
+Startup trace (nsec): print: 18437378
+Startup trace (nsec): init ebpf vm: 2077442455
+Startup trace (nsec): init ebpf done: 2081088306
+Startup trace (nsec): read program: 8553
+Startup trace (nsec): lock: 47
+Startup trace (nsec): load elf: 10391
+Startup trace (nsec): signature: 146381
+Startup trace (nsec): jit: 178974
+Startup trace (nsec): print: 18454982
+Startup trace (nsec): init ebpf vm: 2102592369
+Startup trace (nsec): init ebpf done: 2106239299
+Startup trace (nsec): read program: 8275
+Startup trace (nsec): lock: 51
+Startup trace (nsec): load elf: 10582
+Startup trace (nsec): signature: 145403
+Startup trace (nsec): jit: 179270
+Startup trace (nsec): print: 18441317
+Startup trace (nsec): init ebpf vm: 2127732385
+Startup trace (nsec): init ebpf done: 2131382831
+Startup trace (nsec): read program: 8432
+Startup trace (nsec): lock: 48
+Startup trace (nsec): load elf: 10816
+Startup trace (nsec): signature: 145866
+Startup trace (nsec): jit: 186688
+Startup trace (nsec): print: 18438581
+Startup trace (nsec): init ebpf vm: 2152869334
+Startup trace (nsec): init ebpf done: 2156518217
+Startup trace (nsec): read program: 8438
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10538
+Startup trace (nsec): signature: 144872
+Startup trace (nsec): jit: 184577
+Startup trace (nsec): print: 18453598
+Startup trace (nsec): init ebpf vm: 2178020188
+Startup trace (nsec): init ebpf done: 2181674396
+Startup trace (nsec): read program: 8461
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 14359
+Startup trace (nsec): signature: 146445
+Startup trace (nsec): jit: 179494
+Startup trace (nsec): print: 18437692
+Startup trace (nsec): init ebpf vm: 2203165227
+Startup trace (nsec): init ebpf done: 2206820328
+Startup trace (nsec): read program: 8481
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10562
+Startup trace (nsec): signature: 146340
+Startup trace (nsec): jit: 179324
+Startup trace (nsec): print: 18445724
+Startup trace (nsec): init ebpf vm: 2228313157
+Startup trace (nsec): init ebpf done: 2231960658
+Startup trace (nsec): read program: 8454
+Startup trace (nsec): lock: 53
+Startup trace (nsec): load elf: 10436
+Startup trace (nsec): signature: 146475
+Startup trace (nsec): jit: 179067
+Startup trace (nsec): print: 18460654
+Startup trace (nsec): init ebpf vm: 2253472620
+Startup trace (nsec): init ebpf done: 2257122863
+Startup trace (nsec): read program: 8322
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10481
+Startup trace (nsec): signature: 145358
+Startup trace (nsec): jit: 179814
+Startup trace (nsec): print: 18439599
+Startup trace (nsec): init ebpf vm: 2278611644
+Startup trace (nsec): init ebpf done: 2282262012
+Startup trace (nsec): read program: 8195
+Startup trace (nsec): lock: 51
+Startup trace (nsec): load elf: 10432
+Startup trace (nsec): signature: 145374
+Startup trace (nsec): jit: 179552
+Startup trace (nsec): print: 18447676
+Startup trace (nsec): init ebpf vm: 2303763475
+Startup trace (nsec): init ebpf done: 2307423365
+Startup trace (nsec): read program: 8330
+Startup trace (nsec): lock: 50
+Startup trace (nsec): load elf: 10385
+Startup trace (nsec): signature: 144946
+Startup trace (nsec): jit: 186603
+Startup trace (nsec): print: 18443042
+Startup trace (nsec): init ebpf vm: 2328933115
+Startup trace (nsec): init ebpf done: 2332586399
+Startup trace (nsec): read program: 8511
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10525
+Startup trace (nsec): signature: 149471
+Startup trace (nsec): jit: 179383
+Startup trace (nsec): print: 18424906
+Startup trace (nsec): init ebpf vm: 2354057034
+Startup trace (nsec): init ebpf done: 2357700556
+Startup trace (nsec): read program: 8171
+Startup trace (nsec): lock: 67
+Startup trace (nsec): load elf: 10408
+Startup trace (nsec): signature: 145052
+Startup trace (nsec): jit: 179588
+Startup trace (nsec): print: 18432361
+Startup trace (nsec): init ebpf vm: 2379176378
+Startup trace (nsec): init ebpf done: 2382822679
+Startup trace (nsec): read program: 8344
+Startup trace (nsec): lock: 51
+Startup trace (nsec): load elf: 10380
+Startup trace (nsec): signature: 145438
+Startup trace (nsec): jit: 179867
+Startup trace (nsec): print: 18447700
+Startup trace (nsec): init ebpf vm: 2404325526
+Startup trace (nsec): init ebpf done: 2407977633
+Startup trace (nsec): read program: 8246
+Startup trace (nsec): lock: 67
+Startup trace (nsec): load elf: 10539
+Startup trace (nsec): signature: 145634
+Startup trace (nsec): jit: 179552
+Startup trace (nsec): print: 18455894
+Startup trace (nsec): init ebpf vm: 2429480874
+Startup trace (nsec): init ebpf done: 2433134645
+Startup trace (nsec): read program: 8397
+Startup trace (nsec): lock: 51
+Startup trace (nsec): load elf: 10430
+Startup trace (nsec): signature: 145562
+Startup trace (nsec): jit: 179034
+Startup trace (nsec): print: 18435071
+Startup trace (nsec): init ebpf vm: 2454614651
+Startup trace (nsec): init ebpf done: 2458276030
+Startup trace (nsec): read program: 8371
+Startup trace (nsec): lock: 67
+Startup trace (nsec): load elf: 10376
+Startup trace (nsec): signature: 145555
+Startup trace (nsec): jit: 179162
+Startup trace (nsec): print: 18446550
+Startup trace (nsec): init ebpf vm: 2479769327
+Startup trace (nsec): init ebpf done: 2483429433
+Startup trace (nsec): read program: 8145
+Startup trace (nsec): lock: 50
+Startup trace (nsec): load elf: 10435
+Startup trace (nsec): signature: 146295
+Startup trace (nsec): jit: 186147
+Startup trace (nsec): print: 18445963
+Startup trace (nsec): init ebpf vm: 2504931326
+Startup trace (nsec): init ebpf done: 2508662727
+Startup trace (nsec): read program: 12871
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10348
+Startup trace (nsec): signature: 145857
+Startup trace (nsec): jit: 178520
+Startup trace (nsec): print: 18501316
+Startup trace (nsec): init ebpf vm: 2530218682
+Startup trace (nsec): init ebpf done: 2533871922
+Startup trace (nsec): read program: 8461
+Startup trace (nsec): lock: 50
+Startup trace (nsec): load elf: 10546
+Startup trace (nsec): signature: 146100
+Startup trace (nsec): jit: 179220
+Startup trace (nsec): print: 18433483
+Startup trace (nsec): init ebpf vm: 2555353406
+Startup trace (nsec): init ebpf done: 2559011414
+Startup trace (nsec): read program: 8353
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10402
+Startup trace (nsec): signature: 146218
+Startup trace (nsec): jit: 178629
+Startup trace (nsec): print: 18476750
+Startup trace (nsec): init ebpf vm: 2580544110
+Startup trace (nsec): init ebpf done: 2584205918
+Startup trace (nsec): read program: 8437
+Startup trace (nsec): lock: 50
+Startup trace (nsec): load elf: 10490
+Startup trace (nsec): signature: 147635
+Startup trace (nsec): jit: 179624
+Startup trace (nsec): print: 18493879
+Startup trace (nsec): init ebpf vm: 2605751729
+Startup trace (nsec): init ebpf done: 2609416196
+Startup trace (nsec): read program: 8346
+Startup trace (nsec): lock: 51
+Startup trace (nsec): load elf: 10461
+Startup trace (nsec): signature: 146394
+Startup trace (nsec): jit: 186213
+Startup trace (nsec): print: 18446393
+Startup trace (nsec): init ebpf vm: 2630912514
+Startup trace (nsec): init ebpf done: 2634564002
+Startup trace (nsec): read program: 8254
+Startup trace (nsec): lock: 48
+Startup trace (nsec): load elf: 10424
+Startup trace (nsec): signature: 150881
+Startup trace (nsec): jit: 179410
+Startup trace (nsec): print: 18467200
+Startup trace (nsec): init ebpf vm: 2656079006
+Startup trace (nsec): init ebpf done: 2659734647
+Startup trace (nsec): read program: 8383
+Startup trace (nsec): lock: 50
+Startup trace (nsec): load elf: 10421
+Startup trace (nsec): signature: 146122
+Startup trace (nsec): jit: 179625
+Startup trace (nsec): print: 18456989
+Startup trace (nsec): init ebpf vm: 2681247607
+Startup trace (nsec): init ebpf done: 2684899617
+Startup trace (nsec): read program: 8250
+Startup trace (nsec): lock: 50
+Startup trace (nsec): load elf: 10606
+Startup trace (nsec): signature: 146343
+Startup trace (nsec): jit: 179490
+Startup trace (nsec): print: 18447695
+Startup trace (nsec): init ebpf vm: 2706399885
+Startup trace (nsec): init ebpf done: 2710040282
+Startup trace (nsec): read program: 8375
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10473
+Startup trace (nsec): signature: 145681
+Startup trace (nsec): jit: 179282
+Startup trace (nsec): print: 18460262
+Startup trace (nsec): init ebpf vm: 2731550508
+Startup trace (nsec): init ebpf done: 2735203107
+Startup trace (nsec): read program: 8535
+Startup trace (nsec): lock: 48
+Startup trace (nsec): load elf: 10642
+Startup trace (nsec): signature: 146276
+Startup trace (nsec): jit: 179278
+Startup trace (nsec): print: 18475463
+Startup trace (nsec): init ebpf vm: 2756734366
+Startup trace (nsec): init ebpf done: 2760405874
+Startup trace (nsec): read program: 8352
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10468
+Startup trace (nsec): signature: 145310
+Startup trace (nsec): jit: 186376
+Startup trace (nsec): print: 18460215
+Startup trace (nsec): init ebpf vm: 2781918825
+Startup trace (nsec): init ebpf done: 2785578531
+Startup trace (nsec): read program: 8216
+Startup trace (nsec): lock: 48
+Startup trace (nsec): load elf: 10464
+Startup trace (nsec): signature: 150607
+Startup trace (nsec): jit: 178863
+Startup trace (nsec): print: 18462572
+Startup trace (nsec): init ebpf vm: 2807091922
+Startup trace (nsec): init ebpf done: 2810744011
+Startup trace (nsec): read program: 8302
+Startup trace (nsec): lock: 52
+Startup trace (nsec): load elf: 10525
+Startup trace (nsec): signature: 145919
+Startup trace (nsec): jit: 179509
+Startup trace (nsec): print: 18486610
+Startup trace (nsec): init ebpf vm: 2832289240
+Startup trace (nsec): init ebpf done: 2835947826
+Startup trace (nsec): read program: 8390
+Startup trace (nsec): lock: 50
+Startup trace (nsec): load elf: 10519
+Startup trace (nsec): signature: 146113
+Startup trace (nsec): jit: 178892
+Startup trace (nsec): print: 18489877
+Startup trace (nsec): init ebpf vm: 2857493118
+Startup trace (nsec): init ebpf done: 2861146779
+Startup trace (nsec): read program: 8167
+Startup trace (nsec): lock: 67
+Startup trace (nsec): load elf: 10462
+Startup trace (nsec): signature: 145857
+Startup trace (nsec): jit: 179229
+Startup trace (nsec): print: 18462148
+Startup trace (nsec): init ebpf vm: 2882659153
+Startup trace (nsec): init ebpf done: 2886315245
+Startup trace (nsec): read program: 8229
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10638
+Startup trace (nsec): signature: 146196
+Startup trace (nsec): jit: 186727
+Startup trace (nsec): print: 18465136
+Startup trace (nsec): init ebpf vm: 2907832690
+Startup trace (nsec): init ebpf done: 2911490234
+Startup trace (nsec): read program: 8233
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10536
+Startup trace (nsec): signature: 151385
+Startup trace (nsec): jit: 178842
+Startup trace (nsec): print: 18453481
+Startup trace (nsec): init ebpf vm: 2932991581
+Startup trace (nsec): init ebpf done: 2936646718
+Startup trace (nsec): read program: 8644
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10524
+Startup trace (nsec): signature: 146902
+Startup trace (nsec): jit: 178816
+Startup trace (nsec): print: 18460333
+Startup trace (nsec): init ebpf vm: 2958169443
+Startup trace (nsec): init ebpf done: 2961835133
+Startup trace (nsec): read program: 8478
+Startup trace (nsec): lock: 51
+Startup trace (nsec): load elf: 10416
+Startup trace (nsec): signature: 146629
+Startup trace (nsec): jit: 190736
+Startup trace (nsec): print: 18489735
+Startup trace (nsec): init ebpf vm: 2983377457
+Startup trace (nsec): init ebpf done: 2987033321
+Startup trace (nsec): read program: 8531
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10504
+Startup trace (nsec): signature: 147198
+Startup trace (nsec): jit: 180941
+Startup trace (nsec): print: 18457895
+Startup trace (nsec): init ebpf vm: 3008567281
+Startup trace (nsec): init ebpf done: 3012219238
+Startup trace (nsec): read program: 8568
+Startup trace (nsec): lock: 50
+Startup trace (nsec): load elf: 10393
+Startup trace (nsec): signature: 146284
+Startup trace (nsec): jit: 180520
+Startup trace (nsec): print: 18452362
+Startup trace (nsec): init ebpf vm: 3033722850
+Startup trace (nsec): init ebpf done: 3037403720
+Startup trace (nsec): read program: 8597
+Startup trace (nsec): lock: 48
+Startup trace (nsec): load elf: 10465
+Startup trace (nsec): signature: 147521
+Startup trace (nsec): jit: 186804
+Startup trace (nsec): print: 18488300
+Startup trace (nsec): init ebpf vm: 3058944293
+Startup trace (nsec): init ebpf done: 3062605611
+Startup trace (nsec): read program: 8221
+Startup trace (nsec): lock: 50
+Startup trace (nsec): load elf: 10398
+Startup trace (nsec): signature: 150527
+Startup trace (nsec): jit: 180064
+Startup trace (nsec): print: 18473443
+Startup trace (nsec): init ebpf vm: 3084126509
+Startup trace (nsec): init ebpf done: 3087776742
+Startup trace (nsec): read program: 8314
+Startup trace (nsec): lock: 67
+Startup trace (nsec): load elf: 10454
+Startup trace (nsec): signature: 147359
+Startup trace (nsec): jit: 180326
+Startup trace (nsec): print: 18453558
+Startup trace (nsec): init ebpf vm: 3109273136
+Startup trace (nsec): init ebpf done: 3112915838
+Startup trace (nsec): read program: 8172
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10394
+Startup trace (nsec): signature: 145662
+Startup trace (nsec): jit: 179209
+Startup trace (nsec): print: 18461467
+Startup trace (nsec): init ebpf vm: 3134424946
+Startup trace (nsec): init ebpf done: 3138081567
+Startup trace (nsec): read program: 8399
+Startup trace (nsec): lock: 48
+Startup trace (nsec): load elf: 10460
+Startup trace (nsec): signature: 146687
+Startup trace (nsec): jit: 179774
+Startup trace (nsec): print: 18496166
+Startup trace (nsec): init ebpf vm: 3159633931
+Startup trace (nsec): init ebpf done: 3163287610
+Startup trace (nsec): read program: 8333
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10504
+Startup trace (nsec): signature: 146026
+Startup trace (nsec): jit: 186575
+Startup trace (nsec): print: 18449832
+Startup trace (nsec): init ebpf vm: 3184790024
+Startup trace (nsec): init ebpf done: 3188448164
+Startup trace (nsec): read program: 8291
+Startup trace (nsec): lock: 48
+Startup trace (nsec): load elf: 10393
+Startup trace (nsec): signature: 146442
+Startup trace (nsec): jit: 184453
+Startup trace (nsec): print: 18484537
+Startup trace (nsec): init ebpf vm: 3209985439
+Startup trace (nsec): init ebpf done: 3213643555
+Startup trace (nsec): read program: 8198
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10523
+Startup trace (nsec): signature: 145829
+Startup trace (nsec): jit: 180162
+Startup trace (nsec): print: 18469030
+Startup trace (nsec): init ebpf vm: 3235169653
+Startup trace (nsec): init ebpf done: 3238828309
+Startup trace (nsec): read program: 8250
+Startup trace (nsec): lock: 51
+Startup trace (nsec): load elf: 10394
+Startup trace (nsec): signature: 145748
+Startup trace (nsec): jit: 179864
+Startup trace (nsec): print: 18441078
+Startup trace (nsec): init ebpf vm: 3260324533
+Startup trace (nsec): init ebpf done: 3263977974
+Startup trace (nsec): read program: 8414
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10462
+Startup trace (nsec): signature: 146318
+Startup trace (nsec): jit: 179280
+Startup trace (nsec): print: 18454838
+Startup trace (nsec): init ebpf vm: 3285485149
+Startup trace (nsec): init ebpf done: 3289139380
+Startup trace (nsec): read program: 8259
+Startup trace (nsec): lock: 47
+Startup trace (nsec): load elf: 10349
+Startup trace (nsec): signature: 146597
+Startup trace (nsec): jit: 179317
+Startup trace (nsec): print: 18474702
+Startup trace (nsec): init ebpf vm: 3310666687
+Startup trace (nsec): init ebpf done: 3314330106
+Startup trace (nsec): read program: 8313
+Startup trace (nsec): lock: 50
+Startup trace (nsec): load elf: 10358
+Startup trace (nsec): signature: 146103
+Startup trace (nsec): jit: 186685
+Startup trace (nsec): print: 18443256
+Startup trace (nsec): init ebpf vm: 3335822419
+Startup trace (nsec): init ebpf done: 3339478278
+Startup trace (nsec): read program: 8361
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10506
+Startup trace (nsec): signature: 150626
+Startup trace (nsec): jit: 179848
+Startup trace (nsec): print: 18468075
+Startup trace (nsec): init ebpf vm: 3360999695
+Startup trace (nsec): init ebpf done: 3364658938
+Startup trace (nsec): read program: 8450
+Startup trace (nsec): lock: 48
+Startup trace (nsec): load elf: 10503
+Startup trace (nsec): signature: 146308
+Startup trace (nsec): jit: 179764
+Startup trace (nsec): print: 18482511
+Startup trace (nsec): init ebpf vm: 3386196616
+Startup trace (nsec): init ebpf done: 3389861416
+Startup trace (nsec): read program: 8278
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10406
+Startup trace (nsec): signature: 147169
+Startup trace (nsec): jit: 179492
+Startup trace (nsec): print: 18443862
+Startup trace (nsec): init ebpf vm: 3411352140
+Startup trace (nsec): init ebpf done: 3415002333
+Startup trace (nsec): read program: 8259
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10483
+Startup trace (nsec): signature: 146426
+Startup trace (nsec): jit: 180178
+Startup trace (nsec): print: 18467991
+Startup trace (nsec): init ebpf vm: 3436522044
+Startup trace (nsec): init ebpf done: 3440172142
+Startup trace (nsec): read program: 8318
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10463
+Startup trace (nsec): signature: 146772
+Startup trace (nsec): jit: 179733
+Startup trace (nsec): print: 18473927
+Startup trace (nsec): init ebpf vm: 3461699433
+Startup trace (nsec): init ebpf done: 3465363186
+Startup trace (nsec): read program: 8191
+Startup trace (nsec): lock: 51
+Startup trace (nsec): load elf: 10454
+Startup trace (nsec): signature: 147038
+Startup trace (nsec): jit: 185769
+Startup trace (nsec): print: 18480947
+Startup trace (nsec): init ebpf vm: 3486889624
+Startup trace (nsec): init ebpf done: 3490539926
+Startup trace (nsec): read program: 8183
+Startup trace (nsec): lock: 51
+Startup trace (nsec): load elf: 10627
+Startup trace (nsec): signature: 152057
+Startup trace (nsec): jit: 179490
+Startup trace (nsec): print: 18470198
+Startup trace (nsec): init ebpf vm: 3512067940
+Startup trace (nsec): init ebpf done: 3515720255
+Startup trace (nsec): read program: 8278
+Startup trace (nsec): lock: 51
+Startup trace (nsec): load elf: 10445
+Startup trace (nsec): signature: 147148
+Startup trace (nsec): jit: 180140
+Startup trace (nsec): print: 18524044
+Startup trace (nsec): init ebpf vm: 3537303839
+Startup trace (nsec): init ebpf done: 3540970457
+Startup trace (nsec): read program: 8508
+Startup trace (nsec): lock: 51
+Startup trace (nsec): load elf: 10797
+Startup trace (nsec): signature: 146568
+Startup trace (nsec): jit: 179080
+Startup trace (nsec): print: 18479392
+Startup trace (nsec): init ebpf vm: 3562504190
+Startup trace (nsec): init ebpf done: 3566153141
+Startup trace (nsec): read program: 8369
+Startup trace (nsec): lock: 51
+Startup trace (nsec): load elf: 10429
+Startup trace (nsec): signature: 146755
+Startup trace (nsec): jit: 179518
+Startup trace (nsec): print: 18452678
+Startup trace (nsec): init ebpf vm: 3587656163
+Startup trace (nsec): init ebpf done: 3591327136
+Startup trace (nsec): read program: 8513
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10371
+Startup trace (nsec): signature: 146440
+Startup trace (nsec): jit: 186385
+Startup trace (nsec): print: 18459534
+Startup trace (nsec): init ebpf vm: 3612839009
+Startup trace (nsec): init ebpf done: 3616495573
+Startup trace (nsec): read program: 8356
+Startup trace (nsec): lock: 50
+Startup trace (nsec): load elf: 10505
+Startup trace (nsec): signature: 150277
+Startup trace (nsec): jit: 179273
+Startup trace (nsec): print: 18473477
+Startup trace (nsec): init ebpf vm: 3638019966
+Startup trace (nsec): init ebpf done: 3641673087
+Startup trace (nsec): read program: 8299
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10380
+Startup trace (nsec): signature: 145673
+Startup trace (nsec): jit: 179872
+Startup trace (nsec): print: 18441688
+Startup trace (nsec): init ebpf vm: 3663165681
+Startup trace (nsec): init ebpf done: 3666823405
+Startup trace (nsec): read program: 8320
+Startup trace (nsec): lock: 51
+Startup trace (nsec): load elf: 10460
+Startup trace (nsec): signature: 145900
+Startup trace (nsec): jit: 179218
+Startup trace (nsec): print: 18492822
+Startup trace (nsec): init ebpf vm: 3688370089
+Startup trace (nsec): init ebpf done: 3692024829
+Startup trace (nsec): read program: 8382
+Startup trace (nsec): lock: 50
+Startup trace (nsec): load elf: 10486
+Startup trace (nsec): signature: 146685
+Startup trace (nsec): jit: 179551
+Startup trace (nsec): print: 18501042
+Startup trace (nsec): init ebpf vm: 3713582837
+Startup trace (nsec): init ebpf done: 3717235583
+Startup trace (nsec): read program: 8375
+Startup trace (nsec): lock: 51
+Startup trace (nsec): load elf: 10423
+Startup trace (nsec): signature: 146586
+Startup trace (nsec): jit: 179512
+Startup trace (nsec): print: 18452356
+Startup trace (nsec): init ebpf vm: 3738748239
+Startup trace (nsec): init ebpf done: 3742410709
+Startup trace (nsec): read program: 8366
+Startup trace (nsec): lock: 50
+Startup trace (nsec): load elf: 10430
+Startup trace (nsec): signature: 145321
+Startup trace (nsec): jit: 183815
+Startup trace (nsec): print: 18492321
+Startup trace (nsec): init ebpf vm: 3763957682
+Startup trace (nsec): init ebpf done: 3767613058
+Startup trace (nsec): read program: 8361
+Startup trace (nsec): lock: 47
+Startup trace (nsec): load elf: 10468
+Startup trace (nsec): signature: 145329
+Startup trace (nsec): jit: 179534
+Startup trace (nsec): print: 18421458
+Startup trace (nsec): init ebpf vm: 3789088837
+Startup trace (nsec): init ebpf done: 3792734808
+Startup trace (nsec): read program: 8258
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10422
+Startup trace (nsec): signature: 146084
+Startup trace (nsec): jit: 179720
+Startup trace (nsec): print: 18462373
+Startup trace (nsec): init ebpf vm: 3814252240
+Startup trace (nsec): init ebpf done: 3817902274
+Startup trace (nsec): read program: 8371
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10386
+Startup trace (nsec): signature: 145790
+Startup trace (nsec): jit: 178966
+Startup trace (nsec): print: 18434561
+Startup trace (nsec): init ebpf vm: 3839378839
+Startup trace (nsec): init ebpf done: 3843032157
+Startup trace (nsec): read program: 8425
+Startup trace (nsec): lock: 48
+Startup trace (nsec): load elf: 10444
+Startup trace (nsec): signature: 145814
+Startup trace (nsec): jit: 178973
+Startup trace (nsec): print: 18421544
+Startup trace (nsec): init ebpf vm: 3864506187
+Startup trace (nsec): init ebpf done: 3868160048
+Startup trace (nsec): read program: 8302
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10377
+Startup trace (nsec): signature: 145443
+Startup trace (nsec): jit: 179682
+Startup trace (nsec): print: 18463180
+Startup trace (nsec): init ebpf vm: 3889674661
+Startup trace (nsec): init ebpf done: 3893334573
+Startup trace (nsec): read program: 8261
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10432
+Startup trace (nsec): signature: 146017
+Startup trace (nsec): jit: 185627
+Startup trace (nsec): print: 18461134
+Startup trace (nsec): init ebpf vm: 3914855054
+Startup trace (nsec): init ebpf done: 3918515081
+Startup trace (nsec): read program: 8240
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10391
+Startup trace (nsec): signature: 150019
+Startup trace (nsec): jit: 179580
+Startup trace (nsec): print: 18435137
+Startup trace (nsec): init ebpf vm: 3939999536
+Startup trace (nsec): init ebpf done: 3943654033
+Startup trace (nsec): read program: 8188
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10390
+Startup trace (nsec): signature: 145515
+Startup trace (nsec): jit: 179380
+Startup trace (nsec): print: 18495609
+Startup trace (nsec): init ebpf vm: 3965213113
+Startup trace (nsec): init ebpf done: 3968875183
+Startup trace (nsec): read program: 8351
+Startup trace (nsec): lock: 51
+Startup trace (nsec): load elf: 10429
+Startup trace (nsec): signature: 146018
+Startup trace (nsec): jit: 179174
+Startup trace (nsec): print: 18513945
+Startup trace (nsec): init ebpf vm: 3990449083
+Startup trace (nsec): init ebpf done: 3994114770
+Startup trace (nsec): read program: 8440
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10470
+Startup trace (nsec): signature: 146181
+Startup trace (nsec): jit: 179817
+Startup trace (nsec): print: 18512546
+Startup trace (nsec): init ebpf vm: 4015688171
+Startup trace (nsec): init ebpf done: 4019353328
+Startup trace (nsec): read program: 8285
+Startup trace (nsec): lock: 51
+Startup trace (nsec): load elf: 10298
+Startup trace (nsec): signature: 145161
+Startup trace (nsec): jit: 185867
+Startup trace (nsec): print: 18460511
+Startup trace (nsec): init ebpf vm: 4040857106
+Startup trace (nsec): init ebpf done: 4044505683
+Startup trace (nsec): read program: 8327
+Startup trace (nsec): lock: 50
+Startup trace (nsec): load elf: 10348
+Startup trace (nsec): signature: 149631
+Startup trace (nsec): jit: 179431
+Startup trace (nsec): print: 18469907
+Startup trace (nsec): init ebpf vm: 4066037441
+Startup trace (nsec): init ebpf done: 4069693855
+Startup trace (nsec): read program: 8277
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10366
+Startup trace (nsec): signature: 151054
+Startup trace (nsec): jit: 179107
+Startup trace (nsec): print: 18436199
+Startup trace (nsec): init ebpf vm: 4091176460
+Startup trace (nsec): init ebpf done: 4094824886
+Startup trace (nsec): read program: 8474
+Startup trace (nsec): lock: 48
+Startup trace (nsec): load elf: 10356
+Startup trace (nsec): signature: 146057
+Startup trace (nsec): jit: 179027
+Startup trace (nsec): print: 18458085
+Startup trace (nsec): init ebpf vm: 4116330816
+Startup trace (nsec): init ebpf done: 4119974495
+Startup trace (nsec): read program: 8431
+Startup trace (nsec): lock: 48
+Startup trace (nsec): load elf: 10438
+Startup trace (nsec): signature: 146228
+Startup trace (nsec): jit: 179418
+Startup trace (nsec): print: 18436123
+Startup trace (nsec): init ebpf vm: 4141459387
+Startup trace (nsec): init ebpf done: 4145117452
+Startup trace (nsec): read program: 8453
+Startup trace (nsec): lock: 50
+Startup trace (nsec): load elf: 10451
+Startup trace (nsec): signature: 145962
+Startup trace (nsec): jit: 179165
+Startup trace (nsec): print: 18434817
+Startup trace (nsec): init ebpf vm: 4166598187
+Startup trace (nsec): init ebpf done: 4170252492
+Startup trace (nsec): read program: 8332
+Startup trace (nsec): lock: 69
+Startup trace (nsec): load elf: 10422
+Startup trace (nsec): signature: 146498
+Startup trace (nsec): jit: 186603
+Startup trace (nsec): print: 18464001
+Startup trace (nsec): init ebpf vm: 4191765108
+Startup trace (nsec): init ebpf done: 4195428001
+Startup trace (nsec): read program: 8479
+Startup trace (nsec): lock: 69
+Startup trace (nsec): load elf: 10441
+Startup trace (nsec): signature: 151865
+Startup trace (nsec): jit: 179722
+Startup trace (nsec): print: 18453113
+Startup trace (nsec): init ebpf vm: 4216930048
+Startup trace (nsec): init ebpf done: 4220585106
+Startup trace (nsec): read program: 8493
+Startup trace (nsec): lock: 51
+Startup trace (nsec): load elf: 10452
+Startup trace (nsec): signature: 146774
+Startup trace (nsec): jit: 179682
+Startup trace (nsec): print: 18469349
+Startup trace (nsec): init ebpf vm: 4242109286
+Startup trace (nsec): init ebpf done: 4245769895
+Startup trace (nsec): read program: 8402
+Startup trace (nsec): lock: 52
+Startup trace (nsec): load elf: 10336
+Startup trace (nsec): signature: 146817
+Startup trace (nsec): jit: 179380
+Startup trace (nsec): print: 18474368
+Startup trace (nsec): init ebpf vm: 4267290776
+Startup trace (nsec): init ebpf done: 4270943338
+Startup trace (nsec): read program: 8397
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10523
+Startup trace (nsec): signature: 147576
+Startup trace (nsec): jit: 179626
+Startup trace (nsec): print: 18450641
+Startup trace (nsec): init ebpf vm: 4292447325
+Startup trace (nsec): init ebpf done: 4296096704
+Startup trace (nsec): read program: 8360
+Startup trace (nsec): lock: 51
+Startup trace (nsec): load elf: 10526
+Startup trace (nsec): signature: 148018
+Startup trace (nsec): jit: 179100
+Startup trace (nsec): print: 18474865
+Startup trace (nsec): init ebpf vm: 4317625854
+Startup trace (nsec): init ebpf done: 4321282842
+Startup trace (nsec): read program: 8372
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10513
+Startup trace (nsec): signature: 147311
+Startup trace (nsec): jit: 185958
+Startup trace (nsec): print: 18448593
+Startup trace (nsec): init ebpf vm: 4342780288
+Startup trace (nsec): init ebpf done: 4346434017
+Startup trace (nsec): read program: 8328
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10628
+Startup trace (nsec): signature: 151127
+Startup trace (nsec): jit: 179523
+Startup trace (nsec): print: 18438859
+Startup trace (nsec): init ebpf vm: 4367921847
+Startup trace (nsec): init ebpf done: 4371580342
+Startup trace (nsec): read program: 8287
+Startup trace (nsec): lock: 50
+Startup trace (nsec): load elf: 10515
+Startup trace (nsec): signature: 146291
+Startup trace (nsec): jit: 179594
+Startup trace (nsec): print: 18462513
+Startup trace (nsec): init ebpf vm: 4393093218
+Startup trace (nsec): init ebpf done: 4396752930
+Startup trace (nsec): read program: 8663
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10500
+Startup trace (nsec): signature: 148373
+Startup trace (nsec): jit: 179643
+Startup trace (nsec): print: 18462524
+Startup trace (nsec): init ebpf vm: 4418267997
+Startup trace (nsec): init ebpf done: 4421929411
+Startup trace (nsec): read program: 8420
+Startup trace (nsec): lock: 48
+Startup trace (nsec): load elf: 10353
+Startup trace (nsec): signature: 148301
+Startup trace (nsec): jit: 179788
+Startup trace (nsec): print: 18445344
+Startup trace (nsec): init ebpf vm: 4443422913
+Startup trace (nsec): init ebpf done: 4447073171
+Startup trace (nsec): read program: 8215
+Startup trace (nsec): lock: 50
+Startup trace (nsec): load elf: 10476
+Startup trace (nsec): signature: 147794
+Startup trace (nsec): jit: 179600
+Startup trace (nsec): print: 18456051
+Startup trace (nsec): init ebpf vm: 4468579015
+Startup trace (nsec): init ebpf done: 4472240348
+Startup trace (nsec): read program: 8400
+Startup trace (nsec): lock: 51
+Startup trace (nsec): load elf: 10569
+Startup trace (nsec): signature: 147900
+Startup trace (nsec): jit: 187516
+Startup trace (nsec): print: 18460399
+Startup trace (nsec): init ebpf vm: 4493750435
+Startup trace (nsec): init ebpf done: 4497406815
+Startup trace (nsec): read program: 8212
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10609
+Startup trace (nsec): signature: 153461
+Startup trace (nsec): jit: 179446
+Startup trace (nsec): print: 18495219
+Startup trace (nsec): init ebpf vm: 4518954447
+Startup trace (nsec): init ebpf done: 4522607569
+Startup trace (nsec): read program: 8373
+Startup trace (nsec): lock: 50
+Startup trace (nsec): load elf: 10520
+Startup trace (nsec): signature: 147910
+Startup trace (nsec): jit: 179394
+Startup trace (nsec): print: 18455926
+Startup trace (nsec): init ebpf vm: 4544116053
+Startup trace (nsec): init ebpf done: 4547773324
+Startup trace (nsec): read program: 8555
+Startup trace (nsec): lock: 50
+Startup trace (nsec): load elf: 10414
+Startup trace (nsec): signature: 147788
+Startup trace (nsec): jit: 179736
+Startup trace (nsec): print: 18451116
+Startup trace (nsec): init ebpf vm: 4569278248
+Startup trace (nsec): init ebpf done: 4572942559
+Startup trace (nsec): read program: 8500
+Startup trace (nsec): lock: 48
+Startup trace (nsec): load elf: 10616
+Startup trace (nsec): signature: 148616
+Startup trace (nsec): jit: 183847
+Startup trace (nsec): print: 18466170
+Startup trace (nsec): init ebpf vm: 4594459540
+Startup trace (nsec): init ebpf done: 4598118408
+Startup trace (nsec): read program: 8327
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10445
+Startup trace (nsec): signature: 148361
+Startup trace (nsec): jit: 180323
+Startup trace (nsec): print: 18494886
+Startup trace (nsec): init ebpf vm: 4619672729
+Startup trace (nsec): init ebpf done: 4623336581
+Startup trace (nsec): read program: 8235
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10520
+Startup trace (nsec): signature: 147451
+Startup trace (nsec): jit: 186545
+Startup trace (nsec): print: 18458305
+Startup trace (nsec): init ebpf vm: 4644849114
+Startup trace (nsec): init ebpf done: 4648502834
+Startup trace (nsec): read program: 8333
+Startup trace (nsec): lock: 51
+Startup trace (nsec): load elf: 10432
+Startup trace (nsec): signature: 151423
+Startup trace (nsec): jit: 179772
+Startup trace (nsec): print: 18453872
+Startup trace (nsec): init ebpf vm: 4670008751
+Startup trace (nsec): init ebpf done: 4673663431
+Startup trace (nsec): read program: 8362
+Startup trace (nsec): lock: 50
+Startup trace (nsec): load elf: 10396
+Startup trace (nsec): signature: 146666
+Startup trace (nsec): jit: 179891
+Startup trace (nsec): print: 18462339
+Startup trace (nsec): init ebpf vm: 4695174035
+Startup trace (nsec): init ebpf done: 4698837712
+Startup trace (nsec): read program: 8514
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10602
+Startup trace (nsec): signature: 147527
+Startup trace (nsec): jit: 179910
+Startup trace (nsec): print: 18487460
+Startup trace (nsec): init ebpf vm: 4720381912
+Startup trace (nsec): init ebpf done: 4724036285
+Startup trace (nsec): read program: 8336
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10468
+Startup trace (nsec): signature: 148006
+Startup trace (nsec): jit: 179490
+Startup trace (nsec): print: 18467126
+Startup trace (nsec): init ebpf vm: 4745548792
+Startup trace (nsec): init ebpf done: 4749209319
+Startup trace (nsec): read program: 8332
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10507
+Startup trace (nsec): signature: 147737
+Startup trace (nsec): jit: 187177
+Startup trace (nsec): print: 18476230
+Startup trace (nsec): init ebpf vm: 4770738740
+Startup trace (nsec): init ebpf done: 4774394100
+Startup trace (nsec): read program: 8178
+Startup trace (nsec): lock: 48
+Startup trace (nsec): load elf: 10562
+Startup trace (nsec): signature: 151621
+Startup trace (nsec): jit: 179084
+Startup trace (nsec): print: 18467304
+Startup trace (nsec): init ebpf vm: 4795911483
+Startup trace (nsec): init ebpf done: 4799567630
+Startup trace (nsec): read program: 8296
+Startup trace (nsec): lock: 69
+Startup trace (nsec): load elf: 10432
+Startup trace (nsec): signature: 147790
+Startup trace (nsec): jit: 179742
+Startup trace (nsec): print: 18490386
+Startup trace (nsec): init ebpf vm: 4821106055
+Startup trace (nsec): init ebpf done: 4824769558
+Startup trace (nsec): read program: 8405
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10600
+Startup trace (nsec): signature: 146808
+Startup trace (nsec): jit: 179566
+Startup trace (nsec): print: 18421157
+Startup trace (nsec): init ebpf vm: 4846235340
+Startup trace (nsec): init ebpf done: 4849882465
+Startup trace (nsec): read program: 8288
+Startup trace (nsec): lock: 67
+Startup trace (nsec): load elf: 10586
+Startup trace (nsec): signature: 146474
+Startup trace (nsec): jit: 179830
+Startup trace (nsec): print: 18520171
+Startup trace (nsec): init ebpf vm: 4871464530
+Startup trace (nsec): init ebpf done: 4875133474
+Startup trace (nsec): read program: 8309
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10490
+Startup trace (nsec): signature: 146842
+Startup trace (nsec): jit: 180016
+Startup trace (nsec): print: 18540744
+Startup trace (nsec): init ebpf vm: 4896738421
+Startup trace (nsec): init ebpf done: 4900406521
+Startup trace (nsec): read program: 8260
+Startup trace (nsec): lock: 75
+Startup trace (nsec): load elf: 10396
+Startup trace (nsec): signature: 152204
+Startup trace (nsec): jit: 179265
+Startup trace (nsec): print: 18468468
+Startup trace (nsec): init ebpf vm: 4921925721
+Startup trace (nsec): init ebpf done: 4925576996
+Startup trace (nsec): read program: 8258
+Startup trace (nsec): lock: 48
+Startup trace (nsec): load elf: 10464
+Startup trace (nsec): signature: 146846
+Startup trace (nsec): jit: 179669
+Startup trace (nsec): print: 18455056
+Startup trace (nsec): init ebpf vm: 4947084805
+Startup trace (nsec): init ebpf done: 4950742893
+Startup trace (nsec): read program: 8459
+Startup trace (nsec): lock: 48
+Startup trace (nsec): load elf: 10409
+Startup trace (nsec): signature: 146722
+Startup trace (nsec): jit: 180004
+Startup trace (nsec): print: 18453694
+Startup trace (nsec): init ebpf vm: 4972249766
+Startup trace (nsec): init ebpf done: 4975916553
+Startup trace (nsec): read program: 8273
+Startup trace (nsec): lock: 51
+Startup trace (nsec): load elf: 10428
+Startup trace (nsec): signature: 145594
+Startup trace (nsec): jit: 180050
+Startup trace (nsec): print: 18474246
+Startup trace (nsec): init ebpf vm: 4997447331
+Startup trace (nsec): init ebpf done: 5001104522
+Startup trace (nsec): read program: 8462
+Startup trace (nsec): lock: 48
+Startup trace (nsec): load elf: 10392
+Startup trace (nsec): signature: 147343
+Startup trace (nsec): jit: 179350
+Startup trace (nsec): print: 18487114
+Startup trace (nsec): init ebpf vm: 5022657503
+Startup trace (nsec): init ebpf done: 5026320600
+Startup trace (nsec): read program: 8211
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10402
+Startup trace (nsec): signature: 146432
+Startup trace (nsec): jit: 185525
+Startup trace (nsec): print: 18474030
+Startup trace (nsec): init ebpf vm: 5047855659
+Startup trace (nsec): init ebpf done: 5051522149
+Startup trace (nsec): read program: 8477
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10547
+Startup trace (nsec): signature: 147326
+Startup trace (nsec): jit: 179391
+Startup trace (nsec): print: 18489162
+Startup trace (nsec): init ebpf vm: 5073065112
+Startup trace (nsec): init ebpf done: 5076730793
+Startup trace (nsec): read program: 8309
+Startup trace (nsec): lock: 50
+Startup trace (nsec): load elf: 10635
+Startup trace (nsec): signature: 147478
+Startup trace (nsec): jit: 179748
+Startup trace (nsec): print: 18541645
+Startup trace (nsec): init ebpf vm: 5098332739
+Startup trace (nsec): init ebpf done: 5102009068
+Startup trace (nsec): read program: 8611
+Startup trace (nsec): lock: 127
+Startup trace (nsec): load elf: 10914
+Startup trace (nsec): signature: 152543
+Startup trace (nsec): jit: 186359
+Startup trace (nsec): print: 18531909
+Startup trace (nsec): init ebpf vm: 5123614982
+Startup trace (nsec): init ebpf done: 5127289594
+Startup trace (nsec): read program: 8412
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10615
+Startup trace (nsec): signature: 148366
+Startup trace (nsec): jit: 190011
+Startup trace (nsec): print: 18482241
+Startup trace (nsec): init ebpf vm: 5148831393
+Startup trace (nsec): init ebpf done: 5152497279
+Startup trace (nsec): read program: 8361
+Startup trace (nsec): lock: 71
+Startup trace (nsec): load elf: 10624
+Startup trace (nsec): signature: 149469
+Startup trace (nsec): jit: 179530
+Startup trace (nsec): print: 18489594
+Startup trace (nsec): init ebpf vm: 5174046828
+Startup trace (nsec): init ebpf done: 5177709313
+Startup trace (nsec): read program: 8725
+Startup trace (nsec): lock: 50
+Startup trace (nsec): load elf: 10512
+Startup trace (nsec): signature: 146771
+Startup trace (nsec): jit: 179660
+Startup trace (nsec): print: 18479590
+Startup trace (nsec): init ebpf vm: 5199241695
+Startup trace (nsec): init ebpf done: 5202894068
+Startup trace (nsec): read program: 8435
+Startup trace (nsec): lock: 51
+Startup trace (nsec): load elf: 10422
+Startup trace (nsec): signature: 147638
+Startup trace (nsec): jit: 179182
+Startup trace (nsec): print: 18504405
+Startup trace (nsec): init ebpf vm: 5224457465
+Startup trace (nsec): init ebpf done: 5228123989
+Startup trace (nsec): read program: 8590
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10520
+Startup trace (nsec): signature: 147509
+Startup trace (nsec): jit: 179539
+Startup trace (nsec): print: 18493199
+Startup trace (nsec): init ebpf vm: 5249687039
+Startup trace (nsec): init ebpf done: 5253351210
+Startup trace (nsec): read program: 8208
+Startup trace (nsec): lock: 50
+Startup trace (nsec): load elf: 10478
+Startup trace (nsec): signature: 151686
+Startup trace (nsec): jit: 179458
+Startup trace (nsec): print: 18465349
+Startup trace (nsec): init ebpf vm: 5274883338
+Startup trace (nsec): init ebpf done: 5278546148
+Startup trace (nsec): read program: 8301
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10352
+Startup trace (nsec): signature: 146771
+Startup trace (nsec): jit: 179558
+Startup trace (nsec): print: 18486429
+Startup trace (nsec): init ebpf vm: 5300090466
+Startup trace (nsec): init ebpf done: 5303755975
+Startup trace (nsec): read program: 8303
+Startup trace (nsec): lock: 48
+Startup trace (nsec): load elf: 10494
+Startup trace (nsec): signature: 146956
+Startup trace (nsec): jit: 179856
+Startup trace (nsec): print: 18480433
+Startup trace (nsec): init ebpf vm: 5325284006
+Startup trace (nsec): init ebpf done: 5328947915
+Startup trace (nsec): read program: 8409
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10505
+Startup trace (nsec): signature: 146818
+Startup trace (nsec): jit: 179437
+Startup trace (nsec): print: 18470657
+Startup trace (nsec): init ebpf vm: 5350468847
+Startup trace (nsec): init ebpf done: 5354122197
+Startup trace (nsec): read program: 8301
+Startup trace (nsec): lock: 48
+Startup trace (nsec): load elf: 10488
+Startup trace (nsec): signature: 146172
+Startup trace (nsec): jit: 179193
+Startup trace (nsec): print: 18489986
+Startup trace (nsec): init ebpf vm: 5375666544
+Startup trace (nsec): init ebpf done: 5379331536
+Startup trace (nsec): read program: 8440
+Startup trace (nsec): lock: 51
+Startup trace (nsec): load elf: 10448
+Startup trace (nsec): signature: 155900
+Startup trace (nsec): jit: 178953
+Startup trace (nsec): print: 18448207
+Startup trace (nsec): init ebpf vm: 5400831545
+Startup trace (nsec): init ebpf done: 5404486053
+Startup trace (nsec): read program: 8189
+Startup trace (nsec): lock: 55
+Startup trace (nsec): load elf: 10404
+Startup trace (nsec): signature: 146114
+Startup trace (nsec): jit: 179152
+Startup trace (nsec): print: 18488962
+Startup trace (nsec): init ebpf vm: 5426026900
+Startup trace (nsec): init ebpf done: 5429685214
+Startup trace (nsec): read program: 8255
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10464
+Startup trace (nsec): signature: 145640
+Startup trace (nsec): jit: 179914
+Startup trace (nsec): print: 18497039
+Startup trace (nsec): init ebpf vm: 5451236567
+Startup trace (nsec): init ebpf done: 5454890701
+Startup trace (nsec): read program: 8513
+Startup trace (nsec): lock: 51
+Startup trace (nsec): load elf: 10405
+Startup trace (nsec): signature: 145691
+Startup trace (nsec): jit: 179578
+Startup trace (nsec): print: 18498216
+Startup trace (nsec): init ebpf vm: 5476442167
+Startup trace (nsec): init ebpf done: 5480096564
+Startup trace (nsec): read program: 8451
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10432
+Startup trace (nsec): signature: 145678
+Startup trace (nsec): jit: 178868
+Startup trace (nsec): print: 18500497
+Startup trace (nsec): init ebpf vm: 5501667073
+Startup trace (nsec): init ebpf done: 5505333054
+Startup trace (nsec): read program: 8466
+Startup trace (nsec): lock: 50
+Startup trace (nsec): load elf: 10784
+Startup trace (nsec): signature: 150814
+Startup trace (nsec): jit: 179438
+Startup trace (nsec): print: 18499490
+Startup trace (nsec): init ebpf vm: 5526901654
+Startup trace (nsec): init ebpf done: 5530563481
+Startup trace (nsec): read program: 8425
+Startup trace (nsec): lock: 47
+Startup trace (nsec): load elf: 10472
+Startup trace (nsec): signature: 145306
+Startup trace (nsec): jit: 179692
+Startup trace (nsec): print: 18489246
+Startup trace (nsec): init ebpf vm: 5552111144
+Startup trace (nsec): init ebpf done: 5555767609
+Startup trace (nsec): read program: 8293
+Startup trace (nsec): lock: 50
+Startup trace (nsec): load elf: 10450
+Startup trace (nsec): signature: 145548
+Startup trace (nsec): jit: 179010
+Startup trace (nsec): print: 18511045
+Startup trace (nsec): init ebpf vm: 5577337339
+Startup trace (nsec): init ebpf done: 5580994393
+Startup trace (nsec): read program: 8341
+Startup trace (nsec): lock: 50
+Startup trace (nsec): load elf: 10424
+Startup trace (nsec): signature: 145994
+Startup trace (nsec): jit: 179460
+Startup trace (nsec): print: 18500489
+Startup trace (nsec): init ebpf vm: 5602563573
+Startup trace (nsec): init ebpf done: 5606236182
+Startup trace (nsec): read program: 8438
+Startup trace (nsec): lock: 52
+Startup trace (nsec): load elf: 10541
+Startup trace (nsec): signature: 146990
+Startup trace (nsec): jit: 185643
+Startup trace (nsec): print: 18490686
+Startup trace (nsec): init ebpf vm: 5627780163
+Startup trace (nsec): init ebpf done: 5631438010
+Startup trace (nsec): read program: 8108
+Startup trace (nsec): lock: 51
+Startup trace (nsec): load elf: 10523
+Startup trace (nsec): signature: 150678
+Startup trace (nsec): jit: 179423
+Startup trace (nsec): print: 18510346
+Startup trace (nsec): init ebpf vm: 5653005190
+Startup trace (nsec): init ebpf done: 5656666890
+Startup trace (nsec): read program: 8357
+Startup trace (nsec): lock: 53
+Startup trace (nsec): load elf: 10482
+Startup trace (nsec): signature: 146886
+Startup trace (nsec): jit: 179474
+Startup trace (nsec): print: 18489293
+Startup trace (nsec): init ebpf vm: 5678210835
+Startup trace (nsec): init ebpf done: 5681864994
+Startup trace (nsec): read program: 8371
+Startup trace (nsec): lock: 52
+Startup trace (nsec): load elf: 10471
+Startup trace (nsec): signature: 145814
+Startup trace (nsec): jit: 178907
+Startup trace (nsec): print: 18490137
+Startup trace (nsec): init ebpf vm: 5703410432
+Startup trace (nsec): init ebpf done: 5707067780
+Startup trace (nsec): read program: 8285
+Startup trace (nsec): lock: 48
+Startup trace (nsec): load elf: 10559
+Startup trace (nsec): signature: 147153
+Startup trace (nsec): jit: 179272
+Startup trace (nsec): print: 18541703
+Startup trace (nsec): init ebpf vm: 5728669848
+Startup trace (nsec): init ebpf done: 5732338433
+Startup trace (nsec): read program: 8166
+Startup trace (nsec): lock: 70
+Startup trace (nsec): load elf: 10522
+Startup trace (nsec): signature: 151246
+Startup trace (nsec): jit: 179472
+Startup trace (nsec): print: 18502196
+Startup trace (nsec): init ebpf vm: 5753897080
+Startup trace (nsec): init ebpf done: 5757564882
+Startup trace (nsec): read program: 8450
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10726
+Startup trace (nsec): signature: 146578
+Startup trace (nsec): jit: 178969
+Startup trace (nsec): print: 18492069
+Startup trace (nsec): init ebpf vm: 5779112199
+Startup trace (nsec): init ebpf done: 5782769047
+Startup trace (nsec): read program: 8392
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10561
+Startup trace (nsec): signature: 146674
+Startup trace (nsec): jit: 179228
+Startup trace (nsec): print: 18486252
+Startup trace (nsec): init ebpf vm: 5804319047
+Startup trace (nsec): init ebpf done: 5807976809
+Startup trace (nsec): read program: 8480
+Startup trace (nsec): lock: 50
+Startup trace (nsec): load elf: 10518
+Startup trace (nsec): signature: 147466
+Startup trace (nsec): jit: 179410
+Startup trace (nsec): print: 18496321
+Startup trace (nsec): init ebpf vm: 5829525272
+Startup trace (nsec): init ebpf done: 5833184347
+Startup trace (nsec): read program: 8210
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10352
+Startup trace (nsec): signature: 146608
+Startup trace (nsec): jit: 185929
+Startup trace (nsec): print: 18477483
+Startup trace (nsec): init ebpf vm: 5854716286
+Startup trace (nsec): init ebpf done: 5858377222
+Startup trace (nsec): read program: 8471
+Startup trace (nsec): lock: 50
+Startup trace (nsec): load elf: 10554
+Startup trace (nsec): signature: 150645
+Startup trace (nsec): jit: 179862
+Startup trace (nsec): print: 18464598
+Startup trace (nsec): init ebpf vm: 5879901501
+Startup trace (nsec): init ebpf done: 5883574380
+Startup trace (nsec): read program: 8419
+Startup trace (nsec): lock: 47
+Startup trace (nsec): load elf: 10599
+Startup trace (nsec): signature: 147404
+Startup trace (nsec): jit: 179497
+Startup trace (nsec): print: 18463328
+Startup trace (nsec): init ebpf vm: 5905097853
+Startup trace (nsec): init ebpf done: 5908759267
+Startup trace (nsec): read program: 8181
+Startup trace (nsec): lock: 52
+Startup trace (nsec): load elf: 10530
+Startup trace (nsec): signature: 146482
+Startup trace (nsec): jit: 179440
+Startup trace (nsec): print: 18511064
+Startup trace (nsec): init ebpf vm: 5930331844
+Startup trace (nsec): init ebpf done: 5933992109
+Startup trace (nsec): read program: 8434
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10464
+Startup trace (nsec): signature: 148992
+Startup trace (nsec): jit: 179244
+Startup trace (nsec): print: 18491360
+Startup trace (nsec): init ebpf vm: 5955545676
+Startup trace (nsec): init ebpf done: 5959207150
+Startup trace (nsec): read program: 8297
+Startup trace (nsec): lock: 50
+Startup trace (nsec): load elf: 10590
+Startup trace (nsec): signature: 145935
+Startup trace (nsec): jit: 185854
+Startup trace (nsec): print: 18470921
+Startup trace (nsec): init ebpf vm: 5980735001
+Startup trace (nsec): init ebpf done: 5984402579
+Startup trace (nsec): read program: 8052
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10466
+Startup trace (nsec): signature: 150748
+Startup trace (nsec): jit: 179292
+Startup trace (nsec): print: 18489147
+Startup trace (nsec): init ebpf vm: 6005947913
+Startup trace (nsec): init ebpf done: 6009606744
+Startup trace (nsec): read program: 8340
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10548
+Startup trace (nsec): signature: 146462
+Startup trace (nsec): jit: 179674
+Startup trace (nsec): print: 18453214
+Startup trace (nsec): init ebpf vm: 6031116058
+Startup trace (nsec): init ebpf done: 6034774343
+Startup trace (nsec): read program: 8360
+Startup trace (nsec): lock: 50
+Startup trace (nsec): load elf: 10443
+Startup trace (nsec): signature: 146074
+Startup trace (nsec): jit: 178920
+Startup trace (nsec): print: 18496153
+Startup trace (nsec): init ebpf vm: 6056322771
+Startup trace (nsec): init ebpf done: 6059982075
+Startup trace (nsec): read program: 8457
+Startup trace (nsec): lock: 55
+Startup trace (nsec): load elf: 10450
+Startup trace (nsec): signature: 145609
+Startup trace (nsec): jit: 179184
+Startup trace (nsec): print: 18504092
+Startup trace (nsec): init ebpf vm: 6081555781
+Startup trace (nsec): init ebpf done: 6085228703
+Startup trace (nsec): read program: 8279
+Startup trace (nsec): lock: 72
+Startup trace (nsec): load elf: 10511
+Startup trace (nsec): signature: 145974
+Startup trace (nsec): jit: 186296
+Startup trace (nsec): print: 18464399
+Startup trace (nsec): init ebpf vm: 6106745886
+Startup trace (nsec): init ebpf done: 6110415816
+Startup trace (nsec): read program: 8236
+Startup trace (nsec): lock: 48
+Startup trace (nsec): load elf: 14241
+Startup trace (nsec): signature: 146404
+Startup trace (nsec): jit: 178812
+Startup trace (nsec): print: 18512798
+Startup trace (nsec): init ebpf vm: 6131988523
+Startup trace (nsec): init ebpf done: 6135649117
+Startup trace (nsec): read program: 8617
+Startup trace (nsec): lock: 51
+Startup trace (nsec): load elf: 10502
+Startup trace (nsec): signature: 145966
+Startup trace (nsec): jit: 179051
+Startup trace (nsec): print: 18480715
+Startup trace (nsec): init ebpf vm: 6157180491
+Startup trace (nsec): init ebpf done: 6160844638
+Startup trace (nsec): read program: 8579
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10334
+Startup trace (nsec): signature: 146124
+Startup trace (nsec): jit: 178866
+Startup trace (nsec): print: 18472336
+Startup trace (nsec): init ebpf vm: 6182370087
+Startup trace (nsec): init ebpf done: 6186064641
+Startup trace (nsec): read program: 8317
+Startup trace (nsec): lock: 70
+Startup trace (nsec): load elf: 10414
+Startup trace (nsec): signature: 146696
+Startup trace (nsec): jit: 221272
+Startup trace (nsec): print: 18483613
+Startup trace (nsec): init ebpf vm: 6207598231
+Startup trace (nsec): init ebpf done: 6211270563
+Startup trace (nsec): read program: 8503
+Startup trace (nsec): lock: 50
+Startup trace (nsec): load elf: 10622
+Startup trace (nsec): signature: 147249
+Startup trace (nsec): jit: 199003
+Startup trace (nsec): print: 18494791
+Startup trace (nsec): init ebpf vm: 6232837447
+Startup trace (nsec): init ebpf done: 6236505794
+Startup trace (nsec): read program: 8444
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10625
+Startup trace (nsec): signature: 147584
+Startup trace (nsec): jit: 183010
+Startup trace (nsec): print: 18478129
+Startup trace (nsec): init ebpf vm: 6258039902
+Startup trace (nsec): init ebpf done: 6261701966
+Startup trace (nsec): read program: 8293
+Startup trace (nsec): lock: 65
+Startup trace (nsec): load elf: 10518
+Startup trace (nsec): signature: 147523
+Startup trace (nsec): jit: 180942
+Startup trace (nsec): print: 18504190
+Startup trace (nsec): init ebpf vm: 6283264670
+Startup trace (nsec): init ebpf done: 6286924571
+Startup trace (nsec): read program: 8364
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10673
+Startup trace (nsec): signature: 147225
+Startup trace (nsec): jit: 180604
+Startup trace (nsec): print: 18469591
+Startup trace (nsec): init ebpf vm: 6308448471
+Startup trace (nsec): init ebpf done: 6312113283
+Startup trace (nsec): read program: 8337
+Startup trace (nsec): lock: 51
+Startup trace (nsec): load elf: 10556
+Startup trace (nsec): signature: 147500
+Startup trace (nsec): jit: 187102
+Startup trace (nsec): print: 18480205
+Startup trace (nsec): init ebpf vm: 6333654475
+Startup trace (nsec): init ebpf done: 6337322050
+Startup trace (nsec): read program: 8275
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10531
+Startup trace (nsec): signature: 152967
+Startup trace (nsec): jit: 179698
+Startup trace (nsec): print: 18473390
+Startup trace (nsec): init ebpf vm: 6358862213
+Startup trace (nsec): init ebpf done: 6362536537
+Startup trace (nsec): read program: 8362
+Startup trace (nsec): lock: 50
+Startup trace (nsec): load elf: 10524
+Startup trace (nsec): signature: 146465
+Startup trace (nsec): jit: 179740
+Startup trace (nsec): print: 18483299
+Startup trace (nsec): init ebpf vm: 6384076360
+Startup trace (nsec): init ebpf done: 6387731096
+Startup trace (nsec): read program: 8022
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10315
+Startup trace (nsec): signature: 145888
+Startup trace (nsec): jit: 179476
+Startup trace (nsec): print: 18486486
+Startup trace (nsec): init ebpf vm: 6409275362
+Startup trace (nsec): init ebpf done: 6412936041
+Startup trace (nsec): read program: 8390
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10468
+Startup trace (nsec): signature: 146892
+Startup trace (nsec): jit: 179585
+Startup trace (nsec): print: 18479466
+Startup trace (nsec): init ebpf vm: 6434475164
+Startup trace (nsec): init ebpf done: 6438153454
+Startup trace (nsec): read program: 8147
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10384
+Startup trace (nsec): signature: 145664
+Startup trace (nsec): jit: 186637
+Startup trace (nsec): print: 18471875
+Startup trace (nsec): init ebpf vm: 6459678143
+Startup trace (nsec): init ebpf done: 6463346914
+Startup trace (nsec): read program: 8363
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10454
+Startup trace (nsec): signature: 150668
+Startup trace (nsec): jit: 179346
+Startup trace (nsec): print: 18503790
+Startup trace (nsec): init ebpf vm: 6484908972
+Startup trace (nsec): init ebpf done: 6488588507
+Startup trace (nsec): read program: 8317
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10401
+Startup trace (nsec): signature: 146303
+Startup trace (nsec): jit: 179589
+Startup trace (nsec): print: 18472367
+Startup trace (nsec): init ebpf vm: 6510116265
+Startup trace (nsec): init ebpf done: 6513771209
+Startup trace (nsec): read program: 8243
+Startup trace (nsec): lock: 48
+Startup trace (nsec): load elf: 10488
+Startup trace (nsec): signature: 147598
+Startup trace (nsec): jit: 179387
+Startup trace (nsec): print: 18492485
+Startup trace (nsec): init ebpf vm: 6535321001
+Startup trace (nsec): init ebpf done: 6538976032
+Startup trace (nsec): read program: 8311
+Startup trace (nsec): lock: 53
+Startup trace (nsec): load elf: 10471
+Startup trace (nsec): signature: 147423
+Startup trace (nsec): jit: 179734
+Startup trace (nsec): print: 18515644
+Startup trace (nsec): init ebpf vm: 6560555229
+Startup trace (nsec): init ebpf done: 6564224063
+Startup trace (nsec): read program: 8376
+Startup trace (nsec): lock: 51
+Startup trace (nsec): load elf: 10570
+Startup trace (nsec): signature: 147082
+Startup trace (nsec): jit: 184276
+Startup trace (nsec): print: 18478756
+Startup trace (nsec): init ebpf vm: 6585761825
+Startup trace (nsec): init ebpf done: 6589420584
+Startup trace (nsec): read program: 8294
+Startup trace (nsec): lock: 53
+Startup trace (nsec): load elf: 10512
+Startup trace (nsec): signature: 147043
+Startup trace (nsec): jit: 179388
+Startup trace (nsec): print: 18476368
+Startup trace (nsec): init ebpf vm: 6610951515
+Startup trace (nsec): init ebpf done: 6614611689
+Startup trace (nsec): read program: 8224
+Startup trace (nsec): lock: 53
+Startup trace (nsec): load elf: 10481
+Startup trace (nsec): signature: 146368
+Startup trace (nsec): jit: 179885
+Startup trace (nsec): print: 18515352
+Startup trace (nsec): init ebpf vm: 6636188780
+Startup trace (nsec): init ebpf done: 6639845674
+Startup trace (nsec): read program: 8317
+Startup trace (nsec): lock: 51
+Startup trace (nsec): load elf: 10390
+Startup trace (nsec): signature: 146617
+Startup trace (nsec): jit: 179509
+Startup trace (nsec): print: 18475255
+Startup trace (nsec): init ebpf vm: 6661378054
+Startup trace (nsec): init ebpf done: 6665035446
+Startup trace (nsec): read program: 8205
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10424
+Startup trace (nsec): signature: 146158
+Startup trace (nsec): jit: 179226
+Startup trace (nsec): print: 18476020
+Startup trace (nsec): init ebpf vm: 6686566840
+Startup trace (nsec): init ebpf done: 6690230355
+Startup trace (nsec): read program: 8308
+Startup trace (nsec): lock: 51
+Startup trace (nsec): load elf: 10554
+Startup trace (nsec): signature: 150339
+Startup trace (nsec): jit: 179643
+Startup trace (nsec): print: 18469101
+Startup trace (nsec): init ebpf vm: 6711752501
+Startup trace (nsec): init ebpf done: 6715422552
+Startup trace (nsec): read program: 8242
+Startup trace (nsec): lock: 50
+Startup trace (nsec): load elf: 10624
+Startup trace (nsec): signature: 147701
+Startup trace (nsec): jit: 179812
+Startup trace (nsec): print: 18482252
+Startup trace (nsec): init ebpf vm: 6736959757
+Startup trace (nsec): init ebpf done: 6740614565
+Startup trace (nsec): read program: 8168
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10483
+Startup trace (nsec): signature: 145361
+Startup trace (nsec): jit: 179070
+Startup trace (nsec): print: 18492083
+Startup trace (nsec): init ebpf vm: 6762159019
+Startup trace (nsec): init ebpf done: 6765813308
+Startup trace (nsec): read program: 8266
+Startup trace (nsec): lock: 51
+Startup trace (nsec): load elf: 10670
+Startup trace (nsec): signature: 146131
+Startup trace (nsec): jit: 179773
+Startup trace (nsec): print: 18481816
+Startup trace (nsec): init ebpf vm: 6787354713
+Startup trace (nsec): init ebpf done: 6791011246
+Startup trace (nsec): read program: 8331
+Startup trace (nsec): lock: 51
+Startup trace (nsec): load elf: 10393
+Startup trace (nsec): signature: 146104
+Startup trace (nsec): jit: 179380
+Startup trace (nsec): print: 18490150
+Startup trace (nsec): init ebpf vm: 6812561937
+Startup trace (nsec): init ebpf done: 6816222173
+Startup trace (nsec): read program: 8305
+Startup trace (nsec): lock: 50
+Startup trace (nsec): load elf: 10362
+Startup trace (nsec): signature: 150927
+Startup trace (nsec): jit: 179314
+Startup trace (nsec): print: 18493665
+Startup trace (nsec): init ebpf vm: 6837767091
+Startup trace (nsec): init ebpf done: 6841428975
+Startup trace (nsec): read program: 8321
+Startup trace (nsec): lock: 51
+Startup trace (nsec): load elf: 10430
+Startup trace (nsec): signature: 145672
+Startup trace (nsec): jit: 179409
+Startup trace (nsec): print: 18456645
+Startup trace (nsec): init ebpf vm: 6862935416
+Startup trace (nsec): init ebpf done: 6866590622
+Startup trace (nsec): read program: 8049
+Startup trace (nsec): lock: 50
+Startup trace (nsec): load elf: 10402
+Startup trace (nsec): signature: 146059
+Startup trace (nsec): jit: 179540
+Startup trace (nsec): print: 18485889
+Startup trace (nsec): init ebpf vm: 6888128512
+Startup trace (nsec): init ebpf done: 6891782705
+Startup trace (nsec): read program: 8357
+Startup trace (nsec): lock: 50
+Startup trace (nsec): load elf: 10446
+Startup trace (nsec): signature: 146163
+Startup trace (nsec): jit: 179549
+Startup trace (nsec): print: 18494623
+Startup trace (nsec): init ebpf vm: 6913349198
+Startup trace (nsec): init ebpf done: 6917015830
+Startup trace (nsec): read program: 8219
+Startup trace (nsec): lock: 50
+Startup trace (nsec): load elf: 10468
+Startup trace (nsec): signature: 146038
+Startup trace (nsec): jit: 179565
+Startup trace (nsec): print: 18447886
+Startup trace (nsec): init ebpf vm: 6938519867
+Startup trace (nsec): init ebpf done: 6942187111
+Startup trace (nsec): read program: 8070
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10415
+Startup trace (nsec): signature: 144893
+Startup trace (nsec): jit: 184845
+Startup trace (nsec): print: 18480275
+Startup trace (nsec): init ebpf vm: 6963721700
+Startup trace (nsec): init ebpf done: 6967383745
+Startup trace (nsec): read program: 8404
+Startup trace (nsec): lock: 52
+Startup trace (nsec): load elf: 10544
+Startup trace (nsec): signature: 145820
+Startup trace (nsec): jit: 179726
+Startup trace (nsec): print: 18477926
+Startup trace (nsec): init ebpf vm: 6988919283
+Startup trace (nsec): init ebpf done: 6992590402
+Startup trace (nsec): read program: 8308
+Startup trace (nsec): lock: 50
+Startup trace (nsec): load elf: 10386
+Startup trace (nsec): signature: 145526
+Startup trace (nsec): jit: 179584
+Startup trace (nsec): print: 18462724
+Startup trace (nsec): init ebpf vm: 7014106275
+Startup trace (nsec): init ebpf done: 7017755683
+Startup trace (nsec): read program: 8107
+Startup trace (nsec): lock: 53
+Startup trace (nsec): load elf: 10418
+Startup trace (nsec): signature: 145271
+Startup trace (nsec): jit: 179554
+Startup trace (nsec): print: 18481948
+Startup trace (nsec): init ebpf vm: 7039289494
+Startup trace (nsec): init ebpf done: 7042944107
+Startup trace (nsec): read program: 8266
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10449
+Startup trace (nsec): signature: 145767
+Startup trace (nsec): jit: 179801
+Startup trace (nsec): print: 18457634
+Startup trace (nsec): init ebpf vm: 7064470556
+Startup trace (nsec): init ebpf done: 7068137899
+Startup trace (nsec): read program: 8463
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10502
+Startup trace (nsec): signature: 146941
+Startup trace (nsec): jit: 185708
+Startup trace (nsec): print: 18492611
+Startup trace (nsec): init ebpf vm: 7089689470
+Startup trace (nsec): init ebpf done: 7093357922
+Startup trace (nsec): read program: 11991
+Startup trace (nsec): lock: 51
+Startup trace (nsec): load elf: 10572
+Startup trace (nsec): signature: 147071
+Startup trace (nsec): jit: 179603
+Startup trace (nsec): print: 18529049
+Startup trace (nsec): init ebpf vm: 7114939440
+Startup trace (nsec): init ebpf done: 7118605487
+Startup trace (nsec): read program: 8377
+Startup trace (nsec): lock: 46
+Startup trace (nsec): load elf: 10597
+Startup trace (nsec): signature: 153769
+Startup trace (nsec): jit: 179383
+Startup trace (nsec): print: 18466852
+Startup trace (nsec): init ebpf vm: 7140122379
+Startup trace (nsec): init ebpf done: 7143772213
+Startup trace (nsec): read program: 8257
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10422
+Startup trace (nsec): signature: 146632
+Startup trace (nsec): jit: 179493
+Startup trace (nsec): print: 18475892
+Startup trace (nsec): init ebpf vm: 7165298267
+Startup trace (nsec): init ebpf done: 7168952526
+Startup trace (nsec): read program: 8493
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10614
+Startup trace (nsec): signature: 145493
+Startup trace (nsec): jit: 179450
+Startup trace (nsec): print: 18461202
+Startup trace (nsec): init ebpf vm: 7190476290
+Startup trace (nsec): init ebpf done: 7194137170
+Startup trace (nsec): read program: 8146
+Startup trace (nsec): lock: 69
+Startup trace (nsec): load elf: 10429
+Startup trace (nsec): signature: 145345
+Startup trace (nsec): jit: 187099
+Startup trace (nsec): print: 18475170
+Startup trace (nsec): init ebpf vm: 7215664756
+Startup trace (nsec): init ebpf done: 7219322469
+Startup trace (nsec): read program: 8325
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10443
+Startup trace (nsec): signature: 151143
+Startup trace (nsec): jit: 179174
+Startup trace (nsec): print: 18487204
+Startup trace (nsec): init ebpf vm: 7240884693
+Startup trace (nsec): init ebpf done: 7244536258
+Startup trace (nsec): read program: 8388
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10417
+Startup trace (nsec): signature: 146288
+Startup trace (nsec): jit: 178694
+Startup trace (nsec): print: 18523038
+Startup trace (nsec): init ebpf vm: 7266111982
+Startup trace (nsec): init ebpf done: 7269776663
+Startup trace (nsec): read program: 8584
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10420
+Startup trace (nsec): signature: 146877
+Startup trace (nsec): jit: 179519
+Startup trace (nsec): print: 18467522
+Startup trace (nsec): init ebpf vm: 7291299720
+Startup trace (nsec): init ebpf done: 7294953123
+Startup trace (nsec): read program: 8391
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10564
+Startup trace (nsec): signature: 147435
+Startup trace (nsec): jit: 179876
+Startup trace (nsec): print: 18512909
+Startup trace (nsec): init ebpf vm: 7316523244
+Startup trace (nsec): init ebpf done: 7320188188
+Startup trace (nsec): read program: 8217
+Startup trace (nsec): lock: 50
+Startup trace (nsec): load elf: 10548
+Startup trace (nsec): signature: 152055
+Startup trace (nsec): jit: 179492
+Startup trace (nsec): print: 18460688
+Startup trace (nsec): init ebpf vm: 7341705624
+Startup trace (nsec): init ebpf done: 7345370706
+Startup trace (nsec): read program: 8011
+Startup trace (nsec): lock: 51
+Startup trace (nsec): load elf: 10379
+Startup trace (nsec): signature: 146758
+Startup trace (nsec): jit: 179488
+Startup trace (nsec): print: 18468289
+Startup trace (nsec): init ebpf vm: 7366888776
+Startup trace (nsec): init ebpf done: 7370544960
+Startup trace (nsec): read program: 8401
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10560
+Startup trace (nsec): signature: 146828
+Startup trace (nsec): jit: 179176
+Startup trace (nsec): print: 18476416
+Startup trace (nsec): init ebpf vm: 7392073886
+Startup trace (nsec): init ebpf done: 7395729095
+Startup trace (nsec): read program: 8296
+Startup trace (nsec): lock: 51
+Startup trace (nsec): load elf: 10414
+Startup trace (nsec): signature: 146449
+Startup trace (nsec): jit: 179543
+Startup trace (nsec): print: 18472942
+Startup trace (nsec): init ebpf vm: 7417256332
+Startup trace (nsec): init ebpf done: 7420920079
+Startup trace (nsec): read program: 8161
+Startup trace (nsec): lock: 53
+Startup trace (nsec): load elf: 10400
+Startup trace (nsec): signature: 146880
+Startup trace (nsec): jit: 178958
+Startup trace (nsec): print: 18489468
+Startup trace (nsec): init ebpf vm: 7442465452
+Startup trace (nsec): init ebpf done: 7446129759
+Startup trace (nsec): read program: 8313
+Startup trace (nsec): lock: 50
+Startup trace (nsec): load elf: 10418
+Startup trace (nsec): signature: 146359
+Startup trace (nsec): jit: 186082
+Startup trace (nsec): print: 18505955
+Startup trace (nsec): init ebpf vm: 7467702066
+Startup trace (nsec): init ebpf done: 7471361249
+Startup trace (nsec): read program: 8491
+Startup trace (nsec): lock: 50
+Startup trace (nsec): load elf: 10520
+Startup trace (nsec): signature: 147007
+Startup trace (nsec): jit: 179426
+Startup trace (nsec): print: 18473378
+Startup trace (nsec): init ebpf vm: 7492890513
+Startup trace (nsec): init ebpf done: 7496551297
+Startup trace (nsec): read program: 8265
+Startup trace (nsec): lock: 47
+Startup trace (nsec): load elf: 10435
+Startup trace (nsec): signature: 147320
+Startup trace (nsec): jit: 179200
+Startup trace (nsec): print: 18495452
+Startup trace (nsec): init ebpf vm: 7518105399
+Startup trace (nsec): init ebpf done: 7521754682
+Startup trace (nsec): read program: 8394
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10558
+Startup trace (nsec): signature: 147732
+Startup trace (nsec): jit: 179452
+Startup trace (nsec): print: 18473277
+Startup trace (nsec): init ebpf vm: 7543284641
+Startup trace (nsec): init ebpf done: 7546957351
+Startup trace (nsec): read program: 8561
+Startup trace (nsec): lock: 53
+Startup trace (nsec): load elf: 10476
+Startup trace (nsec): signature: 147159
+Startup trace (nsec): jit: 179951
+Startup trace (nsec): print: 18476352
+Startup trace (nsec): init ebpf vm: 7568484173
+Startup trace (nsec): init ebpf done: 7572149535
+Startup trace (nsec): read program: 8517
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10467
+Startup trace (nsec): signature: 147354
+Startup trace (nsec): jit: 184129
+Startup trace (nsec): print: 18478012
+Startup trace (nsec): init ebpf vm: 7593683985
+Startup trace (nsec): init ebpf done: 7597345052
+Startup trace (nsec): read program: 8021
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10373
+Startup trace (nsec): signature: 146877
+Startup trace (nsec): jit: 179901
+Startup trace (nsec): print: 18486392
+Startup trace (nsec): init ebpf vm: 7618895138
+Startup trace (nsec): init ebpf done: 7622554922
+Startup trace (nsec): read program: 8267
+Startup trace (nsec): lock: 52
+Startup trace (nsec): load elf: 10469
+Startup trace (nsec): signature: 147119
+Startup trace (nsec): jit: 179022
+Startup trace (nsec): print: 18502086
+Startup trace (nsec): init ebpf vm: 7644125166
+Startup trace (nsec): init ebpf done: 7647786706
+Startup trace (nsec): read program: 8309
+Startup trace (nsec): lock: 51
+Startup trace (nsec): load elf: 10368
+Startup trace (nsec): signature: 146828
+Startup trace (nsec): jit: 179454
+Startup trace (nsec): print: 18482935
+Startup trace (nsec): init ebpf vm: 7669314719
+Startup trace (nsec): init ebpf done: 7672961372
+Startup trace (nsec): read program: 8286
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10454
+Startup trace (nsec): signature: 145958
+Startup trace (nsec): jit: 180009
+Startup trace (nsec): print: 18440277
+Startup trace (nsec): init ebpf vm: 7694453570
+Startup trace (nsec): init ebpf done: 7698112270
+Startup trace (nsec): read program: 8126
+Startup trace (nsec): lock: 47
+Startup trace (nsec): load elf: 10336
+Startup trace (nsec): signature: 146236
+Startup trace (nsec): jit: 185870
+Startup trace (nsec): print: 18465568
+Startup trace (nsec): init ebpf vm: 7719631854
+Startup trace (nsec): init ebpf done: 7723299952
+Startup trace (nsec): read program: 8298
+Startup trace (nsec): lock: 50
+Startup trace (nsec): load elf: 10626
+Startup trace (nsec): signature: 152170
+Startup trace (nsec): jit: 179777
+Startup trace (nsec): print: 18465170
+Startup trace (nsec): init ebpf vm: 7744828327
+Startup trace (nsec): init ebpf done: 7748478484
+Startup trace (nsec): read program: 8444
+Startup trace (nsec): lock: 47
+Startup trace (nsec): load elf: 10486
+Startup trace (nsec): signature: 147091
+Startup trace (nsec): jit: 179527
+Startup trace (nsec): print: 18414572
+Startup trace (nsec): init ebpf vm: 7769944870
+Startup trace (nsec): init ebpf done: 7773596072
+Startup trace (nsec): read program: 8562
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10543
+Startup trace (nsec): signature: 146726
+Startup trace (nsec): jit: 179582
+Startup trace (nsec): print: 18467022
+Startup trace (nsec): init ebpf vm: 7795122590
+Startup trace (nsec): init ebpf done: 7798787614
+Startup trace (nsec): read program: 8580
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10568
+Startup trace (nsec): signature: 146870
+Startup trace (nsec): jit: 184307
+Startup trace (nsec): print: 18463027
+Startup trace (nsec): init ebpf vm: 7820309848
+Startup trace (nsec): init ebpf done: 7823983377
+Startup trace (nsec): read program: 8639
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10472
+Startup trace (nsec): signature: 147563
+Startup trace (nsec): jit: 191930
+Startup trace (nsec): print: 18475063
+Startup trace (nsec): init ebpf vm: 7845538961
+Startup trace (nsec): init ebpf done: 7849206525
+Startup trace (nsec): read program: 8657
+Startup trace (nsec): lock: 50
+Startup trace (nsec): load elf: 10754
+Startup trace (nsec): signature: 154115
+Startup trace (nsec): jit: 180525
+Startup trace (nsec): print: 18472585
+Startup trace (nsec): init ebpf vm: 7870750635
+Startup trace (nsec): init ebpf done: 7874424820
+Startup trace (nsec): read program: 8571
+Startup trace (nsec): lock: 48
+Startup trace (nsec): load elf: 10516
+Startup trace (nsec): signature: 148062
+Startup trace (nsec): jit: 180971
+Startup trace (nsec): print: 18483501
+Startup trace (nsec): init ebpf vm: 7895976994
+Startup trace (nsec): init ebpf done: 7899641927
+Startup trace (nsec): read program: 8557
+Startup trace (nsec): lock: 48
+Startup trace (nsec): load elf: 10901
+Startup trace (nsec): signature: 149407
+Startup trace (nsec): jit: 180204
+Startup trace (nsec): print: 18472426
+Startup trace (nsec): init ebpf vm: 7921162982
+Startup trace (nsec): init ebpf done: 7924815031
+Startup trace (nsec): read program: 8526
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10721
+Startup trace (nsec): signature: 149124
+Startup trace (nsec): jit: 181021
+Startup trace (nsec): print: 18495527
+Startup trace (nsec): init ebpf vm: 7946374207
+Startup trace (nsec): init ebpf done: 7950045179
+Startup trace (nsec): read program: 8187
+Startup trace (nsec): lock: 51
+Startup trace (nsec): load elf: 10702
+Startup trace (nsec): signature: 148503
+Startup trace (nsec): jit: 188043
+Startup trace (nsec): print: 18501400
+Startup trace (nsec): init ebpf vm: 7971607559
+Startup trace (nsec): init ebpf done: 7975275380
+Startup trace (nsec): read program: 8314
+Startup trace (nsec): lock: 68
+Startup trace (nsec): load elf: 10606
+Startup trace (nsec): signature: 152601
+Startup trace (nsec): jit: 180354
+Startup trace (nsec): print: 18454477
+Startup trace (nsec): init ebpf vm: 7996781033
+Startup trace (nsec): init ebpf done: 8000435999
+Startup trace (nsec): read program: 8671
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10542
+Startup trace (nsec): signature: 149251
+Startup trace (nsec): jit: 180364
+Startup trace (nsec): print: 18412605
+Startup trace (nsec): init ebpf vm: 8021909825
+Startup trace (nsec): init ebpf done: 8025573584
+Startup trace (nsec): read program: 8207
+Startup trace (nsec): lock: 51
+Startup trace (nsec): load elf: 10550
+Startup trace (nsec): signature: 148658
+Startup trace (nsec): jit: 180123
+Startup trace (nsec): print: 18496372
+Startup trace (nsec): init ebpf vm: 8047128390
+Startup trace (nsec): init ebpf done: 8050791444
+Startup trace (nsec): read program: 8280
+Startup trace (nsec): lock: 55
+Startup trace (nsec): load elf: 10612
+Startup trace (nsec): signature: 148505
+Startup trace (nsec): jit: 180228
+Startup trace (nsec): print: 18459819
+Startup trace (nsec): init ebpf vm: 8072300454
+Startup trace (nsec): init ebpf done: 8075955085
+Startup trace (nsec): read program: 8408
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10576
+Startup trace (nsec): signature: 147784
+Startup trace (nsec): jit: 187524
+Startup trace (nsec): print: 18435997
+Startup trace (nsec): init ebpf vm: 8097437838
+Startup trace (nsec): init ebpf done: 8101120432
+Startup trace (nsec): read program: 8667
+Startup trace (nsec): lock: 48
+Startup trace (nsec): load elf: 10535
+Startup trace (nsec): signature: 147909
+Startup trace (nsec): jit: 185228
+Startup trace (nsec): print: 18481943
+Startup trace (nsec): init ebpf vm: 8122657117
+Startup trace (nsec): init ebpf done: 8126325022
+Startup trace (nsec): read program: 8363
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10520
+Startup trace (nsec): signature: 147823
+Startup trace (nsec): jit: 179631
+Startup trace (nsec): print: 18469013
+Startup trace (nsec): init ebpf vm: 8147839139
+Startup trace (nsec): init ebpf done: 8151490300
+Startup trace (nsec): read program: 8222
+Startup trace (nsec): lock: 51
+Startup trace (nsec): load elf: 10477
+Startup trace (nsec): signature: 147063
+Startup trace (nsec): jit: 180010
+Startup trace (nsec): print: 18424319
+Startup trace (nsec): init ebpf vm: 8172960992
+Startup trace (nsec): init ebpf done: 8176604463
+Startup trace (nsec): read program: 8312
+Startup trace (nsec): lock: 51
+Startup trace (nsec): load elf: 10526
+Startup trace (nsec): signature: 146723
+Startup trace (nsec): jit: 179955
+Startup trace (nsec): print: 18492663
+Startup trace (nsec): init ebpf vm: 8198150935
+Startup trace (nsec): init ebpf done: 8201807208
+Startup trace (nsec): read program: 8510
+Startup trace (nsec): lock: 48
+Startup trace (nsec): load elf: 10446
+Startup trace (nsec): signature: 145946
+Startup trace (nsec): jit: 179764
+Startup trace (nsec): print: 18492109
+Startup trace (nsec): init ebpf vm: 8223344556
+Startup trace (nsec): init ebpf done: 8227005075
+Startup trace (nsec): read program: 8338
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10440
+Startup trace (nsec): signature: 147039
+Startup trace (nsec): jit: 185787
+Startup trace (nsec): print: 18438007
+Startup trace (nsec): init ebpf vm: 8248494104
+Startup trace (nsec): init ebpf done: 8252163567
+Startup trace (nsec): read program: 8301
+Startup trace (nsec): lock: 50
+Startup trace (nsec): load elf: 10290
+Startup trace (nsec): signature: 151012
+Startup trace (nsec): jit: 179230
+Startup trace (nsec): print: 18480266
+Startup trace (nsec): init ebpf vm: 8273704299
+Startup trace (nsec): init ebpf done: 8277361015
+Startup trace (nsec): read program: 8512
+Startup trace (nsec): lock: 48
+Startup trace (nsec): load elf: 10404
+Startup trace (nsec): signature: 146447
+Startup trace (nsec): jit: 179911
+Startup trace (nsec): print: 18494068
+Startup trace (nsec): init ebpf vm: 8298922876
+Startup trace (nsec): init ebpf done: 8302577192
+Startup trace (nsec): read program: 8459
+Startup trace (nsec): lock: 50
+Startup trace (nsec): load elf: 10369
+Startup trace (nsec): signature: 146367
+Startup trace (nsec): jit: 180023
+Startup trace (nsec): print: 18431263
+Startup trace (nsec): init ebpf vm: 8324048193
+Startup trace (nsec): init ebpf done: 8327692566
+Startup trace (nsec): read program: 8195
+Startup trace (nsec): lock: 48
+Startup trace (nsec): load elf: 10389
+Startup trace (nsec): signature: 146908
+Startup trace (nsec): jit: 179755
+Startup trace (nsec): print: 18483219
+Startup trace (nsec): init ebpf vm: 8349230156
+Startup trace (nsec): init ebpf done: 8352887381
+Startup trace (nsec): read program: 8126
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10450
+Startup trace (nsec): signature: 145855
+Startup trace (nsec): jit: 179451
+Startup trace (nsec): print: 18481482
+Startup trace (nsec): init ebpf vm: 8374422535
+Startup trace (nsec): init ebpf done: 8378094160
+Startup trace (nsec): read program: 8483
+Startup trace (nsec): lock: 51
+Startup trace (nsec): load elf: 10864
+Startup trace (nsec): signature: 146449
+Startup trace (nsec): jit: 185667
+Startup trace (nsec): print: 18432700
+Startup trace (nsec): init ebpf vm: 8399582734
+Startup trace (nsec): init ebpf done: 8403232439
+Startup trace (nsec): read program: 8063
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10486
+Startup trace (nsec): signature: 150101
+Startup trace (nsec): jit: 179228
+Startup trace (nsec): print: 18474045
+Startup trace (nsec): init ebpf vm: 8424763875
+Startup trace (nsec): init ebpf done: 8428427187
+Startup trace (nsec): read program: 8317
+Startup trace (nsec): lock: 54
+Startup trace (nsec): load elf: 10464
+Startup trace (nsec): signature: 146972
+Startup trace (nsec): jit: 179990
+Startup trace (nsec): print: 18484909
+Startup trace (nsec): init ebpf vm: 8449979188
+Startup trace (nsec): init ebpf done: 8453638978
+Startup trace (nsec): read program: 8353
+Startup trace (nsec): lock: 49
+Startup trace (nsec): load elf: 10409
+Startup trace (nsec): signature: 146313
+Startup trace (nsec): jit: 179452
+Startup trace (nsec): print: 18362327
+Received packet:   64 | 01005e00 0016767e 90d49854 080046c0 00280000 40000102
+Received packet:  100 | 01005e00 00fb767e 90d49854 08004500 004cd138 0000ff11
+Received packet:  132 | 33330000 00fb767e 90d49854 86dd600e 84e60044 11fffe80
+Received packet:  120 | 33330000 0016feb1 222420a5 86dd6000 00000038 00010000
+Received packet:  132 | 33330000 00fb767e 90d49854 86dd600e 84e60044 11fffe80
+Received packet:  100 | 01005e00 00fb767e 90d49854 08004500 004cd181 0000ff11
+Received packet:  140 | 33330000 0016feb1 222420a5 86dd6000 0000004c 0001fe80
+Received packet:  120 | 33330000 0016feb1 222420a5 86dd6000 00000038 0001fe80
+Received packet:  131 | 01005e00 00fb767e 90d49854 08004500 006bd1e7 0000ff11
+Received packet:  212 | 33330000 00fb767e 90d49854 86dd600e 84e60094 11fffe80
+Received packet:  132 | 33330000 00fbfeb1 222420a5 86dd600f 11560044 11fffe80
+Received packet:  160 | 33330000 0016feb1 222420a5 86dd6000 00000060 0001fe80
+Received packet:  120 | 33330000 0016feb1 222420a5 86dd6000 00000038 0001fe80
+Received packet:  132 | 33330000 00fbfeb1 222420a5 86dd600f 11560044 11fffe80
+Received packet:  132 | 33330000 00fbfeb1 222420a5 86dd600f 11560044 11fffe80
+Received packet:  212 | 33330000 00fb767e 90d49854 86dd600e 84e60094 11fffe80
+Received packet:  131 | 01005e00 00fb767e 90d49854 08004500 006bd338 0000ff11
+Received packet:  212 | 33330000 00fbfeb1 222420a5 86dd600f 11560094 11fffe80
+Received packet:  212 | 33330000 00fbfeb1 222420a5 86dd600f 11560094 11fffe80

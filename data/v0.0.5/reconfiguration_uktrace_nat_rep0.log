@@ -1,0 +1,1840 @@
+path '/home/okelmann/appclick-ubpf/benchmark' does not contain a 'flake.nix', searching up
+warning: Git tree '/home/okelmann/appclick-ubpf' is dirty
+Using saved setting for 'extra-substituters = https://tum-dse.cachix.org' from ~/.local/share/nix/trusted-settings.json.
+Using saved setting for 'extra-trusted-public-keys = tum-dse.cachix.org-1:v67rK18oLwgO0Z4b69l30SrV1yRtqxKpiHodG4YxhNM=' from ~/.local/share/nix/trusted-settings.json.
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.20s
+     Running `target/debug/bench-helper`
+c[?7l[2J[0mSeaBIOS (version rel-1.16.2-0-gea1b7a073390-prebuilt.qemu.org)
+
+
+iPXE (http://ipxe.org) 00:03.0 CA00 PCI2.10 PnP PMM+BEFD0F40+BEF30F40 CA00
+Press Ctrl-B to configure iPXE (PCI 00:03.0)...                                                                               
+
+
+Booting from ROM..Powered by
+o.   .o       _ _               __ _
+Oo   Oo  ___ (_) | __ __  __ _ ' _) :_
+oO   oO ' _ `| | |/ /  _)' _` | |_|  _)
+oOo oOO| | | | |   (| | | (_) |  _) :_
+ OoOoO ._, ._:_:_,\_._,  .__,_:_, \___)
+                         Telesto 0.16.3
+Startup trace (nsec): click main(): 107763210
+Startup trace (nsec): print config: 109255988
+Received config (length 5697):
+define($MAC0 52:54:00:12:34:56);
+/* End unikraft-provided MAC preamble */
+// From: https://github.com/kohler/click/blob/master/conf/thomer-nat.click
+// Slightly modified to be compatible with Click on Unikraft. Functionality not guaranteed.
+//
+// This Click configuration implements a firewall and NAT, roughly based on the
+// mazu-nat.click example.
+//
+// This example assumes there is one interface that is IP-aliased.  In this
+// example, dev0 and dev0:0 have IP addresses 66.68.65.90 and 192.168.1.1,
+// respectively.  There is a local network, 192.168.1.0/24, and an upstream
+// gateway, 66.58.65.89.  Traffic from the local network is NATed.
+//
+// Connections can be initiated from the NAT box itself, also.
+// 
+// For bugs, suggestions, and, corrections, please email me.
+//
+// Author: Thomer M. Gil (click@thomer.com)
+
+define($DEV0 0)
+
+AddressInfo(
+    dev0-in     172.44.0.2    172.44.0.2/24    00:0d:87:9d:1c:e9,
+    dev0-ex     172.44.0.3                     00:0d:87:9d:1c:e9,
+    gw-addr     172.44.0.1                     00:20:6f:14:54:c2
+);
+
+
+elementclass SniffGatewayDevice {
+  $device |
+  from :: FromDevice($device)
+    -> Print2('Received packet from device')
+    -> t1 :: Tee
+    -> output;
+  input -> q :: Queue(1024)
+    -> t2 :: PullTee
+    -> to :: ToDevice($device);
+  t1[1] -> ToDevice;
+  t2[1] -> ToDevice($device);
+  ScheduleInfo(from .1, to 1);
+}
+
+
+device :: SniffGatewayDevice($DEV0);
+arpq_in :: ARPQuerier(dev0-in) -> device;
+ip_to_extern :: GetIPAddress(16)
+        -> CheckIPHeader
+        -> EtherEncap(0x800, dev0-ex, gw-addr)
+        -> device;
+ip_to_host :: EtherEncap(0x800, gw-addr, dev0-ex)
+        -> ToDevice;
+ip_to_intern :: GetIPAddress(16)
+        -> CheckIPHeader
+        -> arpq_in;
+
+                 
+arp_class :: Classifier(
+        12/0806 20/0001,        // [0] ARP requests
+        12/0806 20/0002,        // [1] ARP replies to host
+        12/0800);               // [2] IP packets
+
+device -> arp_class;
+
+// ARP crap
+arp_class[0] -> ARPResponder(dev0-in, dev0-ex) -> device;
+arp_class[1] -> arp_t :: Tee;
+                arp_t[0] -> ToDevice;
+                arp_t[1] -> [1]arpq_in;
+
+
+// IP packets
+arp_class[2] -> Strip(14)
+   -> CheckIPHeader
+   -> ipclass :: IPClassifier(dst host dev0-ex,
+                              dst host dev0-in,
+                              src net dev0-in);
+
+// Define pattern NAT
+iprw :: IPRewriterPatterns(NAT dev0-ex 50000-65535 - -);
+
+// Rewriting rules for UDP/TCP packets
+// output[0] rewritten to go into the wild
+// output[1] rewritten to come back from the wild or no match
+rw :: IPRewriter(pattern NAT 0 1,
+                 pass 1);
+
+// Rewriting rules for ICMP packets
+irw :: ICMPPingRewriter(pass);
+irw[0] -> ip_to_extern;
+irw[1] -> icmp_me_or_intern :: IPClassifier(dst host dev0-ex, -);
+          icmp_me_or_intern[0] -> ip_to_host;
+          icmp_me_or_intern[1] -> ip_to_intern;
+
+// Rewriting rules for ICMP error packets
+ierw :: ICMPRewriter(rw irw);
+ierw[0] -> icmp_me_or_intern;
+ierw[1] -> icmp_me_or_intern;
+
+
+// Packets directed at dev0-ex.
+// Send it through IPRewriter(pass).  If there was a mapping, it will be
+// rewritten such that dst is dev0-in:net, otherwise dst will still be for
+// dev0-ex.
+ipclass[0] -> Print("->1x") -> [1]rw;
+
+// packets that were rewritten, heading into the wild world.
+rw[0] -> Print("0->") -> ip_to_extern;
+
+// packets that come back from the wild or are not part of an established
+// connection.
+rw[1] -> Print("1->") -> established_class :: IPClassifier(dst host dev0-ex,
+                                           dst net dev0-in);
+
+         // not established yet or returning packets for a connection that was
+         // established from this host itself.
+         established_class[0] ->
+           firewall :: IPClassifier(dst tcp port ssh,
+                                    dst tcp port smtp,
+                                    dst tcp port domain,
+                                    dst udp port domain,
+                                    icmp type echo-reply,
+                                    proto icmp,
+                                    port > 4095,
+                                    -);
+
+                                    firewall[0] -> ip_to_host; // ssh
+                                    firewall[1] -> ip_to_host; // smtp
+                                    firewall[2] -> ip_to_host; // domain (t)
+                                    firewall[3] -> ip_to_host; // domain (u)
+                                    firewall[4] -> [0]irw;     // icmp reply
+                                    firewall[5] -> [0]ierw;    // other icmp
+                                    firewall[6] -> ip_to_host; // port > 4095, probably for connection
+                                                               // originating from host itself
+                                    firewall[7] -> Discard;    // don't allow incoming for port <= 4095
+
+        // established connection
+        established_class[1] -> ip_to_intern;
+
+// To dev0-in.  Only accept from inside network.
+ipclass[1] -> IPClassifier(src net dev0-in) -> ip_to_host;
+
+// Packets from dev0-in:net either stay on local network or go to the wild.
+// Those that go into the wild need to go through the appropriate rewriting
+// element.  (Either UDP/TCP rewriter or ICMP rewriter.)
+ipclass[2] -> inter_class :: IPClassifier(dst net dev0-in, -);
+              inter_class[0] -> ip_to_intern;
+              inter_class[1] -> ip_udp_class :: IPClassifier(tcp or udp,
+                                                             icmp type echo);
+                                ip_udp_class[0] -> Print("->0") -> [0]rw;
+                                ip_udp_class[1] -> [0]irw;
+
+Startup trace (nsec): print config done: 546296859
+Startup trace (nsec): initialize elements: 549868672
+[    0.553774] ERR:  [libvirtio_net] <virtio_net.c @  334> Failed to add a buffer to receive virtqueue 0x400064020: -28
+Startup trace (nsec): initialize elements done: 561274540
+[router_thread:310] Starting driver...
+
+
+Received packet from device: 571930017 ns:  140 | 33330000 0016767e 90d49854 86dd6000 0000004c 00010000
+qemu-system-x86_64: terminating on signal 1 from pid 194283 (/nix/store/h3b1h0p481wd0zrbkq71gw2m7gq13m83-sudo-1.9.17p2/bin/sudo)
+Bench-helper startup time (nsec): 914060342
+path '/home/okelmann/appclick-ubpf/benchmark' does not contain a 'flake.nix', searching up
+warning: Git tree '/home/okelmann/appclick-ubpf' is dirty
+Using saved setting for 'extra-substituters = https://tum-dse.cachix.org' from ~/.local/share/nix/trusted-settings.json.
+Using saved setting for 'extra-trusted-public-keys = tum-dse.cachix.org-1:v67rK18oLwgO0Z4b69l30SrV1yRtqxKpiHodG4YxhNM=' from ~/.local/share/nix/trusted-settings.json.
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.08s
+     Running `target/debug/bench-helper`
+c[?7l[2J[0mSeaBIOS (version rel-1.16.2-0-gea1b7a073390-prebuilt.qemu.org)
+
+
+iPXE (http://ipxe.org) 00:03.0 CA00 PCI2.10 PnP PMM+BEFD0F40+BEF30F40 CA00
+Press Ctrl-B to configure iPXE (PCI 00:03.0)...                                                                               
+
+
+Booting from ROM..Powered by
+o.   .o       _ _               __ _
+Oo   Oo  ___ (_) | __ __  __ _ ' _) :_
+oO   oO ' _ `| | |/ /  _)' _` | |_|  _)
+oOo oOO| | | | |   (| | | (_) |  _) :_
+ OoOoO ._, ._:_:_,\_._,  .__,_:_, \___)
+                         Telesto 0.16.3
+Startup trace (nsec): click main(): 107814094
+Startup trace (nsec): print config: 109311096
+Received config (length 5697):
+define($MAC0 52:54:00:12:34:56);
+/* End unikraft-provided MAC preamble */
+// From: https://github.com/kohler/click/blob/master/conf/thomer-nat.click
+// Slightly modified to be compatible with Click on Unikraft. Functionality not guaranteed.
+//
+// This Click configuration implements a firewall and NAT, roughly based on the
+// mazu-nat.click example.
+//
+// This example assumes there is one interface that is IP-aliased.  In this
+// example, dev0 and dev0:0 have IP addresses 66.68.65.90 and 192.168.1.1,
+// respectively.  There is a local network, 192.168.1.0/24, and an upstream
+// gateway, 66.58.65.89.  Traffic from the local network is NATed.
+//
+// Connections can be initiated from the NAT box itself, also.
+// 
+// For bugs, suggestions, and, corrections, please email me.
+//
+// Author: Thomer M. Gil (click@thomer.com)
+
+define($DEV0 0)
+
+AddressInfo(
+    dev0-in     172.44.0.2    172.44.0.2/24    00:0d:87:9d:1c:e9,
+    dev0-ex     172.44.0.3                     00:0d:87:9d:1c:e9,
+    gw-addr     172.44.0.1                     00:20:6f:14:54:c2
+);
+
+
+elementclass SniffGatewayDevice {
+  $device |
+  from :: FromDevice($device)
+    -> Print2('Received packet from device')
+    -> t1 :: Tee
+    -> output;
+  input -> q :: Queue(1024)
+    -> t2 :: PullTee
+    -> to :: ToDevice($device);
+  t1[1] -> ToDevice;
+  t2[1] -> ToDevice($device);
+  ScheduleInfo(from .1, to 1);
+}
+
+
+device :: SniffGatewayDevice($DEV0);
+arpq_in :: ARPQuerier(dev0-in) -> device;
+ip_to_extern :: GetIPAddress(16)
+        -> CheckIPHeader
+        -> EtherEncap(0x800, dev0-ex, gw-addr)
+        -> device;
+ip_to_host :: EtherEncap(0x800, gw-addr, dev0-ex)
+        -> ToDevice;
+ip_to_intern :: GetIPAddress(16)
+        -> CheckIPHeader
+        -> arpq_in;
+
+                 
+arp_class :: Classifier(
+        12/0806 20/0001,        // [0] ARP requests
+        12/0806 20/0002,        // [1] ARP replies to host
+        12/0800);               // [2] IP packets
+
+device -> arp_class;
+
+// ARP crap
+arp_class[0] -> ARPResponder(dev0-in, dev0-ex) -> device;
+arp_class[1] -> arp_t :: Tee;
+                arp_t[0] -> ToDevice;
+                arp_t[1] -> [1]arpq_in;
+
+
+// IP packets
+arp_class[2] -> Strip(14)
+   -> CheckIPHeader
+   -> ipclass :: IPClassifier(dst host dev0-ex,
+                              dst host dev0-in,
+                              src net dev0-in);
+
+// Define pattern NAT
+iprw :: IPRewriterPatterns(NAT dev0-ex 50000-65535 - -);
+
+// Rewriting rules for UDP/TCP packets
+// output[0] rewritten to go into the wild
+// output[1] rewritten to come back from the wild or no match
+rw :: IPRewriter(pattern NAT 0 1,
+                 pass 1);
+
+// Rewriting rules for ICMP packets
+irw :: ICMPPingRewriter(pass);
+irw[0] -> ip_to_extern;
+irw[1] -> icmp_me_or_intern :: IPClassifier(dst host dev0-ex, -);
+          icmp_me_or_intern[0] -> ip_to_host;
+          icmp_me_or_intern[1] -> ip_to_intern;
+
+// Rewriting rules for ICMP error packets
+ierw :: ICMPRewriter(rw irw);
+ierw[0] -> icmp_me_or_intern;
+ierw[1] -> icmp_me_or_intern;
+
+
+// Packets directed at dev0-ex.
+// Send it through IPRewriter(pass).  If there was a mapping, it will be
+// rewritten such that dst is dev0-in:net, otherwise dst will still be for
+// dev0-ex.
+ipclass[0] -> Print("->1x") -> [1]rw;
+
+// packets that were rewritten, heading into the wild world.
+rw[0] -> Print("0->") -> ip_to_extern;
+
+// packets that come back from the wild or are not part of an established
+// connection.
+rw[1] -> Print("1->") -> established_class :: IPClassifier(dst host dev0-ex,
+                                           dst net dev0-in);
+
+         // not established yet or returning packets for a connection that was
+         // established from this host itself.
+         established_class[0] ->
+           firewall :: IPClassifier(dst tcp port ssh,
+                                    dst tcp port smtp,
+                                    dst tcp port domain,
+                                    dst udp port domain,
+                                    icmp type echo-reply,
+                                    proto icmp,
+                                    port > 4095,
+                                    -);
+
+                                    firewall[0] -> ip_to_host; // ssh
+                                    firewall[1] -> ip_to_host; // smtp
+                                    firewall[2] -> ip_to_host; // domain (t)
+                                    firewall[3] -> ip_to_host; // domain (u)
+                                    firewall[4] -> [0]irw;     // icmp reply
+                                    firewall[5] -> [0]ierw;    // other icmp
+                                    firewall[6] -> ip_to_host; // port > 4095, probably for connection
+                                                               // originating from host itself
+                                    firewall[7] -> Discard;    // don't allow incoming for port <= 4095
+
+        // established connection
+        established_class[1] -> ip_to_intern;
+
+// To dev0-in.  Only accept from inside network.
+ipclass[1] -> IPClassifier(src net dev0-in) -> ip_to_host;
+
+// Packets from dev0-in:net either stay on local network or go to the wild.
+// Those that go into the wild need to go through the appropriate rewriting
+// element.  (Either UDP/TCP rewriter or ICMP rewriter.)
+ipclass[2] -> inter_class :: IPClassifier(dst net dev0-in, -);
+              inter_class[0] -> ip_to_intern;
+              inter_class[1] -> ip_udp_class :: IPClassifier(tcp or udp,
+                                                             icmp type echo);
+                                ip_udp_class[0] -> Print("->0") -> [0]rw;
+                                ip_udp_class[1] -> [0]irw;
+
+Startup trace (nsec): print config done: 549504667
+Startup trace (nsec): initialize elements: 553101575
+[    0.557038] ERR:  [libvirtio_net] <virtio_net.c @  334> Failed to add a buffer to receive virtqueue 0x400064020: -28
+Startup trace (nsec): initialize elements done: 564621012
+[router_thread:310] Starting driver...
+
+
+Received packet from device: 575357006 ns:   64 | 01005e00 0016767e 90d49854 080046c0 00280000 40000102
+qemu-system-x86_64: terminating on signal 1 from pid 194358 (/nix/store/h3b1h0p481wd0zrbkq71gw2m7gq13m83-sudo-1.9.17p2/bin/sudo)
+Bench-helper startup time (nsec): 919662488
+path '/home/okelmann/appclick-ubpf/benchmark' does not contain a 'flake.nix', searching up
+warning: Git tree '/home/okelmann/appclick-ubpf' is dirty
+Using saved setting for 'extra-substituters = https://tum-dse.cachix.org' from ~/.local/share/nix/trusted-settings.json.
+Using saved setting for 'extra-trusted-public-keys = tum-dse.cachix.org-1:v67rK18oLwgO0Z4b69l30SrV1yRtqxKpiHodG4YxhNM=' from ~/.local/share/nix/trusted-settings.json.
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.08s
+     Running `target/debug/bench-helper`
+c[?7l[2J[0mSeaBIOS (version rel-1.16.2-0-gea1b7a073390-prebuilt.qemu.org)
+
+
+iPXE (http://ipxe.org) 00:03.0 CA00 PCI2.10 PnP PMM+BEFD0F40+BEF30F40 CA00
+Press Ctrl-B to configure iPXE (PCI 00:03.0)...                                                                               
+
+
+Booting from ROM..Powered by
+o.   .o       _ _               __ _
+Oo   Oo  ___ (_) | __ __  __ _ ' _) :_
+oO   oO ' _ `| | |/ /  _)' _` | |_|  _)
+oOo oOO| | | | |   (| | | (_) |  _) :_
+ OoOoO ._, ._:_:_,\_._,  .__,_:_, \___)
+                         Telesto 0.16.3
+Startup trace (nsec): click main(): 107868334
+Startup trace (nsec): print config: 109357369
+Received config (length 5697):
+define($MAC0 52:54:00:12:34:56);
+/* End unikraft-provided MAC preamble */
+// From: https://github.com/kohler/click/blob/master/conf/thomer-nat.click
+// Slightly modified to be compatible with Click on Unikraft. Functionality not guaranteed.
+//
+// This Click configuration implements a firewall and NAT, roughly based on the
+// mazu-nat.click example.
+//
+// This example assumes there is one interface that is IP-aliased.  In this
+// example, dev0 and dev0:0 have IP addresses 66.68.65.90 and 192.168.1.1,
+// respectively.  There is a local network, 192.168.1.0/24, and an upstream
+// gateway, 66.58.65.89.  Traffic from the local network is NATed.
+//
+// Connections can be initiated from the NAT box itself, also.
+// 
+// For bugs, suggestions, and, corrections, please email me.
+//
+// Author: Thomer M. Gil (click@thomer.com)
+
+define($DEV0 0)
+
+AddressInfo(
+    dev0-in     172.44.0.2    172.44.0.2/24    00:0d:87:9d:1c:e9,
+    dev0-ex     172.44.0.3                     00:0d:87:9d:1c:e9,
+    gw-addr     172.44.0.1                     00:20:6f:14:54:c2
+);
+
+
+elementclass SniffGatewayDevice {
+  $device |
+  from :: FromDevice($device)
+    -> Print2('Received packet from device')
+    -> t1 :: Tee
+    -> output;
+  input -> q :: Queue(1024)
+    -> t2 :: PullTee
+    -> to :: ToDevice($device);
+  t1[1] -> ToDevice;
+  t2[1] -> ToDevice($device);
+  ScheduleInfo(from .1, to 1);
+}
+
+
+device :: SniffGatewayDevice($DEV0);
+arpq_in :: ARPQuerier(dev0-in) -> device;
+ip_to_extern :: GetIPAddress(16)
+        -> CheckIPHeader
+        -> EtherEncap(0x800, dev0-ex, gw-addr)
+        -> device;
+ip_to_host :: EtherEncap(0x800, gw-addr, dev0-ex)
+        -> ToDevice;
+ip_to_intern :: GetIPAddress(16)
+        -> CheckIPHeader
+        -> arpq_in;
+
+                 
+arp_class :: Classifier(
+        12/0806 20/0001,        // [0] ARP requests
+        12/0806 20/0002,        // [1] ARP replies to host
+        12/0800);               // [2] IP packets
+
+device -> arp_class;
+
+// ARP crap
+arp_class[0] -> ARPResponder(dev0-in, dev0-ex) -> device;
+arp_class[1] -> arp_t :: Tee;
+                arp_t[0] -> ToDevice;
+                arp_t[1] -> [1]arpq_in;
+
+
+// IP packets
+arp_class[2] -> Strip(14)
+   -> CheckIPHeader
+   -> ipclass :: IPClassifier(dst host dev0-ex,
+                              dst host dev0-in,
+                              src net dev0-in);
+
+// Define pattern NAT
+iprw :: IPRewriterPatterns(NAT dev0-ex 50000-65535 - -);
+
+// Rewriting rules for UDP/TCP packets
+// output[0] rewritten to go into the wild
+// output[1] rewritten to come back from the wild or no match
+rw :: IPRewriter(pattern NAT 0 1,
+                 pass 1);
+
+// Rewriting rules for ICMP packets
+irw :: ICMPPingRewriter(pass);
+irw[0] -> ip_to_extern;
+irw[1] -> icmp_me_or_intern :: IPClassifier(dst host dev0-ex, -);
+          icmp_me_or_intern[0] -> ip_to_host;
+          icmp_me_or_intern[1] -> ip_to_intern;
+
+// Rewriting rules for ICMP error packets
+ierw :: ICMPRewriter(rw irw);
+ierw[0] -> icmp_me_or_intern;
+ierw[1] -> icmp_me_or_intern;
+
+
+// Packets directed at dev0-ex.
+// Send it through IPRewriter(pass).  If there was a mapping, it will be
+// rewritten such that dst is dev0-in:net, otherwise dst will still be for
+// dev0-ex.
+ipclass[0] -> Print("->1x") -> [1]rw;
+
+// packets that were rewritten, heading into the wild world.
+rw[0] -> Print("0->") -> ip_to_extern;
+
+// packets that come back from the wild or are not part of an established
+// connection.
+rw[1] -> Print("1->") -> established_class :: IPClassifier(dst host dev0-ex,
+                                           dst net dev0-in);
+
+         // not established yet or returning packets for a connection that was
+         // established from this host itself.
+         established_class[0] ->
+           firewall :: IPClassifier(dst tcp port ssh,
+                                    dst tcp port smtp,
+                                    dst tcp port domain,
+                                    dst udp port domain,
+                                    icmp type echo-reply,
+                                    proto icmp,
+                                    port > 4095,
+                                    -);
+
+                                    firewall[0] -> ip_to_host; // ssh
+                                    firewall[1] -> ip_to_host; // smtp
+                                    firewall[2] -> ip_to_host; // domain (t)
+                                    firewall[3] -> ip_to_host; // domain (u)
+                                    firewall[4] -> [0]irw;     // icmp reply
+                                    firewall[5] -> [0]ierw;    // other icmp
+                                    firewall[6] -> ip_to_host; // port > 4095, probably for connection
+                                                               // originating from host itself
+                                    firewall[7] -> Discard;    // don't allow incoming for port <= 4095
+
+        // established connection
+        established_class[1] -> ip_to_intern;
+
+// To dev0-in.  Only accept from inside network.
+ipclass[1] -> IPClassifier(src net dev0-in) -> ip_to_host;
+
+// Packets from dev0-in:net either stay on local network or go to the wild.
+// Those that go into the wild need to go through the appropriate rewriting
+// element.  (Either UDP/TCP rewriter or ICMP rewriter.)
+ipclass[2] -> inter_class :: IPClassifier(dst net dev0-in, -);
+              inter_class[0] -> ip_to_intern;
+              inter_class[1] -> ip_udp_class :: IPClassifier(tcp or udp,
+                                                             icmp type echo);
+                                ip_udp_class[0] -> Print("->0") -> [0]rw;
+                                ip_udp_class[1] -> [0]irw;
+
+Startup trace (nsec): print config done: 546820404
+Startup trace (nsec): initialize elements: 550396601
+[    0.554314] ERR:  [libvirtio_net] <virtio_net.c @  334> Failed to add a buffer to receive virtqueue 0x400064020: -28
+Startup trace (nsec): initialize elements done: 561806353
+[router_thread:310] Starting driver...
+
+
+Received packet from device: 572461396 ns:  120 | 33330000 0016fee5 c9b5cd95 86dd6000 00000038 00010000
+qemu-system-x86_64: terminating on signal 1 from pid 194464 (/nix/store/h3b1h0p481wd0zrbkq71gw2m7gq13m83-sudo-1.9.17p2/bin/sudo)
+Bench-helper startup time (nsec): 915672747
+path '/home/okelmann/appclick-ubpf/benchmark' does not contain a 'flake.nix', searching up
+warning: Git tree '/home/okelmann/appclick-ubpf' is dirty
+Using saved setting for 'extra-substituters = https://tum-dse.cachix.org' from ~/.local/share/nix/trusted-settings.json.
+Using saved setting for 'extra-trusted-public-keys = tum-dse.cachix.org-1:v67rK18oLwgO0Z4b69l30SrV1yRtqxKpiHodG4YxhNM=' from ~/.local/share/nix/trusted-settings.json.
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.08s
+     Running `target/debug/bench-helper`
+c[?7l[2J[0mSeaBIOS (version rel-1.16.2-0-gea1b7a073390-prebuilt.qemu.org)
+
+
+iPXE (http://ipxe.org) 00:03.0 CA00 PCI2.10 PnP PMM+BEFD0F40+BEF30F40 CA00
+Press Ctrl-B to configure iPXE (PCI 00:03.0)...                                                                               
+
+
+Booting from ROM..Powered by
+o.   .o       _ _               __ _
+Oo   Oo  ___ (_) | __ __  __ _ ' _) :_
+oO   oO ' _ `| | |/ /  _)' _` | |_|  _)
+oOo oOO| | | | |   (| | | (_) |  _) :_
+ OoOoO ._, ._:_:_,\_._,  .__,_:_, \___)
+                         Telesto 0.16.3
+Startup trace (nsec): click main(): 107767793
+Startup trace (nsec): print config: 109251490
+Received config (length 5697):
+define($MAC0 52:54:00:12:34:56);
+/* End unikraft-provided MAC preamble */
+// From: https://github.com/kohler/click/blob/master/conf/thomer-nat.click
+// Slightly modified to be compatible with Click on Unikraft. Functionality not guaranteed.
+//
+// This Click configuration implements a firewall and NAT, roughly based on the
+// mazu-nat.click example.
+//
+// This example assumes there is one interface that is IP-aliased.  In this
+// example, dev0 and dev0:0 have IP addresses 66.68.65.90 and 192.168.1.1,
+// respectively.  There is a local network, 192.168.1.0/24, and an upstream
+// gateway, 66.58.65.89.  Traffic from the local network is NATed.
+//
+// Connections can be initiated from the NAT box itself, also.
+// 
+// For bugs, suggestions, and, corrections, please email me.
+//
+// Author: Thomer M. Gil (click@thomer.com)
+
+define($DEV0 0)
+
+AddressInfo(
+    dev0-in     172.44.0.2    172.44.0.2/24    00:0d:87:9d:1c:e9,
+    dev0-ex     172.44.0.3                     00:0d:87:9d:1c:e9,
+    gw-addr     172.44.0.1                     00:20:6f:14:54:c2
+);
+
+
+elementclass SniffGatewayDevice {
+  $device |
+  from :: FromDevice($device)
+    -> Print2('Received packet from device')
+    -> t1 :: Tee
+    -> output;
+  input -> q :: Queue(1024)
+    -> t2 :: PullTee
+    -> to :: ToDevice($device);
+  t1[1] -> ToDevice;
+  t2[1] -> ToDevice($device);
+  ScheduleInfo(from .1, to 1);
+}
+
+
+device :: SniffGatewayDevice($DEV0);
+arpq_in :: ARPQuerier(dev0-in) -> device;
+ip_to_extern :: GetIPAddress(16)
+        -> CheckIPHeader
+        -> EtherEncap(0x800, dev0-ex, gw-addr)
+        -> device;
+ip_to_host :: EtherEncap(0x800, gw-addr, dev0-ex)
+        -> ToDevice;
+ip_to_intern :: GetIPAddress(16)
+        -> CheckIPHeader
+        -> arpq_in;
+
+                 
+arp_class :: Classifier(
+        12/0806 20/0001,        // [0] ARP requests
+        12/0806 20/0002,        // [1] ARP replies to host
+        12/0800);               // [2] IP packets
+
+device -> arp_class;
+
+// ARP crap
+arp_class[0] -> ARPResponder(dev0-in, dev0-ex) -> device;
+arp_class[1] -> arp_t :: Tee;
+                arp_t[0] -> ToDevice;
+                arp_t[1] -> [1]arpq_in;
+
+
+// IP packets
+arp_class[2] -> Strip(14)
+   -> CheckIPHeader
+   -> ipclass :: IPClassifier(dst host dev0-ex,
+                              dst host dev0-in,
+                              src net dev0-in);
+
+// Define pattern NAT
+iprw :: IPRewriterPatterns(NAT dev0-ex 50000-65535 - -);
+
+// Rewriting rules for UDP/TCP packets
+// output[0] rewritten to go into the wild
+// output[1] rewritten to come back from the wild or no match
+rw :: IPRewriter(pattern NAT 0 1,
+                 pass 1);
+
+// Rewriting rules for ICMP packets
+irw :: ICMPPingRewriter(pass);
+irw[0] -> ip_to_extern;
+irw[1] -> icmp_me_or_intern :: IPClassifier(dst host dev0-ex, -);
+          icmp_me_or_intern[0] -> ip_to_host;
+          icmp_me_or_intern[1] -> ip_to_intern;
+
+// Rewriting rules for ICMP error packets
+ierw :: ICMPRewriter(rw irw);
+ierw[0] -> icmp_me_or_intern;
+ierw[1] -> icmp_me_or_intern;
+
+
+// Packets directed at dev0-ex.
+// Send it through IPRewriter(pass).  If there was a mapping, it will be
+// rewritten such that dst is dev0-in:net, otherwise dst will still be for
+// dev0-ex.
+ipclass[0] -> Print("->1x") -> [1]rw;
+
+// packets that were rewritten, heading into the wild world.
+rw[0] -> Print("0->") -> ip_to_extern;
+
+// packets that come back from the wild or are not part of an established
+// connection.
+rw[1] -> Print("1->") -> established_class :: IPClassifier(dst host dev0-ex,
+                                           dst net dev0-in);
+
+         // not established yet or returning packets for a connection that was
+         // established from this host itself.
+         established_class[0] ->
+           firewall :: IPClassifier(dst tcp port ssh,
+                                    dst tcp port smtp,
+                                    dst tcp port domain,
+                                    dst udp port domain,
+                                    icmp type echo-reply,
+                                    proto icmp,
+                                    port > 4095,
+                                    -);
+
+                                    firewall[0] -> ip_to_host; // ssh
+                                    firewall[1] -> ip_to_host; // smtp
+                                    firewall[2] -> ip_to_host; // domain (t)
+                                    firewall[3] -> ip_to_host; // domain (u)
+                                    firewall[4] -> [0]irw;     // icmp reply
+                                    firewall[5] -> [0]ierw;    // other icmp
+                                    firewall[6] -> ip_to_host; // port > 4095, probably for connection
+                                                               // originating from host itself
+                                    firewall[7] -> Discard;    // don't allow incoming for port <= 4095
+
+        // established connection
+        established_class[1] -> ip_to_intern;
+
+// To dev0-in.  Only accept from inside network.
+ipclass[1] -> IPClassifier(src net dev0-in) -> ip_to_host;
+
+// Packets from dev0-in:net either stay on local network or go to the wild.
+// Those that go into the wild need to go through the appropriate rewriting
+// element.  (Either UDP/TCP rewriter or ICMP rewriter.)
+ipclass[2] -> inter_class :: IPClassifier(dst net dev0-in, -);
+              inter_class[0] -> ip_to_intern;
+              inter_class[1] -> ip_udp_class :: IPClassifier(tcp or udp,
+                                                             icmp type echo);
+                                ip_udp_class[0] -> Print("->0") -> [0]rw;
+                                ip_udp_class[1] -> [0]irw;
+
+Startup trace (nsec): print config done: 548919984
+Startup trace (nsec): initialize elements: 552519602
+[    0.556460] ERR:  [libvirtio_net] <virtio_net.c @  334> Failed to add a buffer to receive virtqueue 0x400064020: -28
+Startup trace (nsec): initialize elements done: 564031725
+[router_thread:310] Starting driver...
+
+
+Received packet from device: 574711652 ns:  180 | 33330000 0016767e 90d49854 86dd6000 00000074 0001fe80
+qemu-system-x86_64: terminating on signal 1 from pid 194540 (/nix/store/h3b1h0p481wd0zrbkq71gw2m7gq13m83-sudo-1.9.17p2/bin/sudo)
+Bench-helper startup time (nsec): 919787688
+path '/home/okelmann/appclick-ubpf/benchmark' does not contain a 'flake.nix', searching up
+warning: Git tree '/home/okelmann/appclick-ubpf' is dirty
+Using saved setting for 'extra-substituters = https://tum-dse.cachix.org' from ~/.local/share/nix/trusted-settings.json.
+Using saved setting for 'extra-trusted-public-keys = tum-dse.cachix.org-1:v67rK18oLwgO0Z4b69l30SrV1yRtqxKpiHodG4YxhNM=' from ~/.local/share/nix/trusted-settings.json.
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.08s
+     Running `target/debug/bench-helper`
+c[?7l[2J[0mSeaBIOS (version rel-1.16.2-0-gea1b7a073390-prebuilt.qemu.org)
+
+
+iPXE (http://ipxe.org) 00:03.0 CA00 PCI2.10 PnP PMM+BEFD0F40+BEF30F40 CA00
+Press Ctrl-B to configure iPXE (PCI 00:03.0)...                                                                               
+
+
+Booting from ROM..Powered by
+o.   .o       _ _               __ _
+Oo   Oo  ___ (_) | __ __  __ _ ' _) :_
+oO   oO ' _ `| | |/ /  _)' _` | |_|  _)
+oOo oOO| | | | |   (| | | (_) |  _) :_
+ OoOoO ._, ._:_:_,\_._,  .__,_:_, \___)
+                         Telesto 0.16.3
+Startup trace (nsec): click main(): 107787741
+Startup trace (nsec): print config: 109273527
+Received config (length 5697):
+define($MAC0 52:54:00:12:34:56);
+/* End unikraft-provided MAC preamble */
+// From: https://github.com/kohler/click/blob/master/conf/thomer-nat.click
+// Slightly modified to be compatible with Click on Unikraft. Functionality not guaranteed.
+//
+// This Click configuration implements a firewall and NAT, roughly based on the
+// mazu-nat.click example.
+//
+// This example assumes there is one interface that is IP-aliased.  In this
+// example, dev0 and dev0:0 have IP addresses 66.68.65.90 and 192.168.1.1,
+// respectively.  There is a local network, 192.168.1.0/24, and an upstream
+// gateway, 66.58.65.89.  Traffic from the local network is NATed.
+//
+// Connections can be initiated from the NAT box itself, also.
+// 
+// For bugs, suggestions, and, corrections, please email me.
+//
+// Author: Thomer M. Gil (click@thomer.com)
+
+define($DEV0 0)
+
+AddressInfo(
+    dev0-in     172.44.0.2    172.44.0.2/24    00:0d:87:9d:1c:e9,
+    dev0-ex     172.44.0.3                     00:0d:87:9d:1c:e9,
+    gw-addr     172.44.0.1                     00:20:6f:14:54:c2
+);
+
+
+elementclass SniffGatewayDevice {
+  $device |
+  from :: FromDevice($device)
+    -> Print2('Received packet from device')
+    -> t1 :: Tee
+    -> output;
+  input -> q :: Queue(1024)
+    -> t2 :: PullTee
+    -> to :: ToDevice($device);
+  t1[1] -> ToDevice;
+  t2[1] -> ToDevice($device);
+  ScheduleInfo(from .1, to 1);
+}
+
+
+device :: SniffGatewayDevice($DEV0);
+arpq_in :: ARPQuerier(dev0-in) -> device;
+ip_to_extern :: GetIPAddress(16)
+        -> CheckIPHeader
+        -> EtherEncap(0x800, dev0-ex, gw-addr)
+        -> device;
+ip_to_host :: EtherEncap(0x800, gw-addr, dev0-ex)
+        -> ToDevice;
+ip_to_intern :: GetIPAddress(16)
+        -> CheckIPHeader
+        -> arpq_in;
+
+                 
+arp_class :: Classifier(
+        12/0806 20/0001,        // [0] ARP requests
+        12/0806 20/0002,        // [1] ARP replies to host
+        12/0800);               // [2] IP packets
+
+device -> arp_class;
+
+// ARP crap
+arp_class[0] -> ARPResponder(dev0-in, dev0-ex) -> device;
+arp_class[1] -> arp_t :: Tee;
+                arp_t[0] -> ToDevice;
+                arp_t[1] -> [1]arpq_in;
+
+
+// IP packets
+arp_class[2] -> Strip(14)
+   -> CheckIPHeader
+   -> ipclass :: IPClassifier(dst host dev0-ex,
+                              dst host dev0-in,
+                              src net dev0-in);
+
+// Define pattern NAT
+iprw :: IPRewriterPatterns(NAT dev0-ex 50000-65535 - -);
+
+// Rewriting rules for UDP/TCP packets
+// output[0] rewritten to go into the wild
+// output[1] rewritten to come back from the wild or no match
+rw :: IPRewriter(pattern NAT 0 1,
+                 pass 1);
+
+// Rewriting rules for ICMP packets
+irw :: ICMPPingRewriter(pass);
+irw[0] -> ip_to_extern;
+irw[1] -> icmp_me_or_intern :: IPClassifier(dst host dev0-ex, -);
+          icmp_me_or_intern[0] -> ip_to_host;
+          icmp_me_or_intern[1] -> ip_to_intern;
+
+// Rewriting rules for ICMP error packets
+ierw :: ICMPRewriter(rw irw);
+ierw[0] -> icmp_me_or_intern;
+ierw[1] -> icmp_me_or_intern;
+
+
+// Packets directed at dev0-ex.
+// Send it through IPRewriter(pass).  If there was a mapping, it will be
+// rewritten such that dst is dev0-in:net, otherwise dst will still be for
+// dev0-ex.
+ipclass[0] -> Print("->1x") -> [1]rw;
+
+// packets that were rewritten, heading into the wild world.
+rw[0] -> Print("0->") -> ip_to_extern;
+
+// packets that come back from the wild or are not part of an established
+// connection.
+rw[1] -> Print("1->") -> established_class :: IPClassifier(dst host dev0-ex,
+                                           dst net dev0-in);
+
+         // not established yet or returning packets for a connection that was
+         // established from this host itself.
+         established_class[0] ->
+           firewall :: IPClassifier(dst tcp port ssh,
+                                    dst tcp port smtp,
+                                    dst tcp port domain,
+                                    dst udp port domain,
+                                    icmp type echo-reply,
+                                    proto icmp,
+                                    port > 4095,
+                                    -);
+
+                                    firewall[0] -> ip_to_host; // ssh
+                                    firewall[1] -> ip_to_host; // smtp
+                                    firewall[2] -> ip_to_host; // domain (t)
+                                    firewall[3] -> ip_to_host; // domain (u)
+                                    firewall[4] -> [0]irw;     // icmp reply
+                                    firewall[5] -> [0]ierw;    // other icmp
+                                    firewall[6] -> ip_to_host; // port > 4095, probably for connection
+                                                               // originating from host itself
+                                    firewall[7] -> Discard;    // don't allow incoming for port <= 4095
+
+        // established connection
+        established_class[1] -> ip_to_intern;
+
+// To dev0-in.  Only accept from inside network.
+ipclass[1] -> IPClassifier(src net dev0-in) -> ip_to_host;
+
+// Packets from dev0-in:net either stay on local network or go to the wild.
+// Those that go into the wild need to go through the appropriate rewriting
+// element.  (Either UDP/TCP rewriter or ICMP rewriter.)
+ipclass[2] -> inter_class :: IPClassifier(dst net dev0-in, -);
+              inter_class[0] -> ip_to_intern;
+              inter_class[1] -> ip_udp_class :: IPClassifier(tcp or udp,
+                                                             icmp type echo);
+                                ip_udp_class[0] -> Print("->0") -> [0]rw;
+                                ip_udp_class[1] -> [0]irw;
+
+Startup trace (nsec): print config done: 547861577
+Startup trace (nsec): initialize elements: 551450757
+[    0.555375] ERR:  [libvirtio_net] <virtio_net.c @  334> Failed to add a buffer to receive virtqueue 0x400064020: -28
+Startup trace (nsec): initialize elements done: 562897564
+[router_thread:310] Starting driver...
+
+
+Received packet from device: 573568896 ns:   64 | 01005e00 0016767e 90d49854 080046c0 00280000 40000102
+qemu-system-x86_64: terminating on signal 1 from pid 194618 (/nix/store/h3b1h0p481wd0zrbkq71gw2m7gq13m83-sudo-1.9.17p2/bin/sudo)
+Bench-helper startup time (nsec): 915876998
+path '/home/okelmann/appclick-ubpf/benchmark' does not contain a 'flake.nix', searching up
+warning: Git tree '/home/okelmann/appclick-ubpf' is dirty
+Using saved setting for 'extra-substituters = https://tum-dse.cachix.org' from ~/.local/share/nix/trusted-settings.json.
+Using saved setting for 'extra-trusted-public-keys = tum-dse.cachix.org-1:v67rK18oLwgO0Z4b69l30SrV1yRtqxKpiHodG4YxhNM=' from ~/.local/share/nix/trusted-settings.json.
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.08s
+     Running `target/debug/bench-helper`
+c[?7l[2J[0mSeaBIOS (version rel-1.16.2-0-gea1b7a073390-prebuilt.qemu.org)
+
+
+iPXE (http://ipxe.org) 00:03.0 CA00 PCI2.10 PnP PMM+BEFD0F40+BEF30F40 CA00
+Press Ctrl-B to configure iPXE (PCI 00:03.0)...                                                                               
+
+
+Booting from ROM..Powered by
+o.   .o       _ _               __ _
+Oo   Oo  ___ (_) | __ __  __ _ ' _) :_
+oO   oO ' _ `| | |/ /  _)' _` | |_|  _)
+oOo oOO| | | | |   (| | | (_) |  _) :_
+ OoOoO ._, ._:_:_,\_._,  .__,_:_, \___)
+                         Telesto 0.16.3
+Startup trace (nsec): click main(): 107859046
+Startup trace (nsec): print config: 109358329
+Received config (length 5697):
+define($MAC0 52:54:00:12:34:56);
+/* End unikraft-provided MAC preamble */
+// From: https://github.com/kohler/click/blob/master/conf/thomer-nat.click
+// Slightly modified to be compatible with Click on Unikraft. Functionality not guaranteed.
+//
+// This Click configuration implements a firewall and NAT, roughly based on the
+// mazu-nat.click example.
+//
+// This example assumes there is one interface that is IP-aliased.  In this
+// example, dev0 and dev0:0 have IP addresses 66.68.65.90 and 192.168.1.1,
+// respectively.  There is a local network, 192.168.1.0/24, and an upstream
+// gateway, 66.58.65.89.  Traffic from the local network is NATed.
+//
+// Connections can be initiated from the NAT box itself, also.
+// 
+// For bugs, suggestions, and, corrections, please email me.
+//
+// Author: Thomer M. Gil (click@thomer.com)
+
+define($DEV0 0)
+
+AddressInfo(
+    dev0-in     172.44.0.2    172.44.0.2/24    00:0d:87:9d:1c:e9,
+    dev0-ex     172.44.0.3                     00:0d:87:9d:1c:e9,
+    gw-addr     172.44.0.1                     00:20:6f:14:54:c2
+);
+
+
+elementclass SniffGatewayDevice {
+  $device |
+  from :: FromDevice($device)
+    -> Print2('Received packet from device')
+    -> t1 :: Tee
+    -> output;
+  input -> q :: Queue(1024)
+    -> t2 :: PullTee
+    -> to :: ToDevice($device);
+  t1[1] -> ToDevice;
+  t2[1] -> ToDevice($device);
+  ScheduleInfo(from .1, to 1);
+}
+
+
+device :: SniffGatewayDevice($DEV0);
+arpq_in :: ARPQuerier(dev0-in) -> device;
+ip_to_extern :: GetIPAddress(16)
+        -> CheckIPHeader
+        -> EtherEncap(0x800, dev0-ex, gw-addr)
+        -> device;
+ip_to_host :: EtherEncap(0x800, gw-addr, dev0-ex)
+        -> ToDevice;
+ip_to_intern :: GetIPAddress(16)
+        -> CheckIPHeader
+        -> arpq_in;
+
+                 
+arp_class :: Classifier(
+        12/0806 20/0001,        // [0] ARP requests
+        12/0806 20/0002,        // [1] ARP replies to host
+        12/0800);               // [2] IP packets
+
+device -> arp_class;
+
+// ARP crap
+arp_class[0] -> ARPResponder(dev0-in, dev0-ex) -> device;
+arp_class[1] -> arp_t :: Tee;
+                arp_t[0] -> ToDevice;
+                arp_t[1] -> [1]arpq_in;
+
+
+// IP packets
+arp_class[2] -> Strip(14)
+   -> CheckIPHeader
+   -> ipclass :: IPClassifier(dst host dev0-ex,
+                              dst host dev0-in,
+                              src net dev0-in);
+
+// Define pattern NAT
+iprw :: IPRewriterPatterns(NAT dev0-ex 50000-65535 - -);
+
+// Rewriting rules for UDP/TCP packets
+// output[0] rewritten to go into the wild
+// output[1] rewritten to come back from the wild or no match
+rw :: IPRewriter(pattern NAT 0 1,
+                 pass 1);
+
+// Rewriting rules for ICMP packets
+irw :: ICMPPingRewriter(pass);
+irw[0] -> ip_to_extern;
+irw[1] -> icmp_me_or_intern :: IPClassifier(dst host dev0-ex, -);
+          icmp_me_or_intern[0] -> ip_to_host;
+          icmp_me_or_intern[1] -> ip_to_intern;
+
+// Rewriting rules for ICMP error packets
+ierw :: ICMPRewriter(rw irw);
+ierw[0] -> icmp_me_or_intern;
+ierw[1] -> icmp_me_or_intern;
+
+
+// Packets directed at dev0-ex.
+// Send it through IPRewriter(pass).  If there was a mapping, it will be
+// rewritten such that dst is dev0-in:net, otherwise dst will still be for
+// dev0-ex.
+ipclass[0] -> Print("->1x") -> [1]rw;
+
+// packets that were rewritten, heading into the wild world.
+rw[0] -> Print("0->") -> ip_to_extern;
+
+// packets that come back from the wild or are not part of an established
+// connection.
+rw[1] -> Print("1->") -> established_class :: IPClassifier(dst host dev0-ex,
+                                           dst net dev0-in);
+
+         // not established yet or returning packets for a connection that was
+         // established from this host itself.
+         established_class[0] ->
+           firewall :: IPClassifier(dst tcp port ssh,
+                                    dst tcp port smtp,
+                                    dst tcp port domain,
+                                    dst udp port domain,
+                                    icmp type echo-reply,
+                                    proto icmp,
+                                    port > 4095,
+                                    -);
+
+                                    firewall[0] -> ip_to_host; // ssh
+                                    firewall[1] -> ip_to_host; // smtp
+                                    firewall[2] -> ip_to_host; // domain (t)
+                                    firewall[3] -> ip_to_host; // domain (u)
+                                    firewall[4] -> [0]irw;     // icmp reply
+                                    firewall[5] -> [0]ierw;    // other icmp
+                                    firewall[6] -> ip_to_host; // port > 4095, probably for connection
+                                                               // originating from host itself
+                                    firewall[7] -> Discard;    // don't allow incoming for port <= 4095
+
+        // established connection
+        established_class[1] -> ip_to_intern;
+
+// To dev0-in.  Only accept from inside network.
+ipclass[1] -> IPClassifier(src net dev0-in) -> ip_to_host;
+
+// Packets from dev0-in:net either stay on local network or go to the wild.
+// Those that go into the wild need to go through the appropriate rewriting
+// element.  (Either UDP/TCP rewriter or ICMP rewriter.)
+ipclass[2] -> inter_class :: IPClassifier(dst net dev0-in, -);
+              inter_class[0] -> ip_to_intern;
+              inter_class[1] -> ip_udp_class :: IPClassifier(tcp or udp,
+                                                             icmp type echo);
+                                ip_udp_class[0] -> Print("->0") -> [0]rw;
+                                ip_udp_class[1] -> [0]irw;
+
+Startup trace (nsec): print config done: 549133200
+Startup trace (nsec): initialize elements: 552757185
+[    0.556721] ERR:  [libvirtio_net] <virtio_net.c @  334> Failed to add a buffer to receive virtqueue 0x400064020: -28
+Startup trace (nsec): initialize elements done: 564377233
+[router_thread:310] Starting driver...
+
+
+Received packet from device: 575331195 ns:  180 | 33330000 0016767e 90d49854 86dd6000 00000074 0001fe80
+qemu-system-x86_64: terminating on signal 1 from pid 194697 (/nix/store/h3b1h0p481wd0zrbkq71gw2m7gq13m83-sudo-1.9.17p2/bin/sudo)
+Bench-helper startup time (nsec): 920069016
+path '/home/okelmann/appclick-ubpf/benchmark' does not contain a 'flake.nix', searching up
+warning: Git tree '/home/okelmann/appclick-ubpf' is dirty
+Using saved setting for 'extra-substituters = https://tum-dse.cachix.org' from ~/.local/share/nix/trusted-settings.json.
+Using saved setting for 'extra-trusted-public-keys = tum-dse.cachix.org-1:v67rK18oLwgO0Z4b69l30SrV1yRtqxKpiHodG4YxhNM=' from ~/.local/share/nix/trusted-settings.json.
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.08s
+     Running `target/debug/bench-helper`
+c[?7l[2J[0mSeaBIOS (version rel-1.16.2-0-gea1b7a073390-prebuilt.qemu.org)
+
+
+iPXE (http://ipxe.org) 00:03.0 CA00 PCI2.10 PnP PMM+BEFD0F40+BEF30F40 CA00
+Press Ctrl-B to configure iPXE (PCI 00:03.0)...                                                                               
+
+
+Booting from ROM..Powered by
+o.   .o       _ _               __ _
+Oo   Oo  ___ (_) | __ __  __ _ ' _) :_
+oO   oO ' _ `| | |/ /  _)' _` | |_|  _)
+oOo oOO| | | | |   (| | | (_) |  _) :_
+ OoOoO ._, ._:_:_,\_._,  .__,_:_, \___)
+                         Telesto 0.16.3
+Startup trace (nsec): click main(): 107832643
+Startup trace (nsec): print config: 109328734
+Received config (length 5697):
+define($MAC0 52:54:00:12:34:56);
+/* End unikraft-provided MAC preamble */
+// From: https://github.com/kohler/click/blob/master/conf/thomer-nat.click
+// Slightly modified to be compatible with Click on Unikraft. Functionality not guaranteed.
+//
+// This Click configuration implements a firewall and NAT, roughly based on the
+// mazu-nat.click example.
+//
+// This example assumes there is one interface that is IP-aliased.  In this
+// example, dev0 and dev0:0 have IP addresses 66.68.65.90 and 192.168.1.1,
+// respectively.  There is a local network, 192.168.1.0/24, and an upstream
+// gateway, 66.58.65.89.  Traffic from the local network is NATed.
+//
+// Connections can be initiated from the NAT box itself, also.
+// 
+// For bugs, suggestions, and, corrections, please email me.
+//
+// Author: Thomer M. Gil (click@thomer.com)
+
+define($DEV0 0)
+
+AddressInfo(
+    dev0-in     172.44.0.2    172.44.0.2/24    00:0d:87:9d:1c:e9,
+    dev0-ex     172.44.0.3                     00:0d:87:9d:1c:e9,
+    gw-addr     172.44.0.1                     00:20:6f:14:54:c2
+);
+
+
+elementclass SniffGatewayDevice {
+  $device |
+  from :: FromDevice($device)
+    -> Print2('Received packet from device')
+    -> t1 :: Tee
+    -> output;
+  input -> q :: Queue(1024)
+    -> t2 :: PullTee
+    -> to :: ToDevice($device);
+  t1[1] -> ToDevice;
+  t2[1] -> ToDevice($device);
+  ScheduleInfo(from .1, to 1);
+}
+
+
+device :: SniffGatewayDevice($DEV0);
+arpq_in :: ARPQuerier(dev0-in) -> device;
+ip_to_extern :: GetIPAddress(16)
+        -> CheckIPHeader
+        -> EtherEncap(0x800, dev0-ex, gw-addr)
+        -> device;
+ip_to_host :: EtherEncap(0x800, gw-addr, dev0-ex)
+        -> ToDevice;
+ip_to_intern :: GetIPAddress(16)
+        -> CheckIPHeader
+        -> arpq_in;
+
+                 
+arp_class :: Classifier(
+        12/0806 20/0001,        // [0] ARP requests
+        12/0806 20/0002,        // [1] ARP replies to host
+        12/0800);               // [2] IP packets
+
+device -> arp_class;
+
+// ARP crap
+arp_class[0] -> ARPResponder(dev0-in, dev0-ex) -> device;
+arp_class[1] -> arp_t :: Tee;
+                arp_t[0] -> ToDevice;
+                arp_t[1] -> [1]arpq_in;
+
+
+// IP packets
+arp_class[2] -> Strip(14)
+   -> CheckIPHeader
+   -> ipclass :: IPClassifier(dst host dev0-ex,
+                              dst host dev0-in,
+                              src net dev0-in);
+
+// Define pattern NAT
+iprw :: IPRewriterPatterns(NAT dev0-ex 50000-65535 - -);
+
+// Rewriting rules for UDP/TCP packets
+// output[0] rewritten to go into the wild
+// output[1] rewritten to come back from the wild or no match
+rw :: IPRewriter(pattern NAT 0 1,
+                 pass 1);
+
+// Rewriting rules for ICMP packets
+irw :: ICMPPingRewriter(pass);
+irw[0] -> ip_to_extern;
+irw[1] -> icmp_me_or_intern :: IPClassifier(dst host dev0-ex, -);
+          icmp_me_or_intern[0] -> ip_to_host;
+          icmp_me_or_intern[1] -> ip_to_intern;
+
+// Rewriting rules for ICMP error packets
+ierw :: ICMPRewriter(rw irw);
+ierw[0] -> icmp_me_or_intern;
+ierw[1] -> icmp_me_or_intern;
+
+
+// Packets directed at dev0-ex.
+// Send it through IPRewriter(pass).  If there was a mapping, it will be
+// rewritten such that dst is dev0-in:net, otherwise dst will still be for
+// dev0-ex.
+ipclass[0] -> Print("->1x") -> [1]rw;
+
+// packets that were rewritten, heading into the wild world.
+rw[0] -> Print("0->") -> ip_to_extern;
+
+// packets that come back from the wild or are not part of an established
+// connection.
+rw[1] -> Print("1->") -> established_class :: IPClassifier(dst host dev0-ex,
+                                           dst net dev0-in);
+
+         // not established yet or returning packets for a connection that was
+         // established from this host itself.
+         established_class[0] ->
+           firewall :: IPClassifier(dst tcp port ssh,
+                                    dst tcp port smtp,
+                                    dst tcp port domain,
+                                    dst udp port domain,
+                                    icmp type echo-reply,
+                                    proto icmp,
+                                    port > 4095,
+                                    -);
+
+                                    firewall[0] -> ip_to_host; // ssh
+                                    firewall[1] -> ip_to_host; // smtp
+                                    firewall[2] -> ip_to_host; // domain (t)
+                                    firewall[3] -> ip_to_host; // domain (u)
+                                    firewall[4] -> [0]irw;     // icmp reply
+                                    firewall[5] -> [0]ierw;    // other icmp
+                                    firewall[6] -> ip_to_host; // port > 4095, probably for connection
+                                                               // originating from host itself
+                                    firewall[7] -> Discard;    // don't allow incoming for port <= 4095
+
+        // established connection
+        established_class[1] -> ip_to_intern;
+
+// To dev0-in.  Only accept from inside network.
+ipclass[1] -> IPClassifier(src net dev0-in) -> ip_to_host;
+
+// Packets from dev0-in:net either stay on local network or go to the wild.
+// Those that go into the wild need to go through the appropriate rewriting
+// element.  (Either UDP/TCP rewriter or ICMP rewriter.)
+ipclass[2] -> inter_class :: IPClassifier(dst net dev0-in, -);
+              inter_class[0] -> ip_to_intern;
+              inter_class[1] -> ip_udp_class :: IPClassifier(tcp or udp,
+                                                             icmp type echo);
+                                ip_udp_class[0] -> Print("->0") -> [0]rw;
+                                ip_udp_class[1] -> [0]irw;
+
+Startup trace (nsec): print config done: 551296705
+Startup trace (nsec): initialize elements: 554912078
+[    0.558860] ERR:  [libvirtio_net] <virtio_net.c @  334> Failed to add a buffer to receive virtqueue 0x400064020: -28
+Startup trace (nsec): initialize elements done: 566468156
+[router_thread:310] Starting driver...
+
+
+Received packet from device: 577217135 ns:   64 | 01005e00 0016767e 90d49854 080046c0 00280000 40000102
+qemu-system-x86_64: terminating on signal 1 from pid 194780 (/nix/store/h3b1h0p481wd0zrbkq71gw2m7gq13m83-sudo-1.9.17p2/bin/sudo)
+Bench-helper startup time (nsec): 944509616
+path '/home/okelmann/appclick-ubpf/benchmark' does not contain a 'flake.nix', searching up
+warning: Git tree '/home/okelmann/appclick-ubpf' is dirty
+Using saved setting for 'extra-substituters = https://tum-dse.cachix.org' from ~/.local/share/nix/trusted-settings.json.
+Using saved setting for 'extra-trusted-public-keys = tum-dse.cachix.org-1:v67rK18oLwgO0Z4b69l30SrV1yRtqxKpiHodG4YxhNM=' from ~/.local/share/nix/trusted-settings.json.
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.08s
+     Running `target/debug/bench-helper`
+c[?7l[2J[0mSeaBIOS (version rel-1.16.2-0-gea1b7a073390-prebuilt.qemu.org)
+
+
+iPXE (http://ipxe.org) 00:03.0 CA00 PCI2.10 PnP PMM+BEFD0F40+BEF30F40 CA00
+Press Ctrl-B to configure iPXE (PCI 00:03.0)...                                                                               
+
+
+Booting from ROM..Powered by
+o.   .o       _ _               __ _
+Oo   Oo  ___ (_) | __ __  __ _ ' _) :_
+oO   oO ' _ `| | |/ /  _)' _` | |_|  _)
+oOo oOO| | | | |   (| | | (_) |  _) :_
+ OoOoO ._, ._:_:_,\_._,  .__,_:_, \___)
+                         Telesto 0.16.3
+Startup trace (nsec): click main(): 107692999
+Startup trace (nsec): print config: 109165916
+Received config (length 5697):
+define($MAC0 52:54:00:12:34:56);
+/* End unikraft-provided MAC preamble */
+// From: https://github.com/kohler/click/blob/master/conf/thomer-nat.click
+// Slightly modified to be compatible with Click on Unikraft. Functionality not guaranteed.
+//
+// This Click configuration implements a firewall and NAT, roughly based on the
+// mazu-nat.click example.
+//
+// This example assumes there is one interface that is IP-aliased.  In this
+// example, dev0 and dev0:0 have IP addresses 66.68.65.90 and 192.168.1.1,
+// respectively.  There is a local network, 192.168.1.0/24, and an upstream
+// gateway, 66.58.65.89.  Traffic from the local network is NATed.
+//
+// Connections can be initiated from the NAT box itself, also.
+// 
+// For bugs, suggestions, and, corrections, please email me.
+//
+// Author: Thomer M. Gil (click@thomer.com)
+
+define($DEV0 0)
+
+AddressInfo(
+    dev0-in     172.44.0.2    172.44.0.2/24    00:0d:87:9d:1c:e9,
+    dev0-ex     172.44.0.3                     00:0d:87:9d:1c:e9,
+    gw-addr     172.44.0.1                     00:20:6f:14:54:c2
+);
+
+
+elementclass SniffGatewayDevice {
+  $device |
+  from :: FromDevice($device)
+    -> Print2('Received packet from device')
+    -> t1 :: Tee
+    -> output;
+  input -> q :: Queue(1024)
+    -> t2 :: PullTee
+    -> to :: ToDevice($device);
+  t1[1] -> ToDevice;
+  t2[1] -> ToDevice($device);
+  ScheduleInfo(from .1, to 1);
+}
+
+
+device :: SniffGatewayDevice($DEV0);
+arpq_in :: ARPQuerier(dev0-in) -> device;
+ip_to_extern :: GetIPAddress(16)
+        -> CheckIPHeader
+        -> EtherEncap(0x800, dev0-ex, gw-addr)
+        -> device;
+ip_to_host :: EtherEncap(0x800, gw-addr, dev0-ex)
+        -> ToDevice;
+ip_to_intern :: GetIPAddress(16)
+        -> CheckIPHeader
+        -> arpq_in;
+
+                 
+arp_class :: Classifier(
+        12/0806 20/0001,        // [0] ARP requests
+        12/0806 20/0002,        // [1] ARP replies to host
+        12/0800);               // [2] IP packets
+
+device -> arp_class;
+
+// ARP crap
+arp_class[0] -> ARPResponder(dev0-in, dev0-ex) -> device;
+arp_class[1] -> arp_t :: Tee;
+                arp_t[0] -> ToDevice;
+                arp_t[1] -> [1]arpq_in;
+
+
+// IP packets
+arp_class[2] -> Strip(14)
+   -> CheckIPHeader
+   -> ipclass :: IPClassifier(dst host dev0-ex,
+                              dst host dev0-in,
+                              src net dev0-in);
+
+// Define pattern NAT
+iprw :: IPRewriterPatterns(NAT dev0-ex 50000-65535 - -);
+
+// Rewriting rules for UDP/TCP packets
+// output[0] rewritten to go into the wild
+// output[1] rewritten to come back from the wild or no match
+rw :: IPRewriter(pattern NAT 0 1,
+                 pass 1);
+
+// Rewriting rules for ICMP packets
+irw :: ICMPPingRewriter(pass);
+irw[0] -> ip_to_extern;
+irw[1] -> icmp_me_or_intern :: IPClassifier(dst host dev0-ex, -);
+          icmp_me_or_intern[0] -> ip_to_host;
+          icmp_me_or_intern[1] -> ip_to_intern;
+
+// Rewriting rules for ICMP error packets
+ierw :: ICMPRewriter(rw irw);
+ierw[0] -> icmp_me_or_intern;
+ierw[1] -> icmp_me_or_intern;
+
+
+// Packets directed at dev0-ex.
+// Send it through IPRewriter(pass).  If there was a mapping, it will be
+// rewritten such that dst is dev0-in:net, otherwise dst will still be for
+// dev0-ex.
+ipclass[0] -> Print("->1x") -> [1]rw;
+
+// packets that were rewritten, heading into the wild world.
+rw[0] -> Print("0->") -> ip_to_extern;
+
+// packets that come back from the wild or are not part of an established
+// connection.
+rw[1] -> Print("1->") -> established_class :: IPClassifier(dst host dev0-ex,
+                                           dst net dev0-in);
+
+         // not established yet or returning packets for a connection that was
+         // established from this host itself.
+         established_class[0] ->
+           firewall :: IPClassifier(dst tcp port ssh,
+                                    dst tcp port smtp,
+                                    dst tcp port domain,
+                                    dst udp port domain,
+                                    icmp type echo-reply,
+                                    proto icmp,
+                                    port > 4095,
+                                    -);
+
+                                    firewall[0] -> ip_to_host; // ssh
+                                    firewall[1] -> ip_to_host; // smtp
+                                    firewall[2] -> ip_to_host; // domain (t)
+                                    firewall[3] -> ip_to_host; // domain (u)
+                                    firewall[4] -> [0]irw;     // icmp reply
+                                    firewall[5] -> [0]ierw;    // other icmp
+                                    firewall[6] -> ip_to_host; // port > 4095, probably for connection
+                                                               // originating from host itself
+                                    firewall[7] -> Discard;    // don't allow incoming for port <= 4095
+
+        // established connection
+        established_class[1] -> ip_to_intern;
+
+// To dev0-in.  Only accept from inside network.
+ipclass[1] -> IPClassifier(src net dev0-in) -> ip_to_host;
+
+// Packets from dev0-in:net either stay on local network or go to the wild.
+// Those that go into the wild need to go through the appropriate rewriting
+// element.  (Either UDP/TCP rewriter or ICMP rewriter.)
+ipclass[2] -> inter_class :: IPClassifier(dst net dev0-in, -);
+              inter_class[0] -> ip_to_intern;
+              inter_class[1] -> ip_udp_class :: IPClassifier(tcp or udp,
+                                                             icmp type echo);
+                                ip_udp_class[0] -> Print("->0") -> [0]rw;
+                                ip_udp_class[1] -> [0]irw;
+
+Startup trace (nsec): print config done: 547049911
+Startup trace (nsec): initialize elements: 550633208
+[    0.554543] ERR:  [libvirtio_net] <virtio_net.c @  334> Failed to add a buffer to receive virtqueue 0x400064020: -28
+Startup trace (nsec): initialize elements done: 562035521
+[router_thread:310] Starting driver...
+
+
+Received packet from device: 572680950 ns:   64 | 01005e00 0016767e 90d49854 080046c0 00280000 40000102
+qemu-system-x86_64: terminating on signal 1 from pid 194856 (/nix/store/h3b1h0p481wd0zrbkq71gw2m7gq13m83-sudo-1.9.17p2/bin/sudo)
+Bench-helper startup time (nsec): 915120617
+path '/home/okelmann/appclick-ubpf/benchmark' does not contain a 'flake.nix', searching up
+warning: Git tree '/home/okelmann/appclick-ubpf' is dirty
+Using saved setting for 'extra-substituters = https://tum-dse.cachix.org' from ~/.local/share/nix/trusted-settings.json.
+Using saved setting for 'extra-trusted-public-keys = tum-dse.cachix.org-1:v67rK18oLwgO0Z4b69l30SrV1yRtqxKpiHodG4YxhNM=' from ~/.local/share/nix/trusted-settings.json.
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.08s
+     Running `target/debug/bench-helper`
+c[?7l[2J[0mSeaBIOS (version rel-1.16.2-0-gea1b7a073390-prebuilt.qemu.org)
+
+
+iPXE (http://ipxe.org) 00:03.0 CA00 PCI2.10 PnP PMM+BEFD0F40+BEF30F40 CA00
+Press Ctrl-B to configure iPXE (PCI 00:03.0)...                                                                               
+
+
+Booting from ROM..Powered by
+o.   .o       _ _               __ _
+Oo   Oo  ___ (_) | __ __  __ _ ' _) :_
+oO   oO ' _ `| | |/ /  _)' _` | |_|  _)
+oOo oOO| | | | |   (| | | (_) |  _) :_
+ OoOoO ._, ._:_:_,\_._,  .__,_:_, \___)
+                         Telesto 0.16.3
+Startup trace (nsec): click main(): 107808581
+Startup trace (nsec): print config: 109296895
+Received config (length 5697):
+define($MAC0 52:54:00:12:34:56);
+/* End unikraft-provided MAC preamble */
+// From: https://github.com/kohler/click/blob/master/conf/thomer-nat.click
+// Slightly modified to be compatible with Click on Unikraft. Functionality not guaranteed.
+//
+// This Click configuration implements a firewall and NAT, roughly based on the
+// mazu-nat.click example.
+//
+// This example assumes there is one interface that is IP-aliased.  In this
+// example, dev0 and dev0:0 have IP addresses 66.68.65.90 and 192.168.1.1,
+// respectively.  There is a local network, 192.168.1.0/24, and an upstream
+// gateway, 66.58.65.89.  Traffic from the local network is NATed.
+//
+// Connections can be initiated from the NAT box itself, also.
+// 
+// For bugs, suggestions, and, corrections, please email me.
+//
+// Author: Thomer M. Gil (click@thomer.com)
+
+define($DEV0 0)
+
+AddressInfo(
+    dev0-in     172.44.0.2    172.44.0.2/24    00:0d:87:9d:1c:e9,
+    dev0-ex     172.44.0.3                     00:0d:87:9d:1c:e9,
+    gw-addr     172.44.0.1                     00:20:6f:14:54:c2
+);
+
+
+elementclass SniffGatewayDevice {
+  $device |
+  from :: FromDevice($device)
+    -> Print2('Received packet from device')
+    -> t1 :: Tee
+    -> output;
+  input -> q :: Queue(1024)
+    -> t2 :: PullTee
+    -> to :: ToDevice($device);
+  t1[1] -> ToDevice;
+  t2[1] -> ToDevice($device);
+  ScheduleInfo(from .1, to 1);
+}
+
+
+device :: SniffGatewayDevice($DEV0);
+arpq_in :: ARPQuerier(dev0-in) -> device;
+ip_to_extern :: GetIPAddress(16)
+        -> CheckIPHeader
+        -> EtherEncap(0x800, dev0-ex, gw-addr)
+        -> device;
+ip_to_host :: EtherEncap(0x800, gw-addr, dev0-ex)
+        -> ToDevice;
+ip_to_intern :: GetIPAddress(16)
+        -> CheckIPHeader
+        -> arpq_in;
+
+                 
+arp_class :: Classifier(
+        12/0806 20/0001,        // [0] ARP requests
+        12/0806 20/0002,        // [1] ARP replies to host
+        12/0800);               // [2] IP packets
+
+device -> arp_class;
+
+// ARP crap
+arp_class[0] -> ARPResponder(dev0-in, dev0-ex) -> device;
+arp_class[1] -> arp_t :: Tee;
+                arp_t[0] -> ToDevice;
+                arp_t[1] -> [1]arpq_in;
+
+
+// IP packets
+arp_class[2] -> Strip(14)
+   -> CheckIPHeader
+   -> ipclass :: IPClassifier(dst host dev0-ex,
+                              dst host dev0-in,
+                              src net dev0-in);
+
+// Define pattern NAT
+iprw :: IPRewriterPatterns(NAT dev0-ex 50000-65535 - -);
+
+// Rewriting rules for UDP/TCP packets
+// output[0] rewritten to go into the wild
+// output[1] rewritten to come back from the wild or no match
+rw :: IPRewriter(pattern NAT 0 1,
+                 pass 1);
+
+// Rewriting rules for ICMP packets
+irw :: ICMPPingRewriter(pass);
+irw[0] -> ip_to_extern;
+irw[1] -> icmp_me_or_intern :: IPClassifier(dst host dev0-ex, -);
+          icmp_me_or_intern[0] -> ip_to_host;
+          icmp_me_or_intern[1] -> ip_to_intern;
+
+// Rewriting rules for ICMP error packets
+ierw :: ICMPRewriter(rw irw);
+ierw[0] -> icmp_me_or_intern;
+ierw[1] -> icmp_me_or_intern;
+
+
+// Packets directed at dev0-ex.
+// Send it through IPRewriter(pass).  If there was a mapping, it will be
+// rewritten such that dst is dev0-in:net, otherwise dst will still be for
+// dev0-ex.
+ipclass[0] -> Print("->1x") -> [1]rw;
+
+// packets that were rewritten, heading into the wild world.
+rw[0] -> Print("0->") -> ip_to_extern;
+
+// packets that come back from the wild or are not part of an established
+// connection.
+rw[1] -> Print("1->") -> established_class :: IPClassifier(dst host dev0-ex,
+                                           dst net dev0-in);
+
+         // not established yet or returning packets for a connection that was
+         // established from this host itself.
+         established_class[0] ->
+           firewall :: IPClassifier(dst tcp port ssh,
+                                    dst tcp port smtp,
+                                    dst tcp port domain,
+                                    dst udp port domain,
+                                    icmp type echo-reply,
+                                    proto icmp,
+                                    port > 4095,
+                                    -);
+
+                                    firewall[0] -> ip_to_host; // ssh
+                                    firewall[1] -> ip_to_host; // smtp
+                                    firewall[2] -> ip_to_host; // domain (t)
+                                    firewall[3] -> ip_to_host; // domain (u)
+                                    firewall[4] -> [0]irw;     // icmp reply
+                                    firewall[5] -> [0]ierw;    // other icmp
+                                    firewall[6] -> ip_to_host; // port > 4095, probably for connection
+                                                               // originating from host itself
+                                    firewall[7] -> Discard;    // don't allow incoming for port <= 4095
+
+        // established connection
+        established_class[1] -> ip_to_intern;
+
+// To dev0-in.  Only accept from inside network.
+ipclass[1] -> IPClassifier(src net dev0-in) -> ip_to_host;
+
+// Packets from dev0-in:net either stay on local network or go to the wild.
+// Those that go into the wild need to go through the appropriate rewriting
+// element.  (Either UDP/TCP rewriter or ICMP rewriter.)
+ipclass[2] -> inter_class :: IPClassifier(dst net dev0-in, -);
+              inter_class[0] -> ip_to_intern;
+              inter_class[1] -> ip_udp_class :: IPClassifier(tcp or udp,
+                                                             icmp type echo);
+                                ip_udp_class[0] -> Print("->0") -> [0]rw;
+                                ip_udp_class[1] -> [0]irw;
+
+Startup trace (nsec): print config done: 548858619
+Startup trace (nsec): initialize elements: 552454054
+[    0.556381] ERR:  [libvirtio_net] <virtio_net.c @  334> Failed to add a buffer to receive virtqueue 0x400064020: -28
+Startup trace (nsec): initialize elements done: 563858378
+[router_thread:310] Starting driver...
+
+
+Received packet from device: 574650736 ns:   64 | 01005e00 0016767e 90d49854 080046c0 00280000 40000102
+qemu-system-x86_64: terminating on signal 1 from pid 194938 (/nix/store/h3b1h0p481wd0zrbkq71gw2m7gq13m83-sudo-1.9.17p2/bin/sudo)
+Bench-helper startup time (nsec): 927600923
+path '/home/okelmann/appclick-ubpf/benchmark' does not contain a 'flake.nix', searching up
+warning: Git tree '/home/okelmann/appclick-ubpf' is dirty
+Using saved setting for 'extra-substituters = https://tum-dse.cachix.org' from ~/.local/share/nix/trusted-settings.json.
+Using saved setting for 'extra-trusted-public-keys = tum-dse.cachix.org-1:v67rK18oLwgO0Z4b69l30SrV1yRtqxKpiHodG4YxhNM=' from ~/.local/share/nix/trusted-settings.json.
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.08s
+     Running `target/debug/bench-helper`
+c[?7l[2J[0mSeaBIOS (version rel-1.16.2-0-gea1b7a073390-prebuilt.qemu.org)
+
+
+iPXE (http://ipxe.org) 00:03.0 CA00 PCI2.10 PnP PMM+BEFD0F40+BEF30F40 CA00
+Press Ctrl-B to configure iPXE (PCI 00:03.0)...                                                                               
+
+
+Booting from ROM..Powered by
+o.   .o       _ _               __ _
+Oo   Oo  ___ (_) | __ __  __ _ ' _) :_
+oO   oO ' _ `| | |/ /  _)' _` | |_|  _)
+oOo oOO| | | | |   (| | | (_) |  _) :_
+ OoOoO ._, ._:_:_,\_._,  .__,_:_, \___)
+                         Telesto 0.16.3
+Startup trace (nsec): click main(): 107790215
+Startup trace (nsec): print config: 109277094
+Received config (length 5697):
+define($MAC0 52:54:00:12:34:56);
+/* End unikraft-provided MAC preamble */
+// From: https://github.com/kohler/click/blob/master/conf/thomer-nat.click
+// Slightly modified to be compatible with Click on Unikraft. Functionality not guaranteed.
+//
+// This Click configuration implements a firewall and NAT, roughly based on the
+// mazu-nat.click example.
+//
+// This example assumes there is one interface that is IP-aliased.  In this
+// example, dev0 and dev0:0 have IP addresses 66.68.65.90 and 192.168.1.1,
+// respectively.  There is a local network, 192.168.1.0/24, and an upstream
+// gateway, 66.58.65.89.  Traffic from the local network is NATed.
+//
+// Connections can be initiated from the NAT box itself, also.
+// 
+// For bugs, suggestions, and, corrections, please email me.
+//
+// Author: Thomer M. Gil (click@thomer.com)
+
+define($DEV0 0)
+
+AddressInfo(
+    dev0-in     172.44.0.2    172.44.0.2/24    00:0d:87:9d:1c:e9,
+    dev0-ex     172.44.0.3                     00:0d:87:9d:1c:e9,
+    gw-addr     172.44.0.1                     00:20:6f:14:54:c2
+);
+
+
+elementclass SniffGatewayDevice {
+  $device |
+  from :: FromDevice($device)
+    -> Print2('Received packet from device')
+    -> t1 :: Tee
+    -> output;
+  input -> q :: Queue(1024)
+    -> t2 :: PullTee
+    -> to :: ToDevice($device);
+  t1[1] -> ToDevice;
+  t2[1] -> ToDevice($device);
+  ScheduleInfo(from .1, to 1);
+}
+
+
+device :: SniffGatewayDevice($DEV0);
+arpq_in :: ARPQuerier(dev0-in) -> device;
+ip_to_extern :: GetIPAddress(16)
+        -> CheckIPHeader
+        -> EtherEncap(0x800, dev0-ex, gw-addr)
+        -> device;
+ip_to_host :: EtherEncap(0x800, gw-addr, dev0-ex)
+        -> ToDevice;
+ip_to_intern :: GetIPAddress(16)
+        -> CheckIPHeader
+        -> arpq_in;
+
+                 
+arp_class :: Classifier(
+        12/0806 20/0001,        // [0] ARP requests
+        12/0806 20/0002,        // [1] ARP replies to host
+        12/0800);               // [2] IP packets
+
+device -> arp_class;
+
+// ARP crap
+arp_class[0] -> ARPResponder(dev0-in, dev0-ex) -> device;
+arp_class[1] -> arp_t :: Tee;
+                arp_t[0] -> ToDevice;
+                arp_t[1] -> [1]arpq_in;
+
+
+// IP packets
+arp_class[2] -> Strip(14)
+   -> CheckIPHeader
+   -> ipclass :: IPClassifier(dst host dev0-ex,
+                              dst host dev0-in,
+                              src net dev0-in);
+
+// Define pattern NAT
+iprw :: IPRewriterPatterns(NAT dev0-ex 50000-65535 - -);
+
+// Rewriting rules for UDP/TCP packets
+// output[0] rewritten to go into the wild
+// output[1] rewritten to come back from the wild or no match
+rw :: IPRewriter(pattern NAT 0 1,
+                 pass 1);
+
+// Rewriting rules for ICMP packets
+irw :: ICMPPingRewriter(pass);
+irw[0] -> ip_to_extern;
+irw[1] -> icmp_me_or_intern :: IPClassifier(dst host dev0-ex, -);
+          icmp_me_or_intern[0] -> ip_to_host;
+          icmp_me_or_intern[1] -> ip_to_intern;
+
+// Rewriting rules for ICMP error packets
+ierw :: ICMPRewriter(rw irw);
+ierw[0] -> icmp_me_or_intern;
+ierw[1] -> icmp_me_or_intern;
+
+
+// Packets directed at dev0-ex.
+// Send it through IPRewriter(pass).  If there was a mapping, it will be
+// rewritten such that dst is dev0-in:net, otherwise dst will still be for
+// dev0-ex.
+ipclass[0] -> Print("->1x") -> [1]rw;
+
+// packets that were rewritten, heading into the wild world.
+rw[0] -> Print("0->") -> ip_to_extern;
+
+// packets that come back from the wild or are not part of an established
+// connection.
+rw[1] -> Print("1->") -> established_class :: IPClassifier(dst host dev0-ex,
+                                           dst net dev0-in);
+
+         // not established yet or returning packets for a connection that was
+         // established from this host itself.
+         established_class[0] ->
+           firewall :: IPClassifier(dst tcp port ssh,
+                                    dst tcp port smtp,
+                                    dst tcp port domain,
+                                    dst udp port domain,
+                                    icmp type echo-reply,
+                                    proto icmp,
+                                    port > 4095,
+                                    -);
+
+                                    firewall[0] -> ip_to_host; // ssh
+                                    firewall[1] -> ip_to_host; // smtp
+                                    firewall[2] -> ip_to_host; // domain (t)
+                                    firewall[3] -> ip_to_host; // domain (u)
+                                    firewall[4] -> [0]irw;     // icmp reply
+                                    firewall[5] -> [0]ierw;    // other icmp
+                                    firewall[6] -> ip_to_host; // port > 4095, probably for connection
+                                                               // originating from host itself
+                                    firewall[7] -> Discard;    // don't allow incoming for port <= 4095
+
+        // established connection
+        established_class[1] -> ip_to_intern;
+
+// To dev0-in.  Only accept from inside network.
+ipclass[1] -> IPClassifier(src net dev0-in) -> ip_to_host;
+
+// Packets from dev0-in:net either stay on local network or go to the wild.
+// Those that go into the wild need to go through the appropriate rewriting
+// element.  (Either UDP/TCP rewriter or ICMP rewriter.)
+ipclass[2] -> inter_class :: IPClassifier(dst net dev0-in, -);
+              inter_class[0] -> ip_to_intern;
+              inter_class[1] -> ip_udp_class :: IPClassifier(tcp or udp,
+                                                             icmp type echo);
+                                ip_udp_class[0] -> Print("->0") -> [0]rw;
+                                ip_udp_class[1] -> [0]irw;
+
+Startup trace (nsec): print config done: 545738043
+Startup trace (nsec): initialize elements: 549314757
+[    0.553219] ERR:  [libvirtio_net] <virtio_net.c @  334> Failed to add a buffer to receive virtqueue 0x400064020: -28
+Startup trace (nsec): initialize elements done: 560696104
+[router_thread:310] Starting driver...
+
+
+Received packet from device: 571340817 ns:   64 | 01005e00 0016767e 90d49854 080046c0 00280000 40000102
+qemu-system-x86_64: terminating on signal 1 from pid 195014 (/nix/store/h3b1h0p481wd0zrbkq71gw2m7gq13m83-sudo-1.9.17p2/bin/sudo)
+Bench-helper startup time (nsec): 913657270
