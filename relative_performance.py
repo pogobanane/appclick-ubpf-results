@@ -198,10 +198,16 @@ def main():
     # df_hue = map_hue(df_hue, hue_map)
     # df['is_passthrough'] = df.apply(lambda row: True if "vmux-pt" in row['interface'] or "vfio" in row['interface'] else False, axis=1)
 
-    linux_mirror_histogram = latency_cdf.LatencyHistogram(args.linux_mirror_histogram[0].name)
-    uk_mirror_histogram = latency_cdf.LatencyHistogram(args.uk_mirror_histogram[0].name)
-    linux_nat_histogram = latency_cdf.LatencyHistogram(args.linux_nat_histogram[0].name)
-    uk_nat_histogram = latency_cdf.LatencyHistogram(args.uk_nat_histogram[0].name)
+    if args.linux_mirror_histogram is None or args.uk_mirror_histogram is None or args.linux_nat_histogram is None or args.uk_nat_histogram is None:
+        add_latency = False
+    else:
+        add_latency = True
+
+    if add_latency:
+        linux_mirror_histogram = latency_cdf.LatencyHistogram(args.linux_mirror_histogram[0].name)
+        uk_mirror_histogram = latency_cdf.LatencyHistogram(args.uk_mirror_histogram[0].name)
+        linux_nat_histogram = latency_cdf.LatencyHistogram(args.linux_nat_histogram[0].name)
+        uk_nat_histogram = latency_cdf.LatencyHistogram(args.uk_nat_histogram[0].name)
 
     df = df[df['size'] == 64]
     df.loc[(df["vnf"] == "mirror") | (df["vnf"] == "nat"), "direction"] = "bi"
@@ -212,9 +218,14 @@ def main():
 
     def calc_speedup(df, system_baseline, system_new):
         columns = ['vnf', 'direction', 'pps']
-        vnfs = [ "empty", "filter", "ids", "mirror", "nat", "latency" ]
+        vnfs = [ "empty", "filter", "ids", "mirror", "nat"]
+        if add_latency:
+            vnfs += [ "latency" ]
         rows = []
-        for direction in ["rx", "tx", "bi", "latency" ]:
+        directions = ["rx", "tx", "bi"]
+        if add_latency:
+            directions += [ "latency" ]
+        for direction in directions:
             for vnf in vnfs:
                 df_ = df[(df['vnf'] == vnf) & (df['direction'] == direction)]
                 value = None
@@ -296,7 +307,7 @@ def main():
             sharey = True,
             sharex = False,
             # col_wrap=2,
-            gridspec_kws={"width_ratios": [3, 3, 2, 2]},
+                         gridspec_kws={"width_ratios": [3, 3, 2, 2] if add_latency else [3, 3, 2]},
     )
     grid.map_dataframe(sns.barplot,
                x='vnf',
