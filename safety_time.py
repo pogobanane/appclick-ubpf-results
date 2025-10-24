@@ -183,6 +183,7 @@ def main():
     nat_mean_msecs = df[(df["system"]=="ukebpfjit")&(df["vnf"]=="nat")].groupby("label")["msec"].mean().reset_index()
     nat_mean_msecs=nat_mean_msecs.assign(system='\nReconfiguration')
     nat_mean_msecs = nat_mean_msecs.rename(columns={'system': 'system', 'label': 'contributor', 'msec': 'restart_s'})
+    nat_mean_msecs.loc[nat_mean_msecs['contributor'] == 'other', 'contributor'] = 'Control'
     oob_df = pd.read_csv(args.bpfbuild[0].name)
     oob_df=oob_df.assign(system='Out-of-band\n')
 
@@ -203,13 +204,14 @@ def main():
     columns = ['system', 'contributor', 'restart_s']
     systems = [ "Out-of-band\n", "\nReconfiguration" ]
     contributors = [ "Compile", "Link", "Verify", "Load", "Validate", "JIT", "Control" ]
-    
+
     df = pd.concat([nat_mean_msecs[nat_mean_msecs['contributor'].isin(contributors)], oob_df])
 
     df['system'] = df['system'].apply(lambda row: system_map.get(str(row), row))
     df['system'] = pd.Categorical(df['system'], systems)
 
     df = df[df['contributor'] != 'Load'] # not visible anyways. Remove so that it won't be visible in Legend
+
 
     # map colors to hues
     # colors = sns.color_palette("pastel", len(df['hue'].unique())-1) + [ mcolors.to_rgb('sandybrown') ]
@@ -231,17 +233,16 @@ def main():
     ax1.set_title('(a) Safety overhead  ')
 
 
-    avg_compile = df[df["contributor"] == "Compile"]["restart_s"].mean()
+    avg_compile = df[df["contributor"] == "Compile"]["restart_s"].mean() # actually msec not sec
     avg_link = df[df["contributor"] == "Link"]["restart_s"].mean()
     avg_verify = df[df["contributor"] == "Verify"]["restart_s"].mean()
-    avg_load = df[df["contributor"] == "Load"]["restart_s"].mean()
+    # avg_load = df[df["contributor"] == "Load"]["restart_s"].mean()
     avg_validate = df[df["contributor"] == "Validate"]["restart_s"].mean()
     avg_jit = df[df["contributor"] == "JIT"]["restart_s"].mean()
     avg_control = df[df["contributor"] == "Control"]["restart_s"].mean()
 
-    oob_safety_pct = (avg_verify / (avg_compile + avg_link)) * 100
-    reconf_safety_pct = (avg_validate / (avg_load + avg_jit + avg_control)) * 100
-    print(f"Out of band tasks contain {oob_safety_pct:.1f}% and reconfiguration {reconf_safety_pct:.1f}% of safety related task time.")
+    total_out_of_band = avg_compile + avg_link + avg_verify
+    total_reconfiguration = avg_validate + avg_jit + avg_control
 
 
     # Create sample data
@@ -255,7 +256,7 @@ def main():
     # We define the amortized out-of-band overhead with a update frequency $f_u$, and a reconfiguration frequency $f_r$ given a verification time $t_v$ as $t_a = t_v * f_u / f_r$.
     HUE_LABEL = "Update frequency"
     columns = ['t_v', 'f_u', HUE_LABEL, 'f_r', 't_a']
-    t_v = 335 # in seconds
+    t_v =  total_out_of_band # approx. 335 # in milliseconds
     secondly = 1 # 1/s
     minutely = 1/60 # 1/min
     hourly= 1/(60*60) # 1/h
@@ -435,6 +436,11 @@ def main():
     plt.savefig(args.output.name)
     plt.close()
 
+    oob_safety_pct = (avg_verify / (avg_compile + avg_link)) * 100
+    reconf_safety_pct = (avg_validate / (avg_validate + avg_jit)) * 100
+    print(f"Out of band tasks contain {oob_safety_pct:.1f}% and reconfiguration {reconf_safety_pct:.1f}% of safety related task time.")
+    print(f"Total out-of-band time: {total_out_of_band:.1f}ms")
+    print(f"Total reconfiguration time: {total_reconfiguration:.1f}ms")
 
 
 
